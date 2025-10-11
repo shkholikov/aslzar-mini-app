@@ -1,0 +1,47 @@
+# Node & Dependencies
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+
+# Build Outputs
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Logs & Debug
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment & Config
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Docker
+docker/data/
+docker/tmp/
+
+# TypeScript 
+*.tsbuildinfo
+
+# Temporary
+tmp/
+temp/
+# Lock files (if using pnpm workspaces)
+package-lock.json
+yarn.lock
+

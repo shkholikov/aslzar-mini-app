@@ -1,0 +1,18 @@
+{
+	"name": "aslzar-platform",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"dev:bot": "npm --filter bot dev",
+		"dev:webapp": "npm --filter webapp dev",
+		"dev:api": "npm --filter api dev",
+		"dev:worker": "npm --filter worker dev",
+		"dev:all": "turbo run dev"
+	},
+	"devDependencies": {
+		"turbo": "^2.0.0"
+	}
+}

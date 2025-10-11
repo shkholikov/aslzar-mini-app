@@ -1,0 +1,21 @@
+{
+	"name": "aslzar-bot",
+	"version": "1.0.0",
+	"main": "index.js",
+	"scripts": {
+		"dev": "ts-node src/bot.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": "",
+	"dependencies": {
+		"dotenv": "^17.2.3",
+		"grammy": "^1.38.3",
+		"ts-node": "^10.9.2"
+	},
+	"devDependencies": {
+		"@types/node": "^24.7.2",
+		"typescript": "^5.9.3"
+	}
+}
