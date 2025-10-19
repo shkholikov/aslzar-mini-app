@@ -15,6 +15,7 @@ export default function HomePage() {
 	const [user, setUser] = useState<TelegramUser | null>(null);
 
 	useEffect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const tg = (window as any).Telegram?.WebApp;
 		tg?.expand(); // makes the Mini App full screen
 		const telegramUser = tg?.initDataUnsafe?.user;
