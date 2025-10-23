@@ -5,6 +5,7 @@ import Image from "next/image";
 import { telegramInit } from "../lib/telegram";
 
 export default function HomePage() {
+	// eslint-disable-next-line
 	const [user, setUser] = useState<any>(null);
 
 	useEffect(() => {
