@@ -8,7 +8,7 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 		<>
 			<Avatar className="rounded-lg w-12 h-12">
 				<AvatarImage src={photo_url} alt="profile_avatar" />
-				<AvatarFallback className="w-24 h-24 text-xl">PH</AvatarFallback>
+				<AvatarFallback className="w-12 h-12 text-xl">PH</AvatarFallback>
 			</Avatar>
 			<div>
 				<h1 className="text-xl text-center text-gray-800 font-semibold">Salom, {first_name} 👋</h1>
@@ -27,7 +27,7 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 					<Separator orientation="vertical" />
 					<Badge variant="outline">Cachback: 20.000</Badge>
 					<Separator orientation="vertical" />
-					<Badge variant="outline">To'lovlar: 2</Badge>
+					<Badge variant="outline">To&apos;lovlar: 2</Badge>
 				</div>
 			</div>
 		</>
