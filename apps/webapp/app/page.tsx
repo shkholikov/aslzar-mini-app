@@ -15,7 +15,11 @@ export default function HomePage() {
 		const tg = telegramInit();
 		if (!tg) return;
 
-		// tg.requestFullscreen();
+		// Expand the app to full screen when opened on a mobile device
+		const platform = tg.platform || "";
+		const isMobile = platform === "android" || platform === "ios" || platform === "weba" || platform === "webk";
+		if (isMobile) tg.requestFullscreen();
+
 		//set client safe area to display items correctly
 		const { top, bottom, left, right } = tg.safeAreaInset || { top: 0, bottom: 0, left: 0, right: 0 };
 		setSafeArea({ top, bottom, left, right });
