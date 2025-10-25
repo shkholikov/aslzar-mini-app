@@ -5,6 +5,7 @@ import { telegramInit } from "../lib/telegram";
 import { Loading } from "@/components/common/loading";
 import { Profile } from "@/components/profile";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { MenuDock } from "@/components/ui/shadcn-io/menu-dock";
 
 export default function HomePage() {
 	// eslint-disable-next-line
@@ -43,13 +44,33 @@ export default function HomePage() {
 						<CardHeader>
 							<CardTitle>ASLZAR Platformasi</CardTitle>
 							<CardDescription>
-								ASLZAR — zamonaviy to‘lovlar, cashback va sodiqlik tizimi uchun yaratilgan platforma. Bu yerda qulaylik va imkoniyatlar sizni
-								kutmoqda!
+								<h3>Platforma haqida qisqacha maʼlumot</h3>
+								<h5>ASLZAR – Sizning sodiqlik va zamonaviy to‘lovlar markazingiz!</h5>
+								<p>ASLZAR orqali hamyonbop va ishonchli to‘lovlarni amalga oshiring, doimiy keshbek va eksklyuziv takliflardan bahramand bo‘ling.</p>
+								<h3>Afzalliklar</h3>
+								<ul>
+									<li>
+										<h5>Qulay interfeys</h5>
+										<p>Foydalanuvchiga qulay va tez ishlaydigan platforma.</p>
+									</li>
+									<li>
+										<h5>Sodiqlik tizimi</h5>
+										<p>To‘lovlaringizdan foyda ko‘ring va bonuslarga ega bo‘ling.</p>
+									</li>
+									<li>
+										<h5>Xavfsizlik</h5>
+										<p>Ma’lumotlaringiz yuqori darajada himoyalangan.</p>
+									</li>
+								</ul>
+								<h5>Platformaning barcha imkoniyatlaridan foydalaning va raqamli dunyodan maksimal darajada bahra oling!</h5>
 							</CardDescription>
 						</CardHeader>
 						<CardContent></CardContent>
 						<CardFooter className="flex-col gap-2"></CardFooter>
 					</Card>
+					<div className="flex items-end justify-center min-h-[120px] fixed bottom-4">
+						<MenuDock variant="compact" animated={false} />
+					</div>
 				</>
 			) : (
 				<Loading />
