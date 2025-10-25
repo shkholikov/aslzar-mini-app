@@ -89,7 +89,7 @@ export default function HomePage() {
 											</li>
 											<li>
 												<div>
-													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Mijozlarni qo'llab-quvvatlash</h4>
+													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Mijozlarni qo&apos;llab-quvvatlash</h4>
 													<p className="text-muted-foreground text-sm mt-0.5">
 														Har qanday muammolar yuzaga kelganda, 24/7 ishlab turadigan yordam xizmati orqali yechim topasiz.
 													</p>
