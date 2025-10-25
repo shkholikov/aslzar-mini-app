@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+import { Menu } from "@/components/common/menu";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -28,7 +29,12 @@ export default function RootLayout({
 			<head>
 				<Script src="https://telegram.org/js/telegram-web-app.js?59" strategy="beforeInteractive" />
 			</head>
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+				{children}
+				<div className="flex justify-center">
+					<Menu />
+				</div>
+			</body>
 		</html>
 	);
 }

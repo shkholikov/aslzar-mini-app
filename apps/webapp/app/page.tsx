@@ -5,7 +5,6 @@ import { telegramInit } from "../lib/telegram";
 import { Loading } from "@/components/common/loading";
 import { Profile } from "@/components/profile";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { MenuDock } from "@/components/ui/shadcn-io/menu-dock";
 
 export default function HomePage() {
 	// eslint-disable-next-line
@@ -40,37 +39,72 @@ export default function HomePage() {
 			{user ? (
 				<>
 					<Profile photo_url={user.photo_url} first_name={user.first_name} />
-					<Card className="w-full max-w-sm mt-8">
+					<Card className="w-full max-w-sm mt-8 mb-16">
 						<CardHeader>
 							<CardTitle>ASLZAR Platformasi</CardTitle>
 							<CardDescription>
-								<h3>Platforma haqida qisqacha maʼlumot</h3>
-								<h5>ASLZAR – Sizning sodiqlik va zamonaviy to‘lovlar markazingiz!</h5>
-								<p>ASLZAR orqali hamyonbop va ishonchli to‘lovlarni amalga oshiring, doimiy keshbek va eksklyuziv takliflardan bahramand bo‘ling.</p>
-								<h3>Afzalliklar</h3>
-								<ul>
-									<li>
-										<h5>Qulay interfeys</h5>
-										<p>Foydalanuvchiga qulay va tez ishlaydigan platforma.</p>
-									</li>
-									<li>
-										<h5>Sodiqlik tizimi</h5>
-										<p>To‘lovlaringizdan foyda ko‘ring va bonuslarga ega bo‘ling.</p>
-									</li>
-									<li>
-										<h5>Xavfsizlik</h5>
-										<p>Ma’lumotlaringiz yuqori darajada himoyalangan.</p>
-									</li>
-								</ul>
-								<h5>Platformaning barcha imkoniyatlaridan foydalaning va raqamli dunyodan maksimal darajada bahra oling!</h5>
+								<div className="space-y-4">
+									<div>
+										<h2 className="scroll-m-20 border-b pb-2 text-2xl font-semibold tracking-tight first:mt-0">Platforma haqida batafsil maʼlumot</h2>
+										<p className="leading-7 text-muted-foreground mt-2">
+											<strong>ASLZAR</strong> — Sizning sodiqlik va zamonaviy to‘lovlar markazingiz! Platformamiz orqali ishonchli, tez va xavfsiz
+											to‘lovlar amalga oshirasiz. Har bir tranzaksiyada doimiy <span className="font-medium text-blue-600">keshbek</span> va
+											<em> eksklyuziv takliflar</em> sizni kutmoqda. ASLZAR nafaqat sodiqlik tizimi, balki zamonaviy moliyaviy boshqaruvni ham oson va
+											qulay qiladi.
+										</p>
+									</div>
+									<div>
+										<h3 className="scroll-m-20 text-xl font-semibold tracking-tight">Platformaning asosiy afzalliklari</h3>
+										<ul className="my-4 ml-6 list-disc space-y-3">
+											<li>
+												<div>
+													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Qulay interfeys va tezkor ishlash</h4>
+													<p className="text-muted-foreground text-sm mt-0.5">
+														Minimalist va funksional dizayn tufayli platforma istalgan qurilmada juda qulay ishlaydi. Foydalanuvchilarga intuitiv
+														boshqaruv va tez ro‘yxatdan o‘tish jarayoni taqdim etiladi.
+													</p>
+												</div>
+											</li>
+											<li>
+												<div>
+													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Innovatsion sodiqlik tizimi</h4>
+													<p className="text-muted-foreground text-sm mt-0.5">
+														Qilgan to‘lovlaringiz uchun avtomatik keshbek va bonuslarni qo‘lga kiriting. Maxsus darajalar va sodiqlik g‘ildiragi
+														orqali yana-da ko‘proq imtiyozlarga ega bo‘ling.
+													</p>
+												</div>
+											</li>
+											<li>
+												<div>
+													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Yuqori darajadagi xavfsizlik</h4>
+													<p className="text-muted-foreground text-sm mt-0.5">
+														Ma’lumotlaringiz zamonaviy shifrlash texnologiyalari orqali himoyalanadi. Har bir tranzaksiya xavfsiz va kafolatlangan
+														tarzda amalga oshiriladi.
+													</p>
+												</div>
+											</li>
+											<li>
+												<div>
+													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Mijozlarni qo'llab-quvvatlash</h4>
+													<p className="text-muted-foreground text-sm mt-0.5">
+														Har qanday muammolar yuzaga kelganda, 24/7 ishlab turadigan yordam xizmati orqali yechim topasiz.
+													</p>
+												</div>
+											</li>
+										</ul>
+									</div>
+									<div>
+										<blockquote className="mt-4 border-l-2 pl-4 italic text-gray-700">
+											Platformaning barcha imkoniyatlaridan foydalaning va raqamli dunyodan maksimal darajada bahramand bo‘ling! ASLZAR — sodiqlik va
+											ishonch maskani.
+										</blockquote>
+									</div>
+								</div>
 							</CardDescription>
 						</CardHeader>
 						<CardContent></CardContent>
 						<CardFooter className="flex-col gap-2"></CardFooter>
 					</Card>
-					<div className="flex items-end justify-center min-h-[120px] fixed bottom-4">
-						<MenuDock variant="compact" animated={false} />
-					</div>
 				</>
 			) : (
 				<Loading />
