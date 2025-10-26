@@ -2,13 +2,16 @@ import { BadgeCheckIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
+import { Spinner } from "./ui/spinner";
 
 export function Profile({ photo_url, first_name }: { photo_url: string; first_name: string }) {
 	return (
 		<>
 			<Avatar className="rounded-lg w-12 h-12">
 				<AvatarImage src={photo_url} alt="profile_avatar" />
-				<AvatarFallback className="w-12 h-12 text-xl">PH</AvatarFallback>
+				<AvatarFallback className="w-12 h-12 text-xl">
+					<Spinner className="size-6" />
+				</AvatarFallback>
 			</Avatar>
 			<div>
 				<h1 className="text-xl text-center text-gray-800 font-semibold">Salom, {first_name} 👋</h1>
