@@ -5,8 +5,11 @@ import { telegramInit } from "../lib/telegram";
 import { Loading } from "@/components/common/loading";
 import { Profile } from "@/components/profile";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function HomePage() {
+	const pathname = usePathname();
+	const router = useRouter();
 	// eslint-disable-next-line
 	const [user, setUser] = useState<any>(null);
 	const [safeArea, setSafeArea] = useState({ top: 0, bottom: 0, left: 0, right: 0 });
@@ -19,6 +22,14 @@ export default function HomePage() {
 		const platform = tg.platform || "";
 		const isMobile = platform === "android" || platform === "ios" || platform === "weba" || platform === "webk";
 		if (isMobile) tg.requestFullscreen();
+
+		// TODO: Doesn't work properly
+		if (pathname === "/") {
+			tg.BackButton.hide();
+		} else {
+			tg.BackButton.show();
+			tg.BackButton.onClick(() => router.back());
+		}
 
 		//set client safe area to display items correctly
 		const { top, bottom, left, right } = tg.safeAreaInset || { top: 0, bottom: 0, left: 0, right: 0 };
