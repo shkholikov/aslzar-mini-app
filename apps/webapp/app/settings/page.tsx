@@ -1,9 +1,12 @@
 "use client";
 
+import { Header } from "@/components/common/header";
+import { Settings } from "lucide-react";
+
 export default function SettingsPage() {
 	return (
-		<main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-			<h1 className="text-2xl font-bold text-gray-800 mb-6">Settings</h1>
-		</main>
+		<>
+			<Header title="Sozlamalar" description="Profil va dastur sozlamalarini shu yerda o‘zgartirishingiz mumkin." icon={Settings} />
+		</>
 	);
 }

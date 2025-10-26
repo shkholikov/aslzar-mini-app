@@ -29,7 +29,15 @@ export default function RootLayout({
 			<head>
 				<Script src="https://telegram.org/js/telegram-web-app.js?59" strategy="beforeInteractive" />
 			</head>
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+			<body
+				className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+				style={{
+					paddingTop: "calc(env(safe-area-inset-top, 0px) + 100px)",
+					paddingBottom: "env(safe-area-inset-bottom, 0px)",
+					paddingLeft: "env(safe-area-inset-left, 0px)",
+					paddingRight: "env(safe-area-inset-right, 0px)"
+				}}
+			>
 				{children}
 				<div className="flex justify-center">
 					<Menu />

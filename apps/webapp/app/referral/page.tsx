@@ -1,9 +1,16 @@
 "use client";
 
+import { Header } from "@/components/common/header";
+import { Users } from "lucide-react";
+
 export default function ReferralPage() {
 	return (
-		<main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-			<h1 className="text-2xl font-bold text-gray-800 mb-6">Referral</h1>
-		</main>
+		<>
+			<Header
+				title="Referral"
+				description="Sizning referal link va do‘stlaringizni taklif qilib, qanday foyda olishingiz mumkinligi shu yerda ko‘rsatiladi."
+				icon={Users}
+			/>
+		</>
 	);
 }
