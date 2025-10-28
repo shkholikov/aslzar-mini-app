@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
+import { TelegramProvider } from "@/hooks/useTelegram";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -32,16 +33,18 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
 				style={{
-					paddingTop: "calc(env(safe-area-inset-top, 0px) + 100px)",
+					paddingTop: "var(--tg-content-safe-area-inset-top)",
 					paddingBottom: "env(safe-area-inset-bottom, 0px)",
 					paddingLeft: "env(safe-area-inset-left, 0px)",
 					paddingRight: "env(safe-area-inset-right, 0px)"
 				}}
 			>
-				{children}
-				<div className="flex justify-center">
-					<Menu />
-				</div>
+				<TelegramProvider>
+					{children}
+					<div className="flex justify-center">
+						<Menu />
+					</div>
+				</TelegramProvider>
 			</body>
 		</html>
 	);

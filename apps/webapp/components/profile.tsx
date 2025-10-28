@@ -7,9 +7,9 @@ import { Spinner } from "./ui/spinner";
 export function Profile({ photo_url, first_name }: { photo_url: string; first_name: string }) {
 	return (
 		<>
-			<Avatar className="rounded-lg w-12 h-12">
+			<Avatar className="rounded-lg w-14 h-14">
 				<AvatarImage src={photo_url} alt="profile_avatar" />
-				<AvatarFallback className="w-12 h-12 text-xl">
+				<AvatarFallback className="w-14 h-14 text-xl">
 					<Spinner className="size-6" />
 				</AvatarFallback>
 			</Avatar>

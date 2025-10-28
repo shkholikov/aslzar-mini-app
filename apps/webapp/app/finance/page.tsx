@@ -5,12 +5,8 @@ import { Briefcase } from "lucide-react";
 
 export default function FinancePage() {
 	return (
-		<>
-			<Header
-				title="Moliyaviy"
-				description="Moliyaviy faoliyatingiz va balansingiz shu yerda ko‘rsatiladi."
-				icon={Briefcase}
-			/>
-		</>
+		<div className="pt-12">
+			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va balansingiz shu yerda ko‘rsatiladi." icon={Briefcase} />
+		</div>
 	);
 }

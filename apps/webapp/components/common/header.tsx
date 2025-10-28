@@ -11,7 +11,7 @@ interface HeaderProps {
 
 export function Header({ title, description, icon: Icon }: HeaderProps) {
 	return (
-		<div className="m-2">
+		<div>
 			<div className="flex flex-items justify-center pb-4">
 				<Icon className="w-12 h-12 text-gray-800" />
 			</div>

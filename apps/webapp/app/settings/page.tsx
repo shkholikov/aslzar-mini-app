@@ -5,8 +5,8 @@ import { Settings } from "lucide-react";
 
 export default function SettingsPage() {
 	return (
-		<>
+		<div className="pt-12">
 			<Header title="Sozlamalar" description="Profil va dastur sozlamalarini shu yerda o‘zgartirishingiz mumkin." icon={Settings} />
-		</>
+		</div>
 	);
 }

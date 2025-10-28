@@ -1,20 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { telegramInit } from "../lib/telegram";
 import { Loading } from "@/components/common/loading";
 import { Profile } from "@/components/profile";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePathname, useRouter } from "next/navigation";
+import { useTelegram } from "@/hooks/useTelegram";
 
 export default function HomePage() {
 	const pathname = usePathname();
 	const router = useRouter();
+	const tg = useTelegram();
 	// eslint-disable-next-line
 	const [user, setUser] = useState<any>(null);
 
 	useEffect(() => {
-		const tg = telegramInit();
 		if (!tg) return;
 
 		// Expand the app to full screen when opened on a mobile device
@@ -22,20 +22,12 @@ export default function HomePage() {
 		const isMobile = platform === "android" || platform === "ios" || platform === "weba" || platform === "webk";
 		if (isMobile) tg.requestFullscreen();
 
-		// TODO: Doesn't work properly
-		if (pathname === "/") {
-			tg.BackButton.hide();
-		} else {
-			tg.BackButton.show();
-			tg.BackButton.onClick(() => router.back());
-		}
-
 		const userData = tg.initDataUnsafe?.user;
 		if (userData) setUser(userData);
-	}, []);
+	}, [tg, pathname, router]);
 
 	return (
-		<main className="flex flex-col items-center min-h-screen">
+		<main className="flex flex-col items-center min-h-screen pt-12">
 			{user ? (
 				<>
 					<Profile photo_url={user.photo_url} first_name={user.first_name} />
