@@ -6,14 +6,14 @@ import { useTelegram } from "@/hooks/useTelegram";
 
 export function Menu() {
 	const router = useRouter();
-    const tg = useTelegram();
+	const tg = useTelegram();
 
 	const navItems = navigationItems.map((item) => ({
 		...item,
 		onClick: () => {
-          tg?.HapticFeedback?.impactOccurred("light");
-          router.push(item.path);
-      }
+			tg?.HapticFeedback?.impactOccurred("light");
+			router.push(item.path);
+		}
 	}));
 	return (
 		<div className="flex items-end justify-center min-h-[120px] fixed bottom-6">
