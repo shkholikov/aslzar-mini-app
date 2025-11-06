@@ -14,22 +14,56 @@ if (!BOT_TOKEN) {
 const bot = new Bot(BOT_TOKEN);
 
 bot.command("start", async (ctx) => {
-	const name = ctx.from?.first_name || "hurmatli Mijoz";
-	await ctx.reply(`Salom, ${name}! 👋\nASLZAR Telegram ilovasiga hush kelibsiz.`, {
+	const name = ctx.from?.first_name || "Hurmatli mijoz";
+	await ctx.reply(
+		`Assalomu alaykum, ${name}! 👋\nASLZAR Telegram botiga xush kelibsiz.\nIltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring.\nTelefon raqamingizni yuborish uchun quyidagi tugmani bosing.`,
+		{
+			reply_markup: {
+				keyboard: [
+					[
+						{
+							text: "📱 Telefon raqamni ulashish",
+							request_contact: true
+						}
+					]
+				],
+				resize_keyboard: true,
+				one_time_keyboard: true
+			}
+		}
+	);
+});
+
+bot.on(":contact", async (ctx) => {
+	const contact = ctx.message?.contact;
+	if (!contact) return;
+
+	const miniAppUrl = "https://aslzar-mini-app-webapp.vercel.app/";
+	const infoText =
+		"*ASLZAR* — Sizning sodiqlik va zamonaviy to‘lovlar markazingiz.\n\n" +
+		"Tez, xavfsiz va ishonchli to‘lovlar, doimiy keshbek va maxsus takliflar aynan shu platformada.\n\n" +
+		"*Platformada:*\n" +
+		"• Qulay interfeys va tez ro‘yxatdan o‘tish;\n" +
+		"• Avtomatik keshbek va sodiqlik bonusi;\n" +
+		"• Yuqori darajadagi ma’lumot xavfsizligi;\n" +
+		"• 24/7 yordam xizmati.\n\n" +
+		"ASLZAR imkoniyatlaridan foydalanish uchun pastdagi tugmadan foydalaning:";
+
+	await ctx.reply(infoText, {
 		reply_markup: {
 			inline_keyboard: [
 				[
 					{
-						text: "Open ASLZAR App",
-						web_app: { url: "https://google.com" }
+						text: "ASLZAR💎 ilovasini ochish",
+						web_app: {
+							url: miniAppUrl
+						}
 					}
 				]
 			]
 		}
 	});
 });
-
-bot.on("message", (ctx) => ctx.reply("Got another message!"));
 
 // Start the bot.
 bot.start();

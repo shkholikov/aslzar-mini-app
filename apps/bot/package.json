@@ -1,9 +1,11 @@
 {
 	"name": "aslzar-bot",
 	"version": "1.0.0",
-	"main": "index.js",
+	"main": "dist/bot.js",
 	"scripts": {
-		"dev": "ts-node src/bot.ts"
+		"dev": "export DEBUG=\"grammy*\"&& ts-node src/bot.ts",
+		"build": "tsc",
+		"start": "node dist/bot.js"
 	},
 	"keywords": [],
 	"author": "",
