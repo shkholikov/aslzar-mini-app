@@ -13,6 +13,8 @@ if (!BOT_TOKEN) {
 
 const bot = new Bot(BOT_TOKEN);
 
+
+
 bot.command("start", async (ctx) => {
 	const name = ctx.from?.first_name || "Hurmatli mijoz";
 	await ctx.reply(
