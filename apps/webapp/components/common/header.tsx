@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Separator } from "../ui/separator";
 import type { ElementType } from "react";
 
@@ -13,7 +14,9 @@ export function Header({ title, description, icon: Icon }: HeaderProps) {
 	return (
 		<div>
 			<div className="flex flex-items justify-center pb-4">
-				<Icon className="w-12 h-12 text-gray-800" />
+				<motion.div animate={{ scale: [1, 1.2, 1], opacity: [1, 0.6, 1] }} transition={{ duration: 0.7 }}>
+					<Icon className="w-12 h-12 text-gray-800" />
+				</motion.div>
 			</div>
 			<div>
 				<h1 className="text-xl text-center text-gray-800 font-semibold">{title}</h1>
