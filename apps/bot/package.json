@@ -12,8 +12,10 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
+		"@grammyjs/storage-mongodb": "^2.5.1",
 		"dotenv": "^17.2.3",
 		"grammy": "^1.38.3",
+		"mongodb": "^7.0.0",
 		"ts-node": "^10.9.2"
 	},
 	"devDependencies": {
