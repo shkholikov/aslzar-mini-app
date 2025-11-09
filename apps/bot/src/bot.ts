@@ -4,6 +4,7 @@ import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { initializeSession } from "./helper";
+import { infoText } from "./messages";
 
 config();
 
@@ -46,15 +47,6 @@ async function bootstrap() {
 		// Check if user exists (has phone number in session/database)
 		if (ctx.session?.phone_number) {
 			// User exists - send webapp URL directly
-			const infoText =
-				"*ASLZAR* — Sizning sodiqlik va zamonaviy to'lovlar markazingiz.\n\n" +
-				"Tez, xavfsiz va ishonchli to'lovlar, doimiy keshbek va maxsus takliflar aynan shu platformada.\n\n" +
-				"*Platformada:*\n" +
-				"• Qulay interfeys va tez ro'yxatdan o'tish;\n" +
-				"• Avtomatik keshbek va sodiqlik bonusi;\n" +
-				"• Yuqori darajadagi ma'lumot xavfsizligi;\n" +
-				"• 24/7 yordam xizmati.\n\n" +
-				"ASLZAR imkoniyatlaridan foydalanish uchun pastdagi tugmadan foydalaning:";
 
 			await ctx.reply(infoText, {
 				reply_markup: {
@@ -68,30 +60,31 @@ async function bootstrap() {
 							}
 						]
 					]
-				}
+				},
+				parse_mode: "MarkdownV2"
 			});
 		} else {
 			// Initialize session data
 			initializeSession(ctx);
 
+			const greetingText = `*Assalomu alaykum, ${name}\\! 👋*\n\n*ASLZAR💎* Telegram botiga xush kelibsiz\\.\n\nIltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring\\.\n\nTelefon raqamingizni yuborish uchun pastdagi tugmani bosing\\.`;
+
 			// User doesn't exist - ask for contact
-			await ctx.reply(
-				`Assalomu alaykum, ${name}! 👋\nASLZAR Telegram botiga xush kelibsiz.\nIltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring.\nTelefon raqamingizni yuborish uchun quyidagi tugmani bosing.`,
-				{
-					reply_markup: {
-						keyboard: [
-							[
-								{
-									text: "📱 Telefon raqamni ulashish",
-									request_contact: true
-								}
-							]
-						],
-						resize_keyboard: true,
-						one_time_keyboard: true
-					}
-				}
-			);
+			await ctx.reply(greetingText, {
+				reply_markup: {
+					keyboard: [
+						[
+							{
+								text: "📱 Telefon raqamni ulashish",
+								request_contact: true
+							}
+						]
+					],
+					resize_keyboard: true,
+					one_time_keyboard: true
+				},
+				parse_mode: "MarkdownV2"
+			});
 		}
 	});
 
@@ -101,16 +94,6 @@ async function bootstrap() {
 
 		// Save contact to session
 		ctx.session.phone_number = contact.phone_number;
-
-		const infoText =
-			"*ASLZAR* — Sizning sodiqlik va zamonaviy to'lovlar markazingiz.\n\n" +
-			"Tez, xavfsiz va ishonchli to'lovlar, doimiy keshbek va maxsus takliflar aynan shu platformada.\n\n" +
-			"*Platformada:*\n" +
-			"• Qulay interfeys va tez ro'yxatdan o'tish;\n" +
-			"• Avtomatik keshbek va sodiqlik bonusi;\n" +
-			"• Yuqori darajadagi ma'lumot xavfsizligi;\n" +
-			"• 24/7 yordam xizmati.\n\n" +
-			"ASLZAR imkoniyatlaridan foydalanish uchun pastdagi tugmadan foydalaning:";
 
 		await ctx.reply(infoText, {
 			reply_markup: {
@@ -124,7 +107,8 @@ async function bootstrap() {
 						}
 					]
 				]
-			}
+			},
+			parse_mode: "MarkdownV2"
 		});
 	});
 
