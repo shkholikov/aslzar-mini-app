@@ -39,7 +39,7 @@ export default function HomePage() {
 					{dataLoading ? (
 						<Loading />
 					) : data.code === 0 ? (
-						<div className="p-2">
+						<div className="m-2">
 							<div className="my-2 bg-white rounded-lg shadow p-4">
 								<h2 className="text-base font-bold mb-2 text-gray-800">Sizning Ma'lumotlaringiz</h2>
 								<div className="text-sm text-gray-700">
@@ -54,7 +54,7 @@ export default function HomePage() {
 								<h2 className="text-base font-bold mb-2 text-gray-800">Platforma Haqida</h2>
 								<div className="text-sm text-gray-700">
 									<p>Bu platforma orqali siz ASLZAR xizmatlaridan, shartnomasiz yoki shartnoma bilan, onlayn va xavfsiz foydalanishingiz mumkin.</p>
-									<p className="mt-2">Ko‘proq ma’lumot uchun rasmiy kanalimizga qo‘shiling yoki podporqa xizmatiga murojaat qiling.</p>
+									<p className="mt-2">Ko'proq ma'lumot uchun rasmiy kanalimizga qo'shiling yoki podporqa xizmatiga murojaat qiling.</p>
 								</div>
 							</div>
 
