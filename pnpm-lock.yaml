@@ -63,6 +63,9 @@ importers:
       lucide-react:
         specifier: ^0.548.0
         version: 0.548.0(react@19.1.0)
+      mongodb:
+        specifier: ^7.0.0
+        version: 7.0.0
       motion:
         specifier: ^12.23.24
         version: 12.23.24(react-dom@19.1.0(react@19.1.0))(react@19.1.0)

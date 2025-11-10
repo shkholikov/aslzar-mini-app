@@ -1,10 +1,37 @@
-import { BadgeCheckIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BadgeCheckIcon, BadgeInfo, BadgeXIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
+import { useUser } from "@/hooks/useUser";
+import { Loading } from "./common/loading";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+
+const DEFAULT_PROFILE_INFO = {
+	verified: false,
+	uroven: "Aniqlanmagan",
+	nachislenie: "0",
+	contracts: 0
+};
 
 export function Profile({ photo_url, first_name }: { photo_url: string; first_name: string }) {
+	const { data, loading } = useUser();
+	const [profileInfo, setProfileInfo] = useState(DEFAULT_PROFILE_INFO);
+
+	useEffect(() => {
+		if (data && data.bonusInfo) {
+			setProfileInfo({
+				verified: data.code === 0,
+				uroven: data.bonusInfo.uroven ?? DEFAULT_PROFILE_INFO.uroven,
+				nachislenie: data.bonusInfo.nachislenie ?? DEFAULT_PROFILE_INFO.nachislenie,
+				contracts: data.contract.ids.length ?? DEFAULT_PROFILE_INFO.contracts
+			});
+		} else {
+			setProfileInfo(DEFAULT_PROFILE_INFO);
+		}
+	}, [data]);
+
 	return (
 		<>
 			<Avatar className="rounded-lg w-14 h-14">
@@ -18,20 +45,48 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 				<span>
 					<h4 className="text-center font-semibold tracking-tight">ASLZAR platformasiga xush kelibsiz!</h4>
 				</span>
-				<div className="flex justify-center my-2">
-					<Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600">
-						<BadgeCheckIcon />
-						Tasdiqlangan
-					</Badge>
-				</div>
-				<Separator className="my-2" />
-				<div className="flex h-5 items-center space-x-4 text-sm">
-					<Badge variant="outline">Level: Gold</Badge>
-					<Separator orientation="vertical" />
-					<Badge variant="outline">Cachback: 20.000</Badge>
-					<Separator orientation="vertical" />
-					<Badge variant="outline">To&apos;lovlar: 2</Badge>
-				</div>
+				{loading ? (
+					<div className="flex justify-center my-2">
+						<Loading />
+					</div>
+				) : (
+					<div className="mx-2">
+						<div className="flex justify-center my-2">
+							{profileInfo.verified ? (
+								<Badge variant="secondary" className="bg-blue-500 text-white">
+									<BadgeCheckIcon />
+									Tasdiqlangan Mijoz
+								</Badge>
+							) : (
+								<Badge variant="secondary" className="bg-amber-400 text-white">
+									<BadgeXIcon />
+									Tasdiqlanmagan Mijoz
+								</Badge>
+							)}
+						</div>
+						<Separator className="my-2" />
+						{profileInfo.verified ? (
+							<div className="flex h-5 items-center space-x-4 text-sm">
+								<Badge variant="outline">Level: {profileInfo.uroven}</Badge>
+								<Separator orientation="vertical" />
+								<Badge variant="outline">Cachback: {profileInfo.nachislenie}</Badge>
+								<Separator orientation="vertical" />
+								<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
+							</div>
+						) : (
+							<Alert>
+								<BadgeInfo />
+								<AlertTitle>Siz hali ASLZAR mijozi emassiz.</AlertTitle>
+								<AlertDescription>
+									Lekin, qulay imkoniyatlar eshigi ochiq! Bir necha qadamlardan so‘ng siz bizning oilamizga qo‘shilasiz va zamonaviy xizmatlardan
+									to‘liq foydalanish imkoniyatiga ega bo‘lasiz.
+									<br />
+									Hisobingizga albatta ro‘yxatdan o‘ting va Aslzar mijoziga aylaning — biz sizni kutyapmiz!
+								</AlertDescription>
+							</Alert>
+						)}
+					</div>
+				)}
 			</div>
 		</>
 	);

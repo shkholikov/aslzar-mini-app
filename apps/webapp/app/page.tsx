@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import { Loading } from "@/components/common/loading";
 import { Profile } from "@/components/profile";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useUser } from "@/hooks/useUser";
+import { Link } from "@/components/common/link";
+import { Gem } from "lucide-react";
 
 export default function HomePage() {
 	const pathname = usePathname();
 	const router = useRouter();
 	const tg = useTelegram();
+	const { data, loading: dataLoading } = useUser();
 	// eslint-disable-next-line
 	const [user, setUser] = useState<any>(null);
 
@@ -23,7 +26,9 @@ export default function HomePage() {
 		if (isMobile) tg.requestFullscreen();
 
 		const userData = tg.initDataUnsafe?.user;
-		if (userData) setUser(userData);
+		if (userData) {
+			setUser(userData);
+		}
 	}, [tg, pathname, router]);
 
 	return (
@@ -31,72 +36,36 @@ export default function HomePage() {
 			{user ? (
 				<>
 					<Profile photo_url={user.photo_url} first_name={user.first_name} />
-					<Card className="w-full max-w-sm mt-8 mb-16">
-						<CardHeader>
-							<CardTitle>ASLZAR Platformasi</CardTitle>
-							<CardDescription>
-								<div className="space-y-4">
-									<div>
-										<h2 className="scroll-m-20 border-b pb-2 text-2xl font-semibold tracking-tight first:mt-0">Platforma haqida batafsil maʼlumot</h2>
-										<p className="leading-7 text-muted-foreground mt-2">
-											<strong>ASLZAR</strong> — Sizning sodiqlik va zamonaviy to‘lovlar markazingiz! Platformamiz orqali ishonchli, tez va xavfsiz
-											to‘lovlar amalga oshirasiz. Har bir tranzaksiyada doimiy <span className="font-medium text-blue-600">keshbek</span> va
-											<em> eksklyuziv takliflar</em> sizni kutmoqda. ASLZAR nafaqat sodiqlik tizimi, balki zamonaviy moliyaviy boshqaruvni ham oson va
-											qulay qiladi.
-										</p>
-									</div>
-									<div>
-										<h3 className="scroll-m-20 text-xl font-semibold tracking-tight">Platformaning asosiy afzalliklari</h3>
-										<ul className="my-4 ml-6 list-disc space-y-3">
-											<li>
-												<div>
-													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Qulay interfeys va tezkor ishlash</h4>
-													<p className="text-muted-foreground text-sm mt-0.5">
-														Minimalist va funksional dizayn tufayli platforma istalgan qurilmada juda qulay ishlaydi. Foydalanuvchilarga intuitiv
-														boshqaruv va tez ro‘yxatdan o‘tish jarayoni taqdim etiladi.
-													</p>
-												</div>
-											</li>
-											<li>
-												<div>
-													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Innovatsion sodiqlik tizimi</h4>
-													<p className="text-muted-foreground text-sm mt-0.5">
-														Qilgan to‘lovlaringiz uchun avtomatik keshbek va bonuslarni qo‘lga kiriting. Maxsus darajalar va sodiqlik g‘ildiragi
-														orqali yana-da ko‘proq imtiyozlarga ega bo‘ling.
-													</p>
-												</div>
-											</li>
-											<li>
-												<div>
-													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Yuqori darajadagi xavfsizlik</h4>
-													<p className="text-muted-foreground text-sm mt-0.5">
-														Ma’lumotlaringiz zamonaviy shifrlash texnologiyalari orqali himoyalanadi. Har bir tranzaksiya xavfsiz va kafolatlangan
-														tarzda amalga oshiriladi.
-													</p>
-												</div>
-											</li>
-											<li>
-												<div>
-													<h4 className="scroll-m-20 text-lg font-semibold tracking-tight">Mijozlarni qo&apos;llab-quvvatlash</h4>
-													<p className="text-muted-foreground text-sm mt-0.5">
-														Har qanday muammolar yuzaga kelganda, 24/7 ishlab turadigan yordam xizmati orqali yechim topasiz.
-													</p>
-												</div>
-											</li>
-										</ul>
-									</div>
-									<div>
-										<blockquote className="mt-4 border-l-2 pl-4 italic text-gray-700">
-											Platformaning barcha imkoniyatlaridan foydalaning va raqamli dunyodan maksimal darajada bahramand bo‘ling! ASLZAR — sodiqlik va
-											ishonch maskani.
-										</blockquote>
-									</div>
+					{dataLoading ? (
+						<Loading />
+					) : data.code === 0 ? (
+						<div className="p-2">
+							<div className="my-2 bg-white rounded-lg shadow p-4">
+								<h2 className="text-base font-bold mb-2 text-gray-800">Sizning Ma'lumotlaringiz</h2>
+								<div className="text-sm text-gray-700">
+									<p>
+										<strong>To'liq ismingiz:</strong> {data.familiya} {data.imya} {data.otchestvo}
+									</p>
+									<p>
+										<strong>Sizning Mijoz ID:</strong> {data.clientId}
+									</p>
 								</div>
-							</CardDescription>
-						</CardHeader>
-						<CardContent></CardContent>
-						<CardFooter className="flex-col gap-2"></CardFooter>
-					</Card>
+								<hr className="my-3" />
+								<h2 className="text-base font-bold mb-2 text-gray-800">Platforma Haqida</h2>
+								<div className="text-sm text-gray-700">
+									<p>Bu platforma orqali siz ASLZAR xizmatlaridan, shartnomasiz yoki shartnoma bilan, onlayn va xavfsiz foydalanishingiz mumkin.</p>
+									<p className="mt-2">Ko‘proq ma’lumot uchun rasmiy kanalimizga qo‘shiling yoki podporqa xizmatiga murojaat qiling.</p>
+								</div>
+							</div>
+
+							{/* <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">{JSON.stringify(data, null, 2)}</pre> */}
+							<Link title="ASLZAR Rasmiy kanaliga azo bo'ling." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+						</div>
+					) : (
+						<div className="p-2">
+							<Link title="ASLZAR Rasmiy kanaliga azo bo'ling." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+						</div>
+					)}
 				</>
 			) : (
 				<Loading />

@@ -4,6 +4,7 @@ import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
 import { TelegramProvider } from "@/hooks/useTelegram";
+import { UserProvider } from "@/hooks/useUser";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -40,10 +41,12 @@ export default function RootLayout({
 				}}
 			>
 				<TelegramProvider>
-					{children}
-					<div className="flex justify-center">
-						<Menu />
-					</div>
+					<UserProvider>
+						{children}
+						<div className="flex justify-center">
+							<Menu />
+						</div>
+					</UserProvider>
 				</TelegramProvider>
 			</body>
 		</html>
