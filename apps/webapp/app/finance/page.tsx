@@ -34,10 +34,10 @@ export default function FinancePage() {
 									<strong>Qarz:</strong> {data.debt}
 								</p>
 								<p>
-									<strong>Qolgan to'lov:</strong> {data.remain}
+									<strong>Qolgan to&apos;lov:</strong> {data.remain}
 								</p>
 								<p>
-									<strong>Kechikkan to'lov:</strong> {data.latePayment}
+									<strong>Kechikkan to&apos;lov:</strong> {data.latePayment}
 								</p>
 								<p>
 									<strong>Bonuslar:</strong> {data.bonusOstatok}
@@ -54,9 +54,10 @@ export default function FinancePage() {
 				) : (
 					<Alert>
 						<BadgeInfo />
-						<AlertTitle>Moliyaviy ma'lumotlar topilmadi.</AlertTitle>
+						<AlertTitle>Moliyaviy ma&apos;lumotlar topilmadi.</AlertTitle>
 						<AlertDescription>
-							Sizning moliyaviy ma'lumotlaringiz hozircha topilmadi. Iltimos, platformada to‘liq ro‘yxatdan o‘tganingizga ishonch hosil qiling.
+							Sizning moliyaviy ma&apos;lumotlaringiz hozircha topilmadi. Iltimos, platformada to&apos;liq ro&apos;yxatdan o&apos;tganingizga ishonch
+							hosil qiling.
 						</AlertDescription>
 					</Alert>
 				)}

@@ -41,7 +41,7 @@ export default function HomePage() {
 						<Loading />
 					) : data.code === 0 ? (
 						<div className="m-2">
-							<Link title="ASLZAR Rasmiy kanaliga a’zo bo‘ling." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+							<Link title="ASLZAR Rasmiy kanaliga aʼzo bo‘ling." href="https://t.me/ASLZAR_tilla" icon={Gem} />
 
 							<div className="my-2 border rounded-lg bg-muted/50 bg-transparent p-4">
 								<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
@@ -58,7 +58,7 @@ export default function HomePage() {
 
 								<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
 									<User className="size-5" />
-									Asosiy Ma’lumotlar
+									Asosiy Maʼlumotlar
 								</h2>
 								<div className="text-sm text-gray-700 mb-2">
 									<p>
@@ -71,17 +71,17 @@ export default function HomePage() {
 										<strong>Raqam:</strong> {data.phone}
 									</p>
 									<p>
-										<strong>INN:</strong> {data.INN || "noma'lum"}
+										<strong>INN:</strong> {data.INN || "nomaʼlum"}
 									</p>
 									<p>
-										<strong>Passport:</strong> {data.Passport || "noma'lum"}
+										<strong>Passport:</strong> {data.Passport || "nomaʼlum"}
 									</p>
 								</div>
 								<Separator className="my-4" />
 
 								<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
 									<HandCoins className="size-5" />
-									Moliyaviy Ma’lumotlar
+									Moliyaviy Maʼlumotlar
 								</h2>
 								<div className="text-sm text-gray-700 mb-2">
 									<p>
@@ -91,13 +91,13 @@ export default function HomePage() {
 										<strong>Qarz:</strong> {data.debt}
 									</p>
 									<p>
-										<strong>Kechikkan to'lovlar:</strong> {data.latePayment}
+										<strong>Kechikkan to‘lovlar:</strong> {data.latePayment}
 									</p>
 									<p>
-										<strong>INN:</strong> {data.INN || "noma'lum"}
+										<strong>INN:</strong> {data.INN || "nomaʼlum"}
 									</p>
 									<p>
-										<strong>Passport:</strong> {data.Passport || "noma'lum"}
+										<strong>Passport:</strong> {data.Passport || "nomaʼlum"}
 									</p>
 								</div>
 							</div>
@@ -110,14 +110,14 @@ export default function HomePage() {
 									Yangiliklar
 								</h2>
 								<div className="text-sm text-gray-700 mb-2">
-									<p>Bu yerga telegram kanaldagi so'nggi postlarni qo'shsak bo'ladi...</p>
+									<p>Bu yerga telegram kanaldagi so‘nggi postlarni qo‘shsak bo‘ladi...</p>
 								</div>
 								{/* <TelegramPostWidget post="ASLZAR_tilla/587723" /> */}
 							</div>
 						</div>
 					) : (
 						<div className="w-full p-2">
-							<Link title="ASLZAR Rasmiy kanaliga a’zo bo‘ling." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+							<Link title="ASLZAR Rasmiy kanaliga aʼzo bo‘ling." href="https://t.me/ASLZAR_tilla" icon={Gem} />
 						</div>
 					)}
 				</>
