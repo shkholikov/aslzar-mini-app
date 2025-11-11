@@ -112,7 +112,7 @@ export default function HomePage() {
 								<div className="text-sm text-gray-700 mb-2">
 									<p>Bu yerga telegram kanaldagi so‘nggi postlarni qo‘shsak bo‘ladi...</p>
 								</div>
-								{/* <TelegramPostWidget post="ASLZAR_tilla/587723" /> */}
+								{/* <TelegramPostWidget post="ASLZAR_tilla/587723" userpic={false} /> */}
 							</div>
 						</div>
 					) : (
