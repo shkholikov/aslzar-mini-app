@@ -42,6 +42,9 @@ importers:
 
   apps/webapp:
     dependencies:
+      '@baranov-guru/react-telegram-widgets':
+        specifier: ^1.0.1
+        version: 1.0.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-avatar':
         specifier: ^1.1.10
         version: 1.1.10(@types/react-dom@19.2.1(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -130,6 +133,13 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
+
+  '@baranov-guru/react-telegram-widgets@1.0.1':
+    resolution: {integrity: sha512-9OFCqmBkLKQ2LzzMinnINIT+iym4Y4rBzH9URKkv/sFoe2WBLmJwK65ivHlcG05I2Xze/99/FjFx5IujRK926A==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -2675,6 +2685,11 @@ packages:
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
+
+  '@baranov-guru/react-telegram-widgets@1.0.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:

@@ -30,12 +30,13 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<Script src="https://telegram.org/js/telegram-web-app.js?59" strategy="beforeInteractive" />
+				<Script async src="https://telegram.org/js/telegram-widget.js?22" strategy="afterInteractive" />
 			</head>
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
 				style={{
 					paddingTop: "var(--tg-content-safe-area-inset-top)",
-					paddingBottom: "env(safe-area-inset-bottom, 0px)",
+					paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px) + 100px)",
 					paddingLeft: "env(safe-area-inset-left, 0px)",
 					paddingRight: "env(safe-area-inset-right, 0px)"
 				}}

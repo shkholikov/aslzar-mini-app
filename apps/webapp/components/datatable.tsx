@@ -23,52 +23,115 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+export type Payment = {
+	id: number;
+	sum: number;
+	skidka: number;
+	vznos: number;
+	consultant: string;
+	date: string;
+	schedule: number;
+	pays: number;
+	goods: number;
+};
+
 const data: Payment[] = [
 	{
-		id: "m5gr84i9",
-		amount: 316,
-		status: "success",
-		email: "ken99@example.com"
+		id: 1,
+		sum: 1200000,
+		skidka: 50000,
+		vznos: 200000,
+		consultant: "Botir Aslonov",
+		date: "2024-06-10",
+		schedule: 12,
+		pays: 2,
+		goods: 12345
 	},
 	{
-		id: "3u1reuv4",
-		amount: 242,
-		status: "success",
-		email: "Abe45@example.com"
+		id: 2,
+		sum: 850000,
+		skidka: 10000,
+		vznos: 85000,
+		consultant: "Dilnoza Xamidova",
+		date: "2024-02-14",
+		schedule: 6,
+		pays: 6,
+		goods: 23456
 	},
 	{
-		id: "derv1ws0",
-		amount: 837,
-		status: "processing",
-		email: "Monserrat44@example.com"
+		id: 3,
+		sum: 430000,
+		skidka: 0,
+		vznos: 43000,
+		consultant: "Habib Musaev",
+		date: "2023-12-28",
+		schedule: 10,
+		pays: 3,
+		goods: 34567
 	},
 	{
-		id: "5kma53ae",
-		amount: 874,
-		status: "success",
-		email: "Silas22@example.com"
+		id: 4,
+		sum: 1290000,
+		skidka: 269000,
+		vznos: 250000,
+		consultant: "Nigora Beqova",
+		date: "2024-03-03",
+		schedule: 8,
+		pays: 8,
+		goods: 45678
 	},
 	{
-		id: "bhqecj4p",
-		amount: 721,
-		status: "failed",
-		email: "carmella@example.com"
+		id: 5,
+		sum: 560000,
+		skidka: 60000,
+		vznos: 112000,
+		consultant: "Azamat Nurmatov",
+		date: "2024-04-20",
+		schedule: 5,
+		pays: 1,
+		goods: 56789
+	},
+	{
+		id: 6,
+		sum: 980000,
+		skidka: 20000,
+		vznos: 150000,
+		consultant: "Dilshod Rakhimov",
+		date: "2024-05-15",
+		schedule: 7,
+		pays: 4,
+		goods: 67890
+	},
+	{
+		id: 7,
+		sum: 1150000,
+		skidka: 75000,
+		vznos: 230000,
+		consultant: "Malika Abduqodirova",
+		date: "2024-01-28",
+		schedule: 9,
+		pays: 7,
+		goods: 78901
+	},
+	{
+		id: 8,
+		sum: 670000,
+		skidka: 30000,
+		vznos: 67000,
+		consultant: "Otabek Mamatov",
+		date: "2023-11-07",
+		schedule: 6,
+		pays: 2,
+		goods: 89012
 	}
 ];
 
-export type Payment = {
-	id: string;
-	amount: number;
-	status: "pending" | "processing" | "success" | "failed";
-	email: string;
-};
-
+// Compatible columns for Payment type
 export const columns: ColumnDef<Payment>[] = [
 	{
 		id: "select",
@@ -84,36 +147,68 @@ export const columns: ColumnDef<Payment>[] = [
 		enableHiding: false
 	},
 	{
-		accessorKey: "status",
-		header: "Status",
-		cell: ({ row }) => <div className="capitalize">{row.getValue("status")}</div>
+		accessorKey: "id",
+		header: "ID",
+		cell: ({ row }) => row.getValue("id")
 	},
 	{
-		accessorKey: "email",
-		header: ({ column }) => {
-			return (
-				<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-					Email
-					<ArrowUpDown />
-				</Button>
-			);
-		},
-		cell: ({ row }) => <div className="lowercase">{row.getValue("email")}</div>
-	},
-	{
-		accessorKey: "amount",
-		header: () => <div className="text-right">Amount</div>,
-		cell: ({ row }) => {
-			const amount = parseFloat(row.getValue("amount"));
-
-			// Format the amount as a dollar amount
-			const formatted = new Intl.NumberFormat("en-US", {
+		accessorKey: "sum",
+		header: ({ column }) => (
+			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+				Summa <ArrowUpDown />
+			</Button>
+		),
+		cell: ({ row }) =>
+			new Intl.NumberFormat("uz-UZ", {
 				style: "currency",
-				currency: "USD"
-			}).format(amount);
-
-			return <div className="text-right font-medium">{formatted}</div>;
-		}
+				currency: "UZS",
+				maximumFractionDigits: 0
+			}).format(row.getValue("sum"))
+	},
+	{
+		accessorKey: "skidka",
+		header: "Chegirma",
+		cell: ({ row }) =>
+			new Intl.NumberFormat("uz-UZ", {
+				style: "currency",
+				currency: "UZS",
+				maximumFractionDigits: 0
+			}).format(row.getValue("skidka"))
+	},
+	{
+		accessorKey: "vznos",
+		header: "Boshlang'ich",
+		cell: ({ row }) =>
+			new Intl.NumberFormat("uz-UZ", {
+				style: "currency",
+				currency: "UZS",
+				maximumFractionDigits: 0
+			}).format(row.getValue("vznos"))
+	},
+	{
+		accessorKey: "consultant",
+		header: "Konsultant",
+		cell: ({ row }) => <div className="capitalize">{row.getValue("consultant")}</div>
+	},
+	{
+		accessorKey: "date",
+		header: "Sana",
+		cell: ({ row }) => row.getValue("date")
+	},
+	{
+		accessorKey: "schedule",
+		header: "Jadval (oy)",
+		cell: ({ row }) => row.getValue("schedule")
+	},
+	{
+		accessorKey: "pays",
+		header: "To‘langan (oy)",
+		cell: ({ row }) => row.getValue("pays")
+	},
+	{
+		accessorKey: "goods",
+		header: "Mahsulot ID",
+		cell: ({ row }) => row.getValue("goods")
 	},
 	{
 		id: "actions",
@@ -131,10 +226,10 @@ export const columns: ColumnDef<Payment>[] = [
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
-						<DropdownMenuItem onClick={() => navigator.clipboard.writeText(payment.id)}>Copy payment ID</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>View customer</DropdownMenuItem>
-						<DropdownMenuItem>View payment details</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => navigator.clipboard.writeText(payment.id.toString())}>To‘lov ID sini nusxalash</DropdownMenuItem>
+						{/* <DropdownMenuSeparator />
+						<DropdownMenuItem>View consultant</DropdownMenuItem>
+						<DropdownMenuItem>View payment details</DropdownMenuItem> */}
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);
@@ -171,15 +266,15 @@ export function DataTableDemo() {
 		<div className="w-full">
 			<div className="flex items-center py-4">
 				<Input
-					placeholder="Filter emails..."
-					value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-					onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)}
+					placeholder="Konsultant bo‘yicha filtrlash..."
+					value={(table.getColumn("consultant")?.getFilterValue() as string) ?? ""}
+					onChange={(event) => table.getColumn("consultant")?.setFilterValue(event.target.value)}
 					className="max-w-sm"
 				/>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<Button variant="outline" className="ml-auto">
-							Columns <ChevronDown />
+							Ustunlar <ChevronDown />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
@@ -206,13 +301,11 @@ export function DataTableDemo() {
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead key={header.id}>
-											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-										</TableHead>
-									);
-								})}
+								{headerGroup.headers.map((header) => (
+									<TableHead key={header.id}>
+										{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+									</TableHead>
+								))}
 							</TableRow>
 						))}
 					</TableHeader>
@@ -237,14 +330,14 @@ export function DataTableDemo() {
 			</div>
 			<div className="flex items-center justify-end space-x-2 py-4">
 				<div className="text-muted-foreground flex-1 text-sm">
-					{table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+					{table.getFilteredSelectedRowModel().rows.length} tadan {table.getFilteredRowModel().rows.length} ta qator tanlandi.
 				</div>
 				<div className="space-x-2">
 					<Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-						Previous
+						Oldingi
 					</Button>
 					<Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-						Next
+						Keyingi
 					</Button>
 				</div>
 			</div>
