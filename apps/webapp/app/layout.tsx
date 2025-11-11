@@ -5,6 +5,7 @@ import Script from "next/script";
 import { Menu } from "@/components/common/menu";
 import { TelegramProvider } from "@/hooks/useTelegram";
 import { UserProvider } from "@/hooks/useUser";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -46,6 +47,15 @@ export default function RootLayout({
 						{children}
 						<div className="flex justify-center">
 							<Menu />
+							<Toaster
+								position="top-center"
+								mobileOffset={{
+									top: "calc(var(--tg-content-safe-area-inset-top, 0px) + 50px)"
+								}}
+								offset={{
+									top: "calc(env(safe-area-inset-top, 0px) + 16px)"
+								}}
+							/>
 						</div>
 					</UserProvider>
 				</TelegramProvider>
