@@ -60,10 +60,10 @@ export default function SettingsPage() {
 							className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
 						/>
 						<div className="grid gap-1.5 font-normal">
-							<p className="text-sm leading-none font-medium">To'lovlar eslatmasi</p>
+							<p className="text-sm leading-none font-medium">To‘lovlar eslatmasi</p>
 							<p className="text-muted-foreground text-sm">
-								To'lov sanasi yaqinlashganda yoki to'lov faoliyati bilan bog'liq eslatmalarni olish uchun ushbu xususiyatni yoqishingiz yoki
-								o'chirishingiz mumkin.
+								To‘lov sanasi yaqinlashganda yoki to‘lov faoliyati bilan bog‘liq eslatmalarni olish uchun ushbu xususiyatni yoqishingiz yoki
+								o‘chirishingiz mumkin.
 							</p>
 						</div>
 					</Label>

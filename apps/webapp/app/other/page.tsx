@@ -14,7 +14,7 @@ export default function OtherPage() {
 				</h2>
 				<div className="text-sm text-gray-700 mb-2">
 					<p>
-						<strong>Bu yerda filiallar fa boshqalar bo'ladi...</strong>
+						<strong>Bu yerda filiallar va boshqalar bo‘ladi...</strong>
 					</p>
 				</div>
 				{/* <TelegramPostWidget post="ASLZAR_tilla/587723" /> */}
