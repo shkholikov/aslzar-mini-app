@@ -64,7 +64,7 @@ async function bootstrap() {
 				parse_mode: "MarkdownV2"
 			});
 		} else {
-			// Initialize session data
+			//Initialize session data
 			initializeSession(ctx);
 
 			const greetingText = `*Assalomu alaykum, ${name}\\! 👋*\n\n*ASLZAR💎* Telegram botiga xush kelibsiz\\.\n\nIltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring\\.\n\nTelefon raqamingizni yuborish uchun pastdagi tugmani bosing\\.`;
