@@ -3,14 +3,12 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import { initializeSession } from "./helper";
-import { infoText } from "./messages";
+import { checkSubscriptionFlow, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
 
 config();
 
 // Get bot token and webapp url from environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
-const WEBAPP_URL = process.env.WEBAPP_URL || "https://aslzar.uz"; // fallback
 
 if (!BOT_TOKEN) {
 	throw new Error("BOT_TOKEN environment variable is required!");
@@ -31,63 +29,33 @@ async function bootstrap() {
 				first_name: undefined,
 				last_name: undefined,
 				phone_number: undefined,
+				isChannelMember: undefined,
+				lastMessageId: undefined,
 				createdAt: new Date()
 			}),
-			getSessionKey: (ctx) => {
-				// Use user ID as session key
-				return ctx.from?.id.toString();
-			},
 			storage: new MongoDBAdapter({ collection: users })
 		})
 	);
 
+	// start command
 	bot.command("start", async (ctx) => {
-		const name = ctx.from?.first_name || "Hurmatli mijoz";
+		console.log(ctx.session);
 
-		// Check if user exists (has phone number in session/database)
-		if (ctx.session?.phone_number) {
-			// User exists - send webapp URL directly
-
-			await ctx.reply(infoText, {
-				reply_markup: {
-					inline_keyboard: [
-						[
-							{
-								text: "ASLZAR💎 ilovasini ochish",
-								web_app: {
-									url: WEBAPP_URL
-								}
-							}
-						]
-					]
-				},
-				parse_mode: "MarkdownV2"
-			});
-		} else {
-			//Initialize session data
+		if (!ctx.session?.phone_number) {
+			// user doesn't exist in a database
 			initializeSession(ctx);
-
-			const greetingText = `*Assalomu alaykum, ${name}\\! 👋*\n\n*ASLZAR💎* Telegram botiga xush kelibsiz\\.\n\nIltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring\\.\n\nTelefon raqamingizni yuborish uchun pastdagi tugmani bosing\\.`;
-
-			// User doesn't exist - ask for contact
-			await ctx.reply(greetingText, {
-				reply_markup: {
-					keyboard: [
-						[
-							{
-								text: "📱 Telefon raqamni ulashish",
-								request_contact: true
-							}
-						]
-					],
-					resize_keyboard: true,
-					one_time_keyboard: true
-				},
-				parse_mode: "MarkdownV2"
-			});
+			// Request a contact
+			sendContactRequest(ctx);
+			// User exists - send webapp URL directly
+		} else if (!ctx.session.isChannelMember) {
+			// send subscribe request
+			sendSubscribeRequest(ctx);
+		} else {
+			sendWebApp(ctx);
 		}
 	});
 
+	// on receiving contact
 	bot.on(":contact", async (ctx) => {
 		const contact = ctx.message?.contact;
 		if (!contact) return;
@@ -95,21 +63,13 @@ async function bootstrap() {
 		// Save contact to session
 		ctx.session.phone_number = contact.phone_number;
 
-		await ctx.reply(infoText, {
-			reply_markup: {
-				inline_keyboard: [
-					[
-						{
-							text: "ASLZAR💎 ilovasini ochish",
-							web_app: {
-								url: WEBAPP_URL
-							}
-						}
-					]
-				]
-			},
-			parse_mode: "MarkdownV2"
-		});
+		// send subscribe request
+		sendSubscribeRequest(ctx);
+	});
+
+	// on check_subscription callback
+	bot.callbackQuery("check_subscription", async (ctx) => {
+		checkSubscriptionFlow(ctx);
 	});
 
 	// Error Handler
