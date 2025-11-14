@@ -26,6 +26,9 @@ export default function HomePage() {
 		const isMobile = platform === "android" || platform === "ios" || platform === "weba" || platform === "webk";
 		if (isMobile) tg.requestFullscreen();
 
+		// disable vertical swipe to close miniapp
+		tg.isVerticalSwipesEnabled = false;
+
 		const userData = tg.initDataUnsafe?.user;
 		if (userData) {
 			setUser(userData);
