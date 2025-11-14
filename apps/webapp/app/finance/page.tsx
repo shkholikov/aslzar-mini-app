@@ -2,7 +2,6 @@
 
 import { Header } from "@/components/common/header";
 import { Loading } from "@/components/common/loading";
-import { DataTableDemo } from "@/components/datatable";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useUser } from "@/hooks/useUser";
 import { BadgeInfo, Briefcase, HandCoins, ReceiptText } from "lucide-react";
@@ -47,9 +46,10 @@ export default function FinancePage() {
 						</div>
 						<h2 className="flex items-center gap-2 font-semibold text-xl mt-4">
 							<ReceiptText className="size-5" />
-							Kontraktlar:
+							Shartnomalar
 						</h2>
-						<DataTableDemo />
+						
+						{/* <DataTableDemo /> */}
 					</>
 				) : (
 					<Alert>
