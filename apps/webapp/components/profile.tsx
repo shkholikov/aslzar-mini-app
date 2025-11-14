@@ -6,7 +6,7 @@ import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
 import { useUser } from "@/hooks/useUser";
 import { Loading } from "./common/loading";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Message } from "./common/message";
 
 const DEFAULT_PROFILE_INFO = {
 	verified: false,
@@ -74,16 +74,11 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 								<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
 							</div>
 						) : (
-							<Alert>
-								<BadgeInfo />
-								<AlertTitle>Siz hali ASLZAR mijozi emassiz.</AlertTitle>
-								<AlertDescription>
-									Lekin, qulay imkoniyatlar eshigi ochiq! Bir necha qadamlardan so‘ng siz bizning oilamizga qo‘shilasiz va zamonaviy xizmatlardan
-									to‘liq foydalanish imkoniyatiga ega bo‘lasiz.
-									<br />
-									Hisobingizga albatta ro‘yxatdan o‘ting va Aslzar mijoziga aylaning — biz sizni kutyapmiz!
-								</AlertDescription>
-							</Alert>
+							<Message
+								icon={BadgeInfo}
+								title="Siz hali ASLZAR mijozi emassiz."
+								description="Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning — biz sizni kutyapmiz!"
+							/>
 						)}
 					</div>
 				)}

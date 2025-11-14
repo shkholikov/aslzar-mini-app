@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPhoneByUserId } from "@/lib/db";
+import { getUserDataByUserId } from "@/lib/db";
 
 // 1C API configuration from environment variables
 const API_BASE_URL = process.env.API_BASE_URL || "";
@@ -23,10 +23,10 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "User ID parameter is required" }, { status: 400 });
 		}
 
-		// Step 1: Get phone number from MongoDB
-		const phone = await getPhoneByUserId(userId);
+		// Step 1: Get current user's session data from MongoDB
+		const tgSessionData = await getUserDataByUserId(userId);
 
-		if (!phone) {
+		if (!tgSessionData?.phone_number) {
 			return NextResponse.json({ error: "User not found or phone number not available" }, { status: 404 });
 		}
 
@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
 		};
 
 		// Step 3: Format phone number with + prefix and call 1C API
+		const phone = tgSessionData.phone_number;
 		const formattedPhone = `+${phone}`;
 		const response = await fetch(endpoint, {
 			method: "POST",
@@ -61,7 +62,10 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "Failed to search user in 1C API", details: errorText }, { status: response.status });
 		}
 
-		const userData = await response.json();
+		const data = await response.json();
+		const userData = { ...data, tgData: tgSessionData };
+
+		console.log(userData);
 
 		return NextResponse.json(userData, { status: 200 });
 	} catch (error) {

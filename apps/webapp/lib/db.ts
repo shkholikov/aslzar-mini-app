@@ -32,11 +32,11 @@ export interface MongoDBUserDocument extends Document {
 }
 
 /**
- * Gets user's phone number from MongoDB by Telegram user ID
+ * Gets user's data from MongoDB by Telegram user ID
  * @param userId - Telegram user ID (used as session key/_id in MongoDB)
- * @returns Phone number string or null if not found
+ * @returns User data object or null if not found
  */
-export async function getPhoneByUserId(userId: string): Promise<string | null> {
+export async function getUserDataByUserId(userId: string): Promise<MongoDBUserDocument["value"] | null> {
 	let client: MongoClient | null = null;
 
 	try {
@@ -55,13 +55,13 @@ export async function getPhoneByUserId(userId: string): Promise<string | null> {
 		// Find user by Telegram ID (stored as session key)
 		const user = await users.findOne({ key: userId });
 
-		if (!user || !user.value?.phone_number) {
+		if (!user || !user.value) {
 			return null;
 		}
 
-		return user.value.phone_number;
+		return user.value;
 	} catch (error) {
-		console.error("Error fetching phone number from database:", error);
+		console.error("Error fetching user data from database:", error);
 		throw error;
 	} finally {
 		if (client) {
