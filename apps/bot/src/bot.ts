@@ -33,6 +33,10 @@ async function bootstrap() {
 				lastMessageId: undefined,
 				createdAt: new Date()
 			}),
+			getSessionKey: (ctx) => {
+				// Use user ID as session key
+				return ctx.from?.id.toString();
+			},
 			storage: new MongoDBAdapter({ collection: users })
 		})
 	);
