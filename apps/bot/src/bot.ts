@@ -43,19 +43,17 @@ async function bootstrap() {
 
 	// start command
 	bot.command("start", async (ctx) => {
-		console.log(ctx.session);
-
 		if (!ctx.session?.phone_number) {
 			// user doesn't exist in a database
 			initializeSession(ctx);
 			// Request a contact
-			sendContactRequest(ctx);
+			await sendContactRequest(ctx);
 			// User exists - send webapp URL directly
 		} else if (!ctx.session.isChannelMember) {
 			// send subscribe request
-			sendSubscribeRequest(ctx);
+			await sendSubscribeRequest(ctx);
 		} else {
-			sendWebApp(ctx);
+			await sendWebApp(ctx);
 		}
 	});
 
@@ -73,7 +71,7 @@ async function bootstrap() {
 
 	// on check_subscription callback
 	bot.callbackQuery("check_subscription", async (ctx) => {
-		checkSubscriptionFlow(ctx);
+		await checkSubscriptionFlow(ctx);
 	});
 
 	// Error Handler

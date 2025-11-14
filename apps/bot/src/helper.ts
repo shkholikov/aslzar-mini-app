@@ -11,7 +11,6 @@ export function initializeSession(ctx: MyContext): void {
 	ctx.session.username = ctx.from.username;
 	ctx.session.first_name = ctx.from.first_name;
 	ctx.session.last_name = ctx.from.last_name;
-	ctx.session.createdAt = new Date();
 }
 
 export async function sendContactRequest(ctx: MyContext) {
@@ -29,7 +28,6 @@ export async function sendContactRequest(ctx: MyContext) {
 					}
 				]
 			],
-			resize_keyboard: true,
 			one_time_keyboard: true
 		},
 		parse_mode: "MarkdownV2"
@@ -88,7 +86,7 @@ export async function checkSubscriptionFlow(ctx: MyContext) {
 
 		if (isSubscribed) {
 			ctx.session.isChannelMember = true;
-			await ctx.answerCallbackQuery({ text: "✅ A'zolik tasdiqlandi!" });
+			await ctx.answerCallbackQuery({ show_alert: true, text: "✅ A'zolik tasdiqlandi!" });
 
 			const chatId = ctx.callbackQuery!.message?.chat.id;
 			const msgId = ctx.callbackQuery!.message?.message_id;
@@ -110,9 +108,9 @@ export async function checkSubscriptionFlow(ctx: MyContext) {
 					parse_mode: "MarkdownV2"
 				});
 			}
-			// await sendWebApp(ctx);
 		} else {
-			await ctx.answerCallbackQuery({ text: "❌ Siz hali a'zo emassiz!" });
+			ctx.session.isChannelMember = false;
+			await ctx.answerCallbackQuery({ show_alert: true, text: "❌ Siz hali a'zo emassiz!" });
 		}
 	} catch (e) {
 		console.error("Error checking subscription:", e);
