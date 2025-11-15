@@ -128,16 +128,30 @@ export async function prepareReferralMessage(ctx: MyContext) {
 
 	const referralLink = `https://t.me/aslzardevbot?start=${userId}`;
 
-	const result = await ctx.api.savePreparedInlineMessage(userId, {
-		type: "article",
-		id: "referral-" + userId,
-		title: "Referral Link",
-		input_message_content: {
-			message_text: `🔥 ASLZAR platformasiga qo‘shiling!\n\nBu mening referral havolam:\n${referralLink}`,
-			parse_mode: "HTML"
+	const result = await ctx.api.savePreparedInlineMessage(
+		userId,
+		{
+			type: "article",
+			id: "referral-" + userId,
+			title: "ASLZAR💎 Referral",
+			input_message_content: {
+				message_text: `ASLZAR💎 platformasiga qo‘shiling\\!\n\n🔗Mening taklif havolam orqali ro‘yxatdan o‘tishingiz mumkin:`,
+				parse_mode: "MarkdownV2"
+			},
+			reply_markup: {
+				inline_keyboard: [
+					[
+						{
+							text: "ASLZAR💎",
+							url: referralLink
+						}
+					]
+				]
+			},
+			description: "Do‘stlaringizni taklif qiling va bonusga ega bo'ling!"
 		},
-		description: "Do‘stingizni taklif qiling"
-	});
+		{ allow_user_chats: true, allow_bot_chats: true, allow_group_chats: true, allow_channel_chats: true }
+	);
 
 	ctx.session.preparedMessageId = result.id;
 
