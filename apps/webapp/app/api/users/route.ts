@@ -65,8 +65,6 @@ export async function GET(request: NextRequest) {
 		const data = await response.json();
 		const userData = { ...data, tgData: tgSessionData };
 
-		console.log(userData);
-
 		return NextResponse.json(userData, { status: 200 });
 	} catch (error) {
 		console.error("Error searching user:", error);

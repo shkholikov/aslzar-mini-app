@@ -80,10 +80,10 @@ export default function FinancePage() {
 									<strong>Qarz:</strong> {data.debt}
 								</p>
 								<p>
-									<strong>Qolgan to&apos;lov:</strong> {data.remain}
+									<strong>Qolgan to’lov:</strong> {data.remain}
 								</p>
 								<p>
-									<strong>Kechikkan to&apos;lov:</strong> {data.latePayment}
+									<strong>Kechikkan to’lov:</strong> {data.latePayment}
 								</p>
 								<p>
 									<strong>Bonuslar:</strong> {data.bonusOstatok}
@@ -104,9 +104,9 @@ export default function FinancePage() {
 									<TableHeader>
 										<TableRow>
 											<TableHead className="w-[100px]">Summa</TableHead>
-											<TableHead>Oylik to'lov</TableHead>
+											<TableHead>Oylik to’lov</TableHead>
 											<TableHead>Muddati</TableHead>
-											<TableHead>To'lov sanasi</TableHead>
+											<TableHead>To’lov sanasi</TableHead>
 											<TableHead>Qoldiq</TableHead>
 										</TableRow>
 									</TableHeader>
@@ -128,8 +128,8 @@ export default function FinancePage() {
 				) : (
 					<Message
 						icon={UserRoundX}
-						title="Moliyaviy ma'lumotlar topilmadi."
-						description="Sizning moliyaviy ma'lumotlaringiz hozircha topilmadi. Iltimos, platformada to'liq ro'yxatdan o'tganingizga ishonch hosil qiling."
+						title="Moliyaviy ma’lumotlar topilmadi."
+						description="Sizning moliyaviy ma’lumotlaringiz hozircha topilmadi. Iltimos, platformada to’liq ro’yxatdan o’tganingizga ishonch hosil qiling."
 					/>
 				)}
 			</div>
