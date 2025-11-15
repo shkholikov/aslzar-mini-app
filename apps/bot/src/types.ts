@@ -8,6 +8,7 @@ export interface ISessionData {
 	phone_number?: string;
 	isChannelMember?: boolean;
 	lastMessageId?: number;
+	preparedMessageId?: string;
 	createdAt: Date;
 }
 

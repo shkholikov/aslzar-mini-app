@@ -116,3 +116,30 @@ export async function checkSubscriptionFlow(ctx: MyContext) {
 		console.error("Error checking subscription:", e);
 	}
 }
+
+export async function prepareReferralMessage(ctx: MyContext) {
+	const userId = ctx.from?.id;
+	if (!userId) return;
+
+	// Already generated? Do NOT regenerate.
+	if (ctx.session.preparedMessageId) {
+		return ctx.session.preparedMessageId;
+	}
+
+	const referralLink = `https://t.me/aslzardevbot?start=${userId}`;
+
+	const result = await ctx.api.savePreparedInlineMessage(userId, {
+		type: "article",
+		id: "referral-" + userId,
+		title: "Referral Link",
+		input_message_content: {
+			message_text: `🔥 ASLZAR platformasiga qo‘shiling!\n\nBu mening referral havolam:\n${referralLink}`,
+			parse_mode: "HTML"
+		},
+		description: "Do‘stingizni taklif qiling"
+	});
+
+	ctx.session.preparedMessageId = result.id;
+
+	return result.id;
+}

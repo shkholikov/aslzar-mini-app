@@ -3,7 +3,7 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import { checkSubscriptionFlow, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
+import { checkSubscriptionFlow, initializeSession, prepareReferralMessage, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
 
 config();
 
@@ -31,6 +31,7 @@ async function bootstrap() {
 				phone_number: undefined,
 				isChannelMember: undefined,
 				lastMessageId: undefined,
+				preparedMessageId: undefined,
 				createdAt: new Date()
 			}),
 			getSessionKey: (ctx) => {
@@ -43,6 +44,10 @@ async function bootstrap() {
 
 	// start command
 	bot.command("start", async (ctx) => {
+		if (!ctx.session.preparedMessageId) {
+			await prepareReferralMessage(ctx);
+		}
+
 		if (!ctx.session?.phone_number) {
 			// user doesn't exist in a database
 			initializeSession(ctx);
