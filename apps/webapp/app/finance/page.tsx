@@ -56,7 +56,6 @@ const contractsTestData: ContractTest[] = [
 
 export default function FinancePage() {
 	const { data, loading } = useUser();
-	console.log(data);
 
 	return (
 		<div className="pt-12">
