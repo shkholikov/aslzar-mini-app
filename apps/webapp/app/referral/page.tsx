@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/common/header";
 import { Loading } from "@/components/common/loading";
-import { QRCodeGenerator } from "@/components/common/qrcode";
+import { QRCodeGenerator } from "@/components/common/qrcode-generator";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -25,11 +25,13 @@ export default function ReferralPage() {
 	const preparedMessageId = useMemo(() => data?.tgData?.preparedMessageId, [data]);
 
 	const handleCopy = useCallback(() => {
+		tg?.HapticFeedback?.impactOccurred("light");
 		navigator.clipboard.writeText(referralLink);
 		toast.success("Referral link nusxasi olindi!");
 	}, [referralLink]);
 
 	const handleShare = useCallback(() => {
+		tg?.HapticFeedback?.impactOccurred("light");
 		if (!preparedMessageId) {
 			toast.error("Referral ulashish uchun hozircha tayyorlangan link topilmadi.");
 			return;

@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Filiallar" description="Profil va dastur sozlamalarini shu yerda o‘zgartirishingiz mumkin." icon={StoreIcon} />
+			<Header title="Filiallar" description="Filiallar va manzillar ro‘yhati shu yerda ko‘rsatiladi." icon={StoreIcon} />
 			{dataLoaded ? (
 				<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
 					<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">

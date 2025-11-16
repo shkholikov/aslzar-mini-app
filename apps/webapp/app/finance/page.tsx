@@ -3,56 +3,22 @@
 import { Header } from "@/components/common/header";
 import { Loading } from "@/components/common/loading";
 import { Message } from "@/components/common/message";
+import { Badge } from "@/components/ui/badge";
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useUser } from "@/hooks/useUser";
-import { Briefcase, HandCoins, ReceiptText, UserRoundX } from "lucide-react";
-
-// TEST DATA: you can change or remove these later
-type ContractTest = {
-	amount: number;
-	monthly: number;
-	duration: string;
-	paymentDate: string;
-	remain: number;
-};
-
-const contractsTestData: ContractTest[] = [
-	{
-		amount: 5000000,
-		monthly: 834000,
-		duration: "6 oy",
-		paymentDate: "2024-06-24",
-		remain: 2000000
-	},
-	{
-		amount: 3250000,
-		monthly: 541667,
-		duration: "6 oy",
-		paymentDate: "2024-07-24",
-		remain: 500000
-	},
-	{
-		amount: 10500000,
-		monthly: 1750000,
-		duration: "6 oy",
-		paymentDate: "2024-08-20",
-		remain: 8000000
-	},
-	{
-		amount: 7300000,
-		monthly: 1042857,
-		duration: "7 oy",
-		paymentDate: "2024-09-15",
-		remain: 3000000
-	},
-	{
-		amount: 2750000,
-		monthly: 458333,
-		duration: "6 oy",
-		paymentDate: "2024-10-01",
-		remain: 1250000
-	}
-];
+import {
+	BookX,
+	Briefcase,
+	Calendar1,
+	CalendarClockIcon,
+	ChartAreaIcon,
+	FileCheckIcon,
+	HandCoinsIcon,
+	ReceiptText,
+	ReceiptTextIcon,
+	UserRoundX
+} from "lucide-react";
 
 export default function FinancePage() {
 	const { data, loading } = useUser();
@@ -69,27 +35,94 @@ export default function FinancePage() {
 					<>
 						<div className="my-2 border rounded-lg bg-muted/50 bg-transparent p-4">
 							<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
-								<HandCoins className="size-5" />
-								Moliyaviy Ma’lumotlar
+								<ChartAreaIcon className="size-5" />
+								Moliyaviy Statistika
 							</h2>
-							<div className="text-sm text-gray-700 mb-2">
-								<p>
-									<strong>Kontraktlar:</strong> {data.contract.ids.length}
-								</p>
-								<p>
-									<strong>Qarz:</strong> {data.debt}
-								</p>
-								<p>
-									<strong>Qolgan to’lov:</strong> {data.remain}
-								</p>
-								<p>
-									<strong>Kechikkan to’lov:</strong> {data.latePayment}
-								</p>
-								<p>
-									<strong>Bonuslar:</strong> {data.bonusOstatok}
-								</p>
-							</div>
-							{/* <TelegramPostWidget post="ASLZAR_tilla/587723" /> */}
+
+							<ItemGroup>
+								<Item>
+									<ItemMedia variant="icon">
+										<ReceiptTextIcon />
+									</ItemMedia>
+									<ItemContent>
+										<ItemTitle>Faol shartnomalar soni</ItemTitle>
+									</ItemContent>
+									<ItemContent>
+										<ItemDescription>
+											<Badge variant="default">{data?.contract?.active} ta</Badge>
+										</ItemDescription>
+									</ItemContent>
+								</Item>
+								<ItemSeparator />
+								<Item>
+									<ItemMedia variant="icon">
+										<FileCheckIcon />
+									</ItemMedia>
+									<ItemContent>
+										<ItemTitle>Yopilgan shartnomalar soni</ItemTitle>
+									</ItemContent>
+									<ItemContent>
+										<ItemDescription>
+											<Badge variant="default">{data?.contract?.ended} ta</Badge>
+										</ItemDescription>
+									</ItemContent>
+								</Item>
+								<Item>
+									<ItemMedia variant="icon">
+										<BookX />
+									</ItemMedia>
+									<ItemContent>
+										<ItemTitle>Qaytgan shartnomalar soni</ItemTitle>
+									</ItemContent>
+									<ItemContent>
+										<ItemDescription>
+											<Badge variant="default">{data?.contract?.returned} ta</Badge>
+										</ItemDescription>
+									</ItemContent>
+								</Item>
+								<ItemSeparator />
+								<Item>
+									<ItemMedia variant="icon">
+										<HandCoinsIcon />
+									</ItemMedia>
+									<ItemContent>
+										<ItemTitle>Umumiy qarzdorlik summasi</ItemTitle>
+									</ItemContent>
+									<ItemContent>
+										<ItemDescription>
+											<Badge variant="default">{data?.debt} so'm</Badge>
+										</ItemDescription>
+									</ItemContent>
+								</Item>
+								<ItemSeparator />
+								<Item>
+									<ItemMedia variant="icon">
+										<Calendar1 />
+									</ItemMedia>
+									<ItemContent>
+										<ItemTitle>Joriy oy bo‘yicha qarzdorlik</ItemTitle>
+									</ItemContent>
+									<ItemContent>
+										<ItemDescription>
+											<Badge variant="default">{data?.remain} so'm</Badge>
+										</ItemDescription>
+									</ItemContent>
+								</Item>
+								<ItemSeparator />
+								<Item>
+									<ItemMedia variant="icon">
+										<CalendarClockIcon />
+									</ItemMedia>
+									<ItemContent>
+										<ItemTitle>Kechikkan to‘lovlar summasi</ItemTitle>
+									</ItemContent>
+									<ItemContent>
+										<ItemDescription>
+											<Badge variant="default">{data?.latePayment} so'm</Badge>
+										</ItemDescription>
+									</ItemContent>
+								</Item>
+							</ItemGroup>
 						</div>
 
 						<div className="my-2 border rounded-lg bg-muted/50 bg-transparent p-4">
@@ -98,7 +131,7 @@ export default function FinancePage() {
 								Shartnomalar
 							</h2>
 
-							<>
+							<div className="mt-2">
 								<Table>
 									<TableCaption>Sizning hamma aktiv shartnomalaringiz.</TableCaption>
 									<TableHeader>
@@ -106,23 +139,23 @@ export default function FinancePage() {
 											<TableHead className="w-[100px]">Summa</TableHead>
 											<TableHead>Oylik to’lov</TableHead>
 											<TableHead>Muddati</TableHead>
-											<TableHead>To’lov sanasi</TableHead>
+											<TableHead>Sana</TableHead>
 											<TableHead>Qoldiq</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										{contractsTestData.map((contract, idx) => (
+										{data?.contract?.ids.map((contract: any, idx: number) => (
 											<TableRow key={idx}>
-												<TableCell className="font-medium">{contract.amount}</TableCell>
-												<TableCell>{contract.monthly}</TableCell>
-												<TableCell>{contract.duration}</TableCell>
-												<TableCell>{contract.paymentDate}</TableCell>
-												<TableCell>{contract.remain}</TableCell>
+												<TableCell className="font-medium">{contract.sum}</TableCell>
+												<TableCell>{contract.vznos}</TableCell>
+												<TableCell>{contract.months} oy</TableCell>
+												<TableCell>{new Date(contract.date).toLocaleDateString("uz-UZ")}</TableCell>
+												<TableCell>{contract.vznos}</TableCell>
 											</TableRow>
 										))}
 									</TableBody>
 								</Table>
-							</>
+							</div>
 						</div>
 					</>
 				) : (

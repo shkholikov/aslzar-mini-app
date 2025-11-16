@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loading } from "@/components/common/loading";
 import { Profile } from "@/components/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -9,6 +8,7 @@ import { useUser } from "@/hooks/useUser";
 import { Link } from "@/components/common/link";
 import { Gem, InfoIcon, Newspaper, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { DataLoading } from "@/components/common/data-loading";
 
 export default function HomePage() {
 	const pathname = usePathname();
@@ -41,7 +41,7 @@ export default function HomePage() {
 				<>
 					<Profile photo_url={user.photo_url} first_name={user.first_name} />
 					{dataLoading ? (
-						<Loading />
+						<DataLoading />
 					) : data.code === 0 ? (
 						<div className="m-2">
 							<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
@@ -96,7 +96,7 @@ export default function HomePage() {
 					)}
 				</>
 			) : (
-				<Loading />
+				""
 			)}
 		</main>
 	);
