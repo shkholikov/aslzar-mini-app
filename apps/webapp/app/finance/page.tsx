@@ -144,7 +144,7 @@ export default function FinancePage() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										// eslint-disable-next-line @typescript-eslint/no-explicit-any
+										// eslint-disable-next-line
 										{data?.contract?.ids.map((contract: any, idx: number) => (
 											<TableRow key={idx}>
 												<TableCell className="font-medium">{contract.sum}</TableCell>
