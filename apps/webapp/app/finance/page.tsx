@@ -144,16 +144,18 @@ export default function FinancePage() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
-										// eslint-disable-next-line
-										{data?.contract?.ids.map((contract: any, idx: number) => (
-											<TableRow key={idx}>
-												<TableCell className="font-medium">{contract.sum}</TableCell>
-												<TableCell>{contract.vznos}</TableCell>
-												<TableCell>{contract.months} oy</TableCell>
-												<TableCell>{new Date(contract.date).toLocaleDateString("uz-UZ")}</TableCell>
-												<TableCell>{contract.vznos}</TableCell>
-											</TableRow>
-										))}
+										{
+											// eslint-disable-next-line
+											data?.contract?.ids.map((contract: any, idx: number) => (
+												<TableRow key={idx}>
+													<TableCell className="font-medium">{contract.sum}</TableCell>
+													<TableCell>{contract.vznos}</TableCell>
+													<TableCell>{contract.months} oy</TableCell>
+													<TableCell>{new Date(contract.date).toLocaleDateString("uz-UZ")}</TableCell>
+													<TableCell>{contract.vznos}</TableCell>
+												</TableRow>
+											))
+										}
 									</TableBody>
 								</Table>
 							</div>
