@@ -25,7 +25,7 @@ export default function FinancePage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko‘rsatiladi." icon={Briefcase} />
+			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko’rsatiladi." icon={Briefcase} />
 			<div className="mx-2">
 				{loading ? (
 					<div className="flex flex-col items-center">
@@ -90,7 +90,7 @@ export default function FinancePage() {
 									</ItemContent>
 									<ItemContent>
 										<ItemDescription>
-											<Badge variant="default">{data?.debt} so'm</Badge>
+											<Badge variant="default">{data?.debt} so’m</Badge>
 										</ItemDescription>
 									</ItemContent>
 								</Item>
@@ -100,11 +100,11 @@ export default function FinancePage() {
 										<Calendar1 />
 									</ItemMedia>
 									<ItemContent>
-										<ItemTitle>Joriy oy bo‘yicha qarzdorlik</ItemTitle>
+										<ItemTitle>Joriy oy bo’yicha qarzdorlik</ItemTitle>
 									</ItemContent>
 									<ItemContent>
 										<ItemDescription>
-											<Badge variant="default">{data?.remain} so'm</Badge>
+											<Badge variant="default">{data?.remain} so’m</Badge>
 										</ItemDescription>
 									</ItemContent>
 								</Item>
@@ -114,11 +114,11 @@ export default function FinancePage() {
 										<CalendarClockIcon />
 									</ItemMedia>
 									<ItemContent>
-										<ItemTitle>Kechikkan to‘lovlar summasi</ItemTitle>
+										<ItemTitle>Kechikkan to’lovlar summasi</ItemTitle>
 									</ItemContent>
 									<ItemContent>
 										<ItemDescription>
-											<Badge variant="default">{data?.latePayment} so'm</Badge>
+											<Badge variant="default">{data?.latePayment} so’m</Badge>
 										</ItemDescription>
 									</ItemContent>
 								</Item>
@@ -144,6 +144,7 @@ export default function FinancePage() {
 										</TableRow>
 									</TableHeader>
 									<TableBody>
+										// eslint-disable-next-line @typescript-eslint/no-explicit-any
 										{data?.contract?.ids.map((contract: any, idx: number) => (
 											<TableRow key={idx}>
 												<TableCell className="font-medium">{contract.sum}</TableCell>
