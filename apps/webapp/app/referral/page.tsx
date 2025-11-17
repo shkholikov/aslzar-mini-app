@@ -14,6 +14,8 @@ import { toast } from "sonner";
 export default function ReferralPage() {
 	const tg = useTelegram();
 	const { data, loading } = useUser();
+	console.log(data);
+
 	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
 
 	useEffect(() => {
