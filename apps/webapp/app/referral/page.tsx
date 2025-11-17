@@ -8,21 +8,35 @@ import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { CopyCheck, Forward, QrCode, Users } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function ReferralPage() {
 	const tg = useTelegram();
 	const { data, loading } = useUser();
+	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!tg) return;
+
+		const userId = tg.initDataUnsafe.user.id;
+
+		// Always generate a fresh prepared message
+		const generate = async () => {
+			const res = await fetch(`/api/referral/link?userId=${userId}`);
+			const data = await res.json();
+
+			setPreparedMessageId(data.preparedMessageId);
+		};
+
+		generate();
+	}, [tg]);
 
 	// Memoize referral link for stable reference
 	const referralLink = useMemo(() => {
 		if (!tg?.initDataUnsafe?.user?.id) return "https://t.me/aslzardevbot";
 		return `https://t.me/aslzardevbot?start=${tg.initDataUnsafe.user.id}`;
 	}, [tg]);
-
-	// Memoize preparedMessageId to simplify sharing logic and safe access
-	const preparedMessageId = useMemo(() => data?.tgData?.preparedMessageId, [data]);
 
 	const handleCopy = useCallback(() => {
 		tg?.HapticFeedback?.impactOccurred("light");
