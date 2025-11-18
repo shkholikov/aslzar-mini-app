@@ -36,8 +36,10 @@ export default function ReferralPage() {
 
 	// Memoize referral link for stable reference
 	const referralLink = useMemo(() => {
-		if (!tg?.initDataUnsafe?.user?.id) return "https://t.me/aslzardevbot";
-		return `https://t.me/aslzardevbot?start=${tg.initDataUnsafe.user.id}`;
+		const userId = tg?.initDataUnsafe?.user?.id;
+		const baseUrl = "https://t.me/aslzardevbot";
+		const link = userId ? `${baseUrl}?start=${userId}` : baseUrl;
+		return `ASLZAR💎 platformasiga qo‘shiling!\n\n🔗 Mening taklif havolam orqali ro‘yxatdan o‘tishingiz mumkin:\n\n${link}`;
 	}, [tg]);
 
 	const handleCopy = useCallback(() => {
