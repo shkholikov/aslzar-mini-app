@@ -60,40 +60,44 @@ export default function SettingsPage() {
 												<Store className="size-5" />
 											</ItemMedia>
 											<ItemContent>
-												<ItemTitle>{branch.address}</ItemTitle>
+												<ItemTitle>{branch.address || "nomaʼlum"}</ItemTitle>
 											</ItemContent>
 										</Item>
 									</AccordionContent>
-									<AccordionContent>
-										<Item asChild>
-											<a href={`tel:${branch.phone1}`}>
-												<ItemMedia>
-													<Phone className="size-5" />
-												</ItemMedia>
-												<ItemContent>
-													<ItemTitle>{branch.phone1}</ItemTitle>
-												</ItemContent>
-												<ItemActions>
-													<ChevronRightIcon className="size-4" />
-												</ItemActions>
-											</a>
-										</Item>
-									</AccordionContent>
-									<AccordionContent>
-										<Item asChild>
-											<a href={`tel:${branch.phone2}`}>
-												<ItemMedia>
-													<Phone className="size-5" />
-												</ItemMedia>
-												<ItemContent>
-													<ItemTitle>{branch.phone2}</ItemTitle>
-												</ItemContent>
-												<ItemActions>
-													<ChevronRightIcon className="size-4" />
-												</ItemActions>
-											</a>
-										</Item>
-									</AccordionContent>
+									{branch.phone1 && (
+										<AccordionContent>
+											<Item asChild>
+												<a href={`tel:${branch.phone1}`}>
+													<ItemMedia>
+														<Phone className="size-5" />
+													</ItemMedia>
+													<ItemContent>
+														<ItemTitle>{branch.phone1}</ItemTitle>
+													</ItemContent>
+													<ItemActions>
+														<ChevronRightIcon className="size-4" />
+													</ItemActions>
+												</a>
+											</Item>
+										</AccordionContent>
+									)}
+									{branch.phone2 && (
+										<AccordionContent>
+											<Item asChild>
+												<a href={`tel:${branch.phone2}`}>
+													<ItemMedia>
+														<Phone className="size-5" />
+													</ItemMedia>
+													<ItemContent>
+														<ItemTitle>{branch.phone2}</ItemTitle>
+													</ItemContent>
+													<ItemActions>
+														<ChevronRightIcon className="size-4" />
+													</ItemActions>
+												</a>
+											</Item>
+										</AccordionContent>
+									)}
 									<Separator />
 								</AccordionItem>
 							</Accordion>
