@@ -30,6 +30,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
+				<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 				<Script src="https://telegram.org/js/telegram-web-app.js?59" strategy="beforeInteractive" />
 				<Script async src="https://telegram.org/js/telegram-widget.js?22" strategy="afterInteractive" />
 			</head>
