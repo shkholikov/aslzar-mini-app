@@ -1,14 +1,18 @@
 "use client";
 
 import { Header } from "@/components/common/header";
-import { Link } from "@/components/common/link";
 import { Loading } from "@/components/common/loading";
-import { MapIcon, MapPinned, StoreIcon } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Separator } from "@/components/ui/separator";
+import { useTelegram } from "@/hooks/useTelegram";
+import { ChevronRightIcon, MapPinned, Phone, Store, StoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function SettingsPage() {
+	const tg = useTelegram();
 	const [dataLoaded, setDataLoaded] = useState(false);
-	const [branches, setBranches] = useState<{ id: number; name: string }[]>([]);
+	const [branches, setBranches] = useState<{ id: number; name: string; address: string; phone1?: string; phone2?: string }[]>([]);
 
 	const fetchBranchData = async () => {
 		try {
@@ -42,14 +46,57 @@ export default function SettingsPage() {
 					</h2>
 					<div className="text-sm text-gray-700 mb-2">
 						<p>
-							<strong>Bizning filiallar ro’yhati:</strong>
+							<strong>Bizning filiallar manzillari va telefon raqamlari:</strong>
 						</p>
 					</div>
 					{branches?.map((branch) => {
 						return (
-							<div key={branch.id} className="my-2">
-								<Link title={branch.name} href={""} icon={MapIcon} />
-							</div>
+							<Accordion key={branch.id} type="single" collapsible>
+								<AccordionItem value="item-1">
+									<AccordionTrigger>{branch.name}</AccordionTrigger>
+									<AccordionContent>
+										<Item>
+											<ItemMedia>
+												<Store className="size-5" />
+											</ItemMedia>
+											<ItemContent>
+												<ItemTitle>{branch.address}</ItemTitle>
+											</ItemContent>
+										</Item>
+									</AccordionContent>
+									<AccordionContent>
+										<Item asChild>
+											<a href={`tel:${branch.phone1}`}>
+												<ItemMedia>
+													<Phone className="size-5" />
+												</ItemMedia>
+												<ItemContent>
+													<ItemTitle>{branch.phone1}</ItemTitle>
+												</ItemContent>
+												<ItemActions>
+													<ChevronRightIcon className="size-4" />
+												</ItemActions>
+											</a>
+										</Item>
+									</AccordionContent>
+									<AccordionContent>
+										<Item asChild>
+											<a href={`tel:${branch.phone2}`}>
+												<ItemMedia>
+													<Phone className="size-5" />
+												</ItemMedia>
+												<ItemContent>
+													<ItemTitle>{branch.phone2}</ItemTitle>
+												</ItemContent>
+												<ItemActions>
+													<ChevronRightIcon className="size-4" />
+												</ItemActions>
+											</a>
+										</Item>
+									</AccordionContent>
+									<Separator />
+								</AccordionItem>
+							</Accordion>
 						);
 					})}
 				</div>
