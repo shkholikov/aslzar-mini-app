@@ -90,7 +90,7 @@ export default function ReferralPage() {
 							disabled={!preparedMessageId}
 							title={!preparedMessageId ? "Ulashish uchun hozircha referral tayyorlangan emas" : undefined}
 						>
-							<Forward /> Ulashish
+							<Forward /> Ulashish	
 						</RippleButton>
 					</div>
 				</div>

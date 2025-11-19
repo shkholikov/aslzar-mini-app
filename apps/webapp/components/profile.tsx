@@ -6,7 +6,9 @@ import { Separator } from "./ui/separator";
 import { Spinner } from "./ui/spinner";
 import { useUser } from "@/hooks/useUser";
 import { Loading } from "./common/loading";
-import { Message } from "./common/message";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "./ui/item";
+import { RippleButton } from "./ui/shadcn-io/ripple-button";
+import { useRouter } from "next/navigation";
 
 const DEFAULT_PROFILE_INFO = {
 	verified: false,
@@ -17,6 +19,7 @@ const DEFAULT_PROFILE_INFO = {
 
 export function Profile({ photo_url, first_name }: { photo_url: string; first_name: string }) {
 	const { data, loading } = useUser();
+	const router = useRouter();
 	const [profileInfo, setProfileInfo] = useState(DEFAULT_PROFILE_INFO);
 
 	useEffect(() => {
@@ -74,11 +77,25 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 								<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
 							</div>
 						) : (
-							<Message
-								icon={BadgeInfo}
-								title="Siz hali ASLZAR mijozi emassiz."
-								description="Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning — biz sizni kutyapmiz!"
-							/>
+							<Item variant="outline">
+								<ItemMedia>
+									<BadgeInfo className="size-5" />
+								</ItemMedia>
+								<ItemContent>
+									<ItemTitle>Siz hali ASLZAR mijozi emassiz.</ItemTitle>
+									<ItemDescription>Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning!</ItemDescription>
+								</ItemContent>
+								<ItemActions>
+									<RippleButton variant="outline" onClick={() => router.push("/register")}>
+										Kirish
+									</RippleButton>
+								</ItemActions>
+							</Item>
+							// <Message
+							// 	icon={BadgeInfo}
+							// 	title="Siz hali ASLZAR mijozi emassiz."
+							// 	description="Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning — biz sizni kutyapmiz!"
+							// />
 						)}
 					</div>
 				)}
