@@ -5,12 +5,10 @@ import { Loading } from "@/components/common/loading";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
-import { useTelegram } from "@/hooks/useTelegram";
 import { ChevronRightIcon, MapPinned, Phone, Store, StoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function SettingsPage() {
-	const tg = useTelegram();
+export default function BranchesPage() {
 	const [dataLoaded, setDataLoaded] = useState(false);
 	const [branches, setBranches] = useState<{ id: number; name: string; address: string; phone1?: string; phone2?: string }[]>([]);
 

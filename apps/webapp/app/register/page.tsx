@@ -5,11 +5,11 @@ import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet 
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
+import { useTelegram } from "@/hooks/useTelegram";
 import { FileCheck, FileXIcon, UserPlus } from "lucide-react";
-import { useForm } from "react-hook-form";
 
 export default function RegisterPage() {
-	const form = useForm();
+	const tg = useTelegram();
 	return (
 		<div className="pt-12">
 			<Header title="Ro‘yxatdan o‘tish" description="ASLZAR platformasida ro‘yxatdan o‘ting va mijozimizga aylaning." icon={UserPlus} />
@@ -35,11 +35,11 @@ export default function RegisterPage() {
 						</FieldGroup>
 					</FieldSet>
 					<Field orientation="vertical">
-						<RippleButton type="submit" variant="outline">
+						<RippleButton type="submit" variant="outline" onClick={() => tg?.HapticFeedback?.impactOccurred("light")}>
 							<FileCheck />
 							Tasdiqlash
 						</RippleButton>
-						<RippleButton variant="outline" type="button">
+						<RippleButton variant="outline" type="button" onClick={() => tg?.HapticFeedback?.impactOccurred("light")}>
 							<FileXIcon />
 							Tozalash
 						</RippleButton>

@@ -9,6 +9,7 @@ import { Loading } from "./common/loading";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "./ui/item";
 import { RippleButton } from "./ui/shadcn-io/ripple-button";
 import { useRouter } from "next/navigation";
+import { useTelegram } from "@/hooks/useTelegram";
 
 const DEFAULT_PROFILE_INFO = {
 	verified: false,
@@ -18,6 +19,7 @@ const DEFAULT_PROFILE_INFO = {
 };
 
 export function Profile({ photo_url, first_name }: { photo_url: string; first_name: string }) {
+	const tg = useTelegram();
 	const { data, loading } = useUser();
 	const router = useRouter();
 	const [profileInfo, setProfileInfo] = useState(DEFAULT_PROFILE_INFO);
@@ -86,7 +88,13 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 									<ItemDescription>Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning!</ItemDescription>
 								</ItemContent>
 								<ItemActions>
-									<RippleButton variant="outline" onClick={() => router.push("/register")}>
+									<RippleButton
+										variant="outline"
+										onClick={() => {
+											router.push("/register");
+											tg?.HapticFeedback?.impactOccurred("light");
+										}}
+									>
 										Kirish
 									</RippleButton>
 								</ItemActions>
