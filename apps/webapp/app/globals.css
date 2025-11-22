@@ -115,6 +115,10 @@
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
+		-webkit-user-select: none; /* iOS Safari & Telegram WebView */
+		-ms-user-select: none; /* older Edge */
+		user-select: none; /* standard */
+		-webkit-touch-callout: none; /* disable callout menu on iOS */
 	}
 	body {
 		@apply bg-background text-foreground;
