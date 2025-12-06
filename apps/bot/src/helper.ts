@@ -29,6 +29,7 @@ export async function sendSubscribeRequest(ctx: MyContext) {
 	await ctx.reply(subscribeRequestText, {
 		reply_markup: new InlineKeyboard()
 			.url("ASLZAR💎 kanaliga a'zo bo'lish", "https://t.me/ASLZAR_tilla")
+			.row()
 			.text("🔎 A’zolikni tekshirish", "check_subscription"),
 		parse_mode: "MarkdownV2"
 	});
