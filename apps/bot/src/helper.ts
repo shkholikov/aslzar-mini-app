@@ -1,3 +1,4 @@
+import { Keyboard } from "grammy";
 import { infoText, subscribeRequestText } from "./messages";
 import { MyContext } from "./types";
 
@@ -19,19 +20,23 @@ export async function sendContactRequest(ctx: MyContext) {
 
 	// User doesn't exist - ask for contact
 	await ctx.reply(greetingText, {
-		reply_markup: {
-			keyboard: [
-				[
-					{
-						text: "📱 Telefon raqamni ulashish",
-						request_contact: true
-					}
-				]
-			],
-			one_time_keyboard: true
-		},
+		reply_markup: new Keyboard().requestContact("📱 Telefon raqamni ulashish").oneTime().resized(),
 		parse_mode: "MarkdownV2"
 	});
+	// await ctx.reply(greetingText, {
+	// 	reply_markup: {
+	// 		keyboard: [
+	// 			[
+	// 				{
+	// 					text: "📱 Telefon raqamni ulashish",
+	// 					request_contact: true
+	// 				}
+	// 			]
+	// 		],
+	// 		one_time_keyboard: true
+	// 	},
+	// 	parse_mode: "MarkdownV2"
+	// });
 }
 
 export async function sendSubscribeRequest(ctx: MyContext) {
