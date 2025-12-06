@@ -1,4 +1,4 @@
-import { Keyboard } from "grammy";
+import { InlineKeyboard, Keyboard } from "grammy";
 import { infoText, subscribeRequestText } from "./messages";
 import { MyContext } from "./types";
 
@@ -23,62 +23,58 @@ export async function sendContactRequest(ctx: MyContext) {
 		reply_markup: new Keyboard().requestContact("📱 Telefon raqamni ulashish").oneTime().resized(),
 		parse_mode: "MarkdownV2"
 	});
-	// await ctx.reply(greetingText, {
+}
+
+export async function sendSubscribeRequest(ctx: MyContext) {
+	await ctx.reply(subscribeRequestText, {
+		reply_markup: new InlineKeyboard()
+			.url("ASLZAR💎 kanaliga a'zo bo'lish", "https://t.me/ASLZAR_tilla")
+			.text("🔎 A’zolikni tekshirish", "check_subscription"),
+		parse_mode: "MarkdownV2"
+	});
+	// await ctx.reply(subscribeRequestText, {
 	// 	reply_markup: {
-	// 		keyboard: [
+	// 		remove_keyboard: true,
+	// 		inline_keyboard: [
 	// 			[
 	// 				{
-	// 					text: "📱 Telefon raqamni ulashish",
-	// 					request_contact: true
+	// 					text: "ASLZAR💎 kanaliga a'zo bo'lish",
+	// 					url: "https://t.me/ASLZAR_tilla"
+	// 				}
+	// 			],
+	// 			[
+	// 				{
+	// 					text: "🔎 A’zolikni tekshirish",
+	// 					callback_data: "check_subscription"
 	// 				}
 	// 			]
-	// 		],
-	// 		one_time_keyboard: true
+	// 		]
 	// 	},
 	// 	parse_mode: "MarkdownV2"
 	// });
 }
 
-export async function sendSubscribeRequest(ctx: MyContext) {
-	await ctx.reply(subscribeRequestText, {
-		reply_markup: {
-			remove_keyboard: true,
-			inline_keyboard: [
-				[
-					{
-						text: "ASLZAR💎 kanaliga a'zo bo'lish",
-						url: "https://t.me/ASLZAR_tilla"
-					}
-				],
-				[
-					{
-						text: "🔎 A’zolikni tekshirish",
-						callback_data: "check_subscription"
-					}
-				]
-			]
-		},
-		parse_mode: "MarkdownV2"
-	});
-}
-
 export async function sendWebApp(ctx: MyContext) {
 	await ctx.reply(infoText, {
-		reply_markup: {
-			remove_keyboard: true,
-			inline_keyboard: [
-				[
-					{
-						text: "ASLZAR💎 ilovasini ochish",
-						web_app: {
-							url: WEBAPP_URL
-						}
-					}
-				]
-			]
-		},
+		reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", WEBAPP_URL),
 		parse_mode: "MarkdownV2"
 	});
+	// await ctx.reply(infoText, {
+	// 	reply_markup: {
+	// 		remove_keyboard: true,
+	// 		inline_keyboard: [
+	// 			[
+	// 				{
+	// 					text: "ASLZAR💎 ilovasini ochish",
+	// 					web_app: {
+	// 						url: WEBAPP_URL
+	// 					}
+	// 				}
+	// 			]
+	// 		]
+	// 	},
+	// 	parse_mode: "MarkdownV2"
+	// });
 }
 
 export async function checkSubscriptionFlow(ctx: MyContext) {
@@ -98,20 +94,24 @@ export async function checkSubscriptionFlow(ctx: MyContext) {
 
 			if (chatId && msgId) {
 				await ctx.api.editMessageText(chatId, msgId, infoText, {
-					reply_markup: {
-						inline_keyboard: [
-							[
-								{
-									text: "ASLZAR💎 ilovasini ochish",
-									web_app: {
-										url: WEBAPP_URL
-									}
-								}
-							]
-						]
-					},
+					reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", WEBAPP_URL),
 					parse_mode: "MarkdownV2"
 				});
+				// await ctx.api.editMessageText(chatId, msgId, infoText, {
+				// 	reply_markup: {
+				// 		inline_keyboard: [
+				// 			[
+				// 				{
+				// 					text: "ASLZAR💎 ilovasini ochish",
+				// 					web_app: {
+				// 						url: WEBAPP_URL
+				// 					}
+				// 				}
+				// 			]
+				// 		]
+				// 	},
+				// 	parse_mode: "MarkdownV2"
+				// });
 			}
 		} else {
 			ctx.session.isChannelMember = false;
