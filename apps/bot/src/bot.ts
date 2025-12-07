@@ -67,9 +67,6 @@ async function bootstrap() {
 		const contact = ctx.message?.contact;
 		if (!contact) return;
 
-		// remove contact button
-		await ctx.reply("", { reply_markup: { remove_keyboard: true } });
-
 		// Save contact to session
 		ctx.session.phone_number = contact.phone_number;
 
