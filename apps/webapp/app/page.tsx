@@ -31,6 +31,8 @@ export default function HomePage() {
 
 		const userData = tg.initDataUnsafe?.user;
 		if (userData) {
+			console.log(userData);
+
 			setUser(userData);
 		}
 	}, [tg, pathname, router]);
