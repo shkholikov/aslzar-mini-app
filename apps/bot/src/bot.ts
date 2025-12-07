@@ -70,8 +70,13 @@ async function bootstrap() {
 		// Save contact to session
 		ctx.session.phone_number = contact.phone_number;
 
+		// Remove the contact request button
+		await ctx.reply("✅ Telefon raqamingiz qabul qilindi!", {
+			reply_markup: { remove_keyboard: true }
+		});
+
 		// send subscribe request
-		sendSubscribeRequest(ctx);
+		await sendSubscribeRequest(ctx);
 	});
 
 	// on check_subscription callback
