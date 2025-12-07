@@ -33,26 +33,6 @@ export async function sendSubscribeRequest(ctx: MyContext) {
 			.text("🔎 A’zolikni tekshirish", "check_subscription"),
 		parse_mode: "MarkdownV2"
 	});
-	// await ctx.reply(subscribeRequestText, {
-	// 	reply_markup: {
-	// 		remove_keyboard: true,
-	// 		inline_keyboard: [
-	// 			[
-	// 				{
-	// 					text: "ASLZAR💎 kanaliga a'zo bo'lish",
-	// 					url: "https://t.me/ASLZAR_tilla"
-	// 				}
-	// 			],
-	// 			[
-	// 				{
-	// 					text: "🔎 A’zolikni tekshirish",
-	// 					callback_data: "check_subscription"
-	// 				}
-	// 			]
-	// 		]
-	// 	},
-	// 	parse_mode: "MarkdownV2"
-	// });
 }
 
 export async function sendWebApp(ctx: MyContext) {
@@ -60,22 +40,6 @@ export async function sendWebApp(ctx: MyContext) {
 		reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", WEBAPP_URL),
 		parse_mode: "MarkdownV2"
 	});
-	// await ctx.reply(infoText, {
-	// 	reply_markup: {
-	// 		remove_keyboard: true,
-	// 		inline_keyboard: [
-	// 			[
-	// 				{
-	// 					text: "ASLZAR💎 ilovasini ochish",
-	// 					web_app: {
-	// 						url: WEBAPP_URL
-	// 					}
-	// 				}
-	// 			]
-	// 		]
-	// 	},
-	// 	parse_mode: "MarkdownV2"
-	// });
 }
 
 export async function checkSubscriptionFlow(ctx: MyContext) {
@@ -98,21 +62,6 @@ export async function checkSubscriptionFlow(ctx: MyContext) {
 					reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", WEBAPP_URL),
 					parse_mode: "MarkdownV2"
 				});
-				// await ctx.api.editMessageText(chatId, msgId, infoText, {
-				// 	reply_markup: {
-				// 		inline_keyboard: [
-				// 			[
-				// 				{
-				// 					text: "ASLZAR💎 ilovasini ochish",
-				// 					web_app: {
-				// 						url: WEBAPP_URL
-				// 					}
-				// 				}
-				// 			]
-				// 		]
-				// 	},
-				// 	parse_mode: "MarkdownV2"
-				// });
 			}
 		} else {
 			ctx.session.isChannelMember = false;
