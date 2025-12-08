@@ -18,11 +18,15 @@ const DEFAULT_PROFILE_INFO = {
 	contracts: 0
 };
 
-export function Profile({ photo_url, first_name }: { photo_url: string; first_name: string }) {
+export function Profile() {
 	const tg = useTelegram();
 	const { data, loading } = useUser();
 	const router = useRouter();
 	const [profileInfo, setProfileInfo] = useState(DEFAULT_PROFILE_INFO);
+
+	const userData = tg?.initDataUnsafe?.user;
+	const photo_url = userData?.photo_url || "";
+	const first_name = userData?.first_name || "";
 
 	useEffect(() => {
 		if (data && data.bonusInfo) {
@@ -99,11 +103,6 @@ export function Profile({ photo_url, first_name }: { photo_url: string; first_na
 									</RippleButton>
 								</ItemActions>
 							</Item>
-							// <Message
-							// 	icon={BadgeInfo}
-							// 	title="Siz hali ASLZAR mijozi emassiz."
-							// 	description="Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning — biz sizni kutyapmiz!"
-							// />
 						)}
 					</div>
 				)}

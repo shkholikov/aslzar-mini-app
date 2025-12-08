@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Profile } from "@/components/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -15,8 +15,6 @@ export default function HomePage() {
 	const router = useRouter();
 	const tg = useTelegram();
 	const { data, loading: dataLoading } = useUser();
-	// eslint-disable-next-line
-	const [user, setUser] = useState<any>(null);
 
 	useEffect(() => {
 		if (!tg) return;
@@ -28,20 +26,13 @@ export default function HomePage() {
 
 		// disable vertical swipe to close miniapp
 		tg.isVerticalSwipesEnabled = false;
-
-		const userData = tg.initDataUnsafe?.user;
-		if (userData) {
-			console.log(userData);
-
-			setUser(userData);
-		}
 	}, [tg, pathname, router]);
 
 	return (
 		<main className="flex flex-col items-center min-h-screen pt-12">
-			{user ? (
+			{tg?.initDataUnsafe?.user ? (
 				<>
-					<Profile photo_url={user.photo_url} first_name={user.first_name} />
+					<Profile />
 					{dataLoading ? (
 						<DataLoading />
 					) : data.code === 0 ? (
@@ -97,9 +88,7 @@ export default function HomePage() {
 						</div>
 					)}
 				</>
-			) : (
-				""
-			)}
+			) : null}
 		</main>
 	);
 }
