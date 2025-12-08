@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { useEffect } from "react";
+import { Loading } from "@/components/common/loading";
 
 const registerSchema = z.object({
 	firstName: z.string().min(3, "Ism kamida 3 ta harf bo‘lishi kerak"),
@@ -77,63 +78,69 @@ export default function RegisterPage() {
 		<form onSubmit={handleSubmit(onSubmit)} className="pt-12">
 			<Header title="Ro‘yxatdan o‘tish" description="ASLZAR platformasida ro‘yxatdan o‘ting va mijozimizga aylaning." icon={UserPlus} />
 
-			<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
-				<FieldGroup>
-					<FieldSet>
-						<FieldLegend>Ro‘yxatdan o‘tish ma’lumotlari</FieldLegend>
-						<FieldDescription>Iltimos, quyidagi ma’lumotlarni to‘ldiring</FieldDescription>
-						<Separator />
+			{loading ? (
+				<div className="flex flex-col items-center">
+					<Loading />
+				</div>
+			) : (
+				<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
+					<FieldGroup>
+						<FieldSet>
+							<FieldLegend>Ro‘yxatdan o‘tish ma’lumotlari</FieldLegend>
+							<FieldDescription>Iltimos, quyidagi ma’lumotlarni to‘ldiring</FieldDescription>
+							<Separator />
 
-						<FieldGroup>
-							{/* FIRST NAME */}
-							<Field>
-								<FieldLabel>Ismingiz</FieldLabel>
-								<Input placeholder="Faqat ismingizni kiriting" {...register("firstName")} />
-								{errors.firstName && <p className="text-red-500 text-sm">{errors.firstName.message}</p>}
-							</Field>
+							<FieldGroup>
+								{/* FIRST NAME */}
+								<Field>
+									<FieldLabel>Ismingiz</FieldLabel>
+									<Input placeholder="Faqat ismingizni kiriting" {...register("firstName")} />
+									{errors.firstName && <p className="text-red-500 text-sm">{errors.firstName.message}</p>}
+								</Field>
 
-							{/* LAST NAME */}
-							<Field>
-								<FieldLabel>Familiyangiz</FieldLabel>
-								<Input placeholder="Faqat familiyangizni kiriting" {...register("lastName")} />
-								{errors.lastName && <p className="text-red-500 text-sm">{errors.lastName.message}</p>}
-							</Field>
+								{/* LAST NAME */}
+								<Field>
+									<FieldLabel>Familiyangiz</FieldLabel>
+									<Input placeholder="Faqat familiyangizni kiriting" {...register("lastName")} />
+									{errors.lastName && <p className="text-red-500 text-sm">{errors.lastName.message}</p>}
+								</Field>
 
-							{/* PHONE */}
-							<Field>
-								<FieldLabel>Telefon raqamingiz</FieldLabel>
-								<Input placeholder="+998XXXXXXXXX" type="tel" {...register("phone")} disabled />
-								{errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
-							</Field>
-						</FieldGroup>
-					</FieldSet>
+								{/* PHONE */}
+								<Field>
+									<FieldLabel>Telefon raqamingiz</FieldLabel>
+									<Input placeholder="+998XXXXXXXXX" type="tel" {...register("phone")} disabled />
+									{errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
+								</Field>
+							</FieldGroup>
+						</FieldSet>
 
-					<Field orientation="vertical" className="mt-4 space-y-2">
-						<RippleButton type="submit" variant="outline">
-							<FileCheck />
-							Tasdiqlash
-						</RippleButton>
+						<Field orientation="vertical" className="mt-4 space-y-2">
+							<RippleButton type="submit" variant="outline">
+								<FileCheck />
+								Tasdiqlash
+							</RippleButton>
 
-						<RippleButton
-							variant="outline"
-							type="button"
-							onClick={() => {
-								reset();
-								// Restore phone number after reset
-								if (data?.tgData?.phone_number) {
-									const phone = data.tgData.phone_number.startsWith("+") ? data.tgData.phone_number : `+${data.tgData.phone_number}`;
-									setValue("phone", phone);
-								}
-								tg?.HapticFeedback?.impactOccurred("light");
-								toast.info("Barcha maydonlar tozalandi. Qaytadan maʼlumot kiriting.");
-							}}
-						>
-							<FileXIcon />
-							Tozalash
-						</RippleButton>
-					</Field>
-				</FieldGroup>
-			</div>
+							<RippleButton
+								variant="outline"
+								type="button"
+								onClick={() => {
+									reset();
+									// Restore phone number after reset
+									if (data?.tgData?.phone_number) {
+										const phone = data.tgData.phone_number.startsWith("+") ? data.tgData.phone_number : `+${data.tgData.phone_number}`;
+										setValue("phone", phone);
+									}
+									tg?.HapticFeedback?.impactOccurred("light");
+									toast.success("Barcha maydonlar tozalandi. Qaytadan maʼlumot kiriting.");
+								}}
+							>
+								<FileXIcon />
+								Tozalash
+							</RippleButton>
+						</Field>
+					</FieldGroup>
+				</div>
+			)}
 		</form>
 	);
 }

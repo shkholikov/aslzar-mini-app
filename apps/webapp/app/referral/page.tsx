@@ -5,9 +5,11 @@ import { Loading } from "@/components/common/loading";
 import { QRCodeGenerator } from "@/components/common/qrcode-generator";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTelegram } from "@/hooks/useTelegram";
-import { CopyCheck, Forward, QrCode, Trophy, Users } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
+import { CopyCheck, Forward, QrCode, ReceiptText, Trophy, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +19,17 @@ interface IBonusProgram {
 	spisanie: number;
 	nachislenieVSrok: number;
 	perexod: number;
+}
+
+interface IReferral {
+	id: string;
+	chislo: string;
+	familiya: string;
+	imya: string;
+	otchestvo: string;
+	phone: string;
+	contract: boolean;
+	contractDate: string;
 }
 
 const programs = {
@@ -54,14 +67,15 @@ const programs = {
 
 export default function ReferralPage() {
 	const tg = useTelegram();
+	const { data, loading } = useUser();
 	const [dataLoaded, setDataLoaded] = useState(false);
 	const [bonusProgramList, setBonusProgramList] = useState<IBonusProgram[]>([]);
 	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
+	const [referrals, setReferrals] = useState<IReferral[]>([]);
 
 	const fetchBonusProgramData = async () => {
 		try {
 			const response = await fetch("/api/bonus");
-			console.log(response);
 
 			if (!response.ok) {
 				throw new Error(`Failed to fetch bonus programs data: ${response.status}`);
@@ -77,9 +91,28 @@ export default function ReferralPage() {
 		}
 	};
 
+	const fetchUserReferrals = async () => {
+		if (!data) return;
+		try {
+			const clientId = data.clientId;
+			console.log(clientId);
+
+			const response = await fetch(`/api/referral?clientId=${clientId}`);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch referrals data: ${response.status}`);
+			}
+
+			const referralsData = await response.json();
+			setReferrals(referralsData?.list);
+		} catch (error) {
+			console.error("Error fetching user's referrals data from 1C:", error);
+		}
+	};
+
 	useEffect(() => {
+		fetchUserReferrals();
 		fetchBonusProgramData();
-	}, []);
+	}, [data]);
 
 	useEffect(() => {
 		if (!tg) return;
@@ -158,7 +191,6 @@ export default function ReferralPage() {
 							))}
 						</Tabs>
 					</div>
-
 					{/* referal qr code */}
 					<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
 						<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
@@ -189,6 +221,43 @@ export default function ReferralPage() {
 								<Forward /> Ulashish
 							</RippleButton>
 						</div>
+					</div>
+
+					{/* referrals block */}
+					<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
+						<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
+							<ReceiptText className="size-5" />
+							Referallar
+						</h2>
+						{loading ? (
+							<div className="flex flex-col items-center">
+								<Loading />
+							</div>
+						) : (
+							<div className="mt-2">
+								<Table>
+									<TableCaption>Sizning taklif qilingan referralaringiz.</TableCaption>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="w-[100px]">Raqam</TableHead>
+											<TableHead>Ism</TableHead>
+											<TableHead>Statusi</TableHead>
+											<TableHead>Sana</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{referrals.map((referral: IReferral) => (
+											<TableRow key={referral.id}>
+												<TableCell className="font-medium">{referral.phone}</TableCell>
+												<TableCell>{referral.imya}</TableCell>
+												<TableCell>{referral.contract}</TableCell>
+												<TableCell>{new Date(referral.chislo).toLocaleDateString("uz-UZ")}</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+						)}
 					</div>
 				</>
 			) : (
