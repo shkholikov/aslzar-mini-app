@@ -12,18 +12,20 @@ type LinkItemProps = {
 
 export function Link({ title, href, icon: Icon, rightIcon: RightIcon = ChevronRightIcon }: LinkItemProps) {
 	return (
-		<Item variant="outline" size="sm" asChild>
-			<a href={href}>
-				<ItemMedia>
-					<Icon className="size-5" />
-				</ItemMedia>
-				<ItemContent>
-					<ItemTitle>{title}</ItemTitle>
-				</ItemContent>
-				<ItemActions>
-					<RightIcon className="size-4" />
-				</ItemActions>
-			</a>
-		</Item>
+		<div className="m-2">
+			<Item variant="outline" size="sm" asChild>
+				<a href={href}>
+					<ItemMedia>
+						<Icon className="size-5" />
+					</ItemMedia>
+					<ItemContent>
+						<ItemTitle>{title}</ItemTitle>
+					</ItemContent>
+					<ItemActions>
+						<RightIcon className="size-4" />
+					</ItemActions>
+				</a>
+			</Item>
+		</div>
 	);
 }
