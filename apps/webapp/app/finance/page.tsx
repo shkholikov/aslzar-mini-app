@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/common/header";
 import { Loading } from "@/components/common/loading";
-import { Message } from "@/components/common/message";
+import { Message } from "./components/message";
 import { Badge } from "@/components/ui/badge";
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

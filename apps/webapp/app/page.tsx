@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { Profile } from "@/components/profile";
+import { Profile } from "@/components/common/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { Link } from "@/components/common/link";
 import { Gem } from "lucide-react";
 import { BonusPrograms } from "@/components/common/bonus-programs";
-import { PlatformInfo } from "@/components/common/platform-info";
-import { UserInfo } from "@/components/common/user-info";
-import { News } from "@/components/common/news";
-import { DataLoading } from "@/components/common/data-loading";
+import { DataLoading } from "@/components/data-loading";
+import { PlatformInfo } from "@/components/platform-info";
+import { UserInfo } from "@/components/user-info";
+import { News } from "@/components/news";
 
 export default function HomePage() {
 	const pathname = usePathname();

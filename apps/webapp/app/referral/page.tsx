@@ -2,7 +2,7 @@
 
 import { Header } from "@/components/common/header";
 import { Loading } from "@/components/common/loading";
-import { QRCodeGenerator } from "@/components/common/qrcode-generator";
+import { QRCodeGenerator } from "./components/qrcode-generator";
 import { BonusPrograms } from "@/components/common/bonus-programs";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";

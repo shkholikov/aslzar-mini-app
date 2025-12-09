@@ -1,7 +1,7 @@
 "use client";
 
 import { InfoIcon } from "lucide-react";
-import { SectionCard } from "./section-card";
+import { SectionCard } from "@/components/common/section-card";
 
 export function PlatformInfo() {
 	return (

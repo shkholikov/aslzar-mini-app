@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from "react";
-import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface AlertCreatorProps {
 	icon: ElementType;
@@ -16,3 +16,4 @@ export function Message({ icon: Icon, title, description }: AlertCreatorProps) {
 		</Alert>
 	);
 }
+

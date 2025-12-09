@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { BadgeCheckIcon, BadgeInfo, BadgeXIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import { Separator } from "./ui/separator";
-import { Spinner } from "./ui/spinner";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Badge } from "../ui/badge";
+import { Separator } from "../ui/separator";
+import { Spinner } from "../ui/spinner";
 import { useUser } from "@/hooks/useUser";
-import { Loading } from "./common/loading";
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "./ui/item";
-import { RippleButton } from "./ui/shadcn-io/ripple-button";
+import { Loading } from "./loading";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "../ui/item";
+import { RippleButton } from "../ui/shadcn-io/ripple-button";
 import { useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 

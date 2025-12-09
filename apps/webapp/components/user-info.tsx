@@ -2,7 +2,7 @@
 
 import { useUser } from "@/hooks/useUser";
 import { User } from "lucide-react";
-import { SectionCard } from "./section-card";
+import { SectionCard } from "@/components/common/section-card";
 
 export function UserInfo() {
 	const { data } = useUser();
@@ -23,3 +23,4 @@ export function UserInfo() {
 		</SectionCard>
 	);
 }
+

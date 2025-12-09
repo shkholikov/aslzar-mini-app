@@ -1,7 +1,7 @@
 "use client";
 import { navigationItems } from "@/lib/navigation";
 import { useRouter } from "next/navigation";
-import { MenuDock } from "../ui/shadcn-io/menu-dock";
+import { MenuDock } from "@/components/ui/shadcn-io/menu-dock";
 import { useTelegram } from "@/hooks/useTelegram";
 
 export function Menu() {
@@ -21,3 +21,4 @@ export function Menu() {
 		</div>
 	);
 }
+

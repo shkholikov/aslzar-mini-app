@@ -8,3 +8,4 @@ interface IQRCodeGenerator {
 export function QRCodeGenerator({ href }: IQRCodeGenerator) {
 	return <QRCode className="size-48 rounded border bg-white p-4 shadow-xs" data={href} />;
 }
+

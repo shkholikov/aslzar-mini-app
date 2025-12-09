@@ -1,5 +1,5 @@
 import { ChevronRightIcon } from "lucide-react";
-import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "../ui/item";
+import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import type { ElementType, ReactNode } from "react";
 
 type LinkItemProps = {
@@ -7,7 +7,6 @@ type LinkItemProps = {
 	href: string;
 	icon: ElementType;
 	rightIcon?: ElementType;
-	className?: string;
 };
 
 export function Link({ title, href, icon: Icon, rightIcon: RightIcon = ChevronRightIcon }: LinkItemProps) {

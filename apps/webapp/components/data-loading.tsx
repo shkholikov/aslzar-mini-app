@@ -1,4 +1,4 @@
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DataLoading() {
 	return (
@@ -11,3 +11,4 @@ export function DataLoading() {
 		</div>
 	);
 }
+
