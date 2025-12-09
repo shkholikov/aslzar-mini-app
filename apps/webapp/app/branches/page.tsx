@@ -5,10 +5,13 @@ import { Loading } from "@/components/common/loading";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
-import { ChevronRightIcon, MapPinned, Phone, Store, StoreIcon } from "lucide-react";
+import { useTelegram } from "@/hooks/useTelegram";
+import { CopyCheck, MapPinned, Phone, Store, StoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function BranchesPage() {
+	const tg = useTelegram();
 	const [dataLoaded, setDataLoaded] = useState(false);
 	const [branches, setBranches] = useState<{ id: number; name: string; address: string; phone1?: string; phone2?: string }[]>([]);
 
@@ -32,6 +35,14 @@ export default function BranchesPage() {
 	useEffect(() => {
 		fetchBranchData();
 	}, []);
+
+	function handleCopyPhone(phone?: string) {
+		tg?.HapticFeedback?.impactOccurred("light");
+		if (phone) {
+			navigator.clipboard.writeText(phone);
+			toast.success("Raqam nusxasi olindi!");
+		}
+	}
 
 	return (
 		<div className="pt-12">
@@ -72,8 +83,8 @@ export default function BranchesPage() {
 													<ItemContent>
 														<ItemTitle>{branch.phone1}</ItemTitle>
 													</ItemContent>
-													<ItemActions>
-														<ChevronRightIcon className="size-4" />
+													<ItemActions onClick={() => handleCopyPhone(branch.phone1)}>
+														<CopyCheck className="size-4" />
 													</ItemActions>
 												</a>
 											</Item>
@@ -89,8 +100,8 @@ export default function BranchesPage() {
 													<ItemContent>
 														<ItemTitle>{branch.phone2}</ItemTitle>
 													</ItemContent>
-													<ItemActions>
-														<ChevronRightIcon className="size-4" />
+													<ItemActions onClick={() => handleCopyPhone(branch.phone2)}>
+														<CopyCheck className="size-4" />
 													</ItemActions>
 												</a>
 											</Item>
