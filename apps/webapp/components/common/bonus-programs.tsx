@@ -1,11 +1,11 @@
 "use client";
 
-import { Loading } from "@/components/common/loading";
 import { SectionCard } from "@/components/common/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTelegram } from "@/hooks/useTelegram";
 import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Loading } from "./loading";
 
 export interface IBonusProgram {
 	uroven: string;
@@ -76,34 +76,34 @@ export function BonusPrograms() {
 		fetchBonusProgramData();
 	}, []);
 
+	if (loading) return <Loading />;
+
+	if (!bonusProgramList || bonusProgramList.length === 0) return null;
+
 	return (
 		<SectionCard icon={Trophy} title="Bonus darajalari haqida">
-			{loading ? (
-				<Loading />
-			) : (
-				<Tabs defaultValue={bonusProgramList[0]?.uroven} className="w-full items-center">
-					<TabsList>
-						{bonusProgramList.map((program) => (
-							<TabsTrigger key={program.uroven} value={program.uroven} onClick={() => tg?.HapticFeedback?.impactOccurred("light")}>
-								{program.uroven}
-							</TabsTrigger>
-						))}
-					</TabsList>
+			<Tabs defaultValue={bonusProgramList[0]?.uroven} className="w-full items-center">
+				<TabsList>
 					{bonusProgramList.map((program) => (
-						<TabsContent key={program.uroven} value={program.uroven}>
-							<strong className="text-sm">{programs[program.uroven as keyof typeof programs].description}</strong>
-							<ul className="text-sm list-disc pl-5">
-								{programs[program.uroven as keyof typeof programs].benefits.map((benefit: string, idx: number) => (
-									<li key={idx}>{benefit}</li>
-								))}
-							</ul>
-							<p className="text-sm">
-								<strong>Shartlar:</strong> {programs[program.uroven as keyof typeof programs].requirement}
-							</p>
-						</TabsContent>
+						<TabsTrigger key={program.uroven} value={program.uroven} onClick={() => tg?.HapticFeedback?.impactOccurred("light")}>
+							{program.uroven}
+						</TabsTrigger>
 					))}
-				</Tabs>
-			)}
+				</TabsList>
+				{bonusProgramList.map((program) => (
+					<TabsContent key={program.uroven} value={program.uroven}>
+						<strong className="text-sm">{programs[program.uroven as keyof typeof programs].description}</strong>
+						<ul className="text-sm list-disc pl-5">
+							{programs[program.uroven as keyof typeof programs].benefits.map((benefit: string, idx: number) => (
+								<li key={idx}>{benefit}</li>
+							))}
+						</ul>
+						<p className="text-sm">
+							<strong>Shartlar:</strong> {programs[program.uroven as keyof typeof programs].requirement}
+						</p>
+					</TabsContent>
+				))}
+			</Tabs>
 		</SectionCard>
 	);
 }

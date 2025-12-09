@@ -3,9 +3,12 @@
 import { useUser } from "@/hooks/useUser";
 import { User } from "lucide-react";
 import { SectionCard } from "@/components/common/section-card";
+import { Loading } from "./common/loading";
 
 export function UserInfo() {
-	const { data } = useUser();
+	const { data, loading } = useUser();
+
+	if (loading) return <Loading />;
 
 	if (!data || data.code !== 0) return null;
 
@@ -23,4 +26,3 @@ export function UserInfo() {
 		</SectionCard>
 	);
 }
-
