@@ -4,11 +4,9 @@ import { useEffect } from "react";
 import { Profile } from "@/components/common/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
-import { useUser } from "@/hooks/useUser";
 import { Link } from "@/components/common/link";
 import { Gem } from "lucide-react";
 import { BonusPrograms } from "@/components/common/bonus-programs";
-import { DataLoading } from "@/components/data-loading";
 import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
@@ -17,7 +15,6 @@ export default function HomePage() {
 	const pathname = usePathname();
 	const router = useRouter();
 	const tg = useTelegram();
-	const { loading } = useUser();
 
 	useEffect(() => {
 		if (!tg) return;
@@ -31,17 +28,13 @@ export default function HomePage() {
 		<main className="flex flex-col items-center min-h-screen pt-12">
 			<>
 				<Profile />
-				{loading ? (
-					<DataLoading />
-				) : (
-					<div>
-						<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
-						<PlatformInfo />
-						<UserInfo />
-						<News />
-						<BonusPrograms />
-					</div>
-				)}
+				<div>
+					<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+					<PlatformInfo />
+					<UserInfo />
+					<News />
+					<BonusPrograms />
+				</div>
 			</>
 		</main>
 	);
