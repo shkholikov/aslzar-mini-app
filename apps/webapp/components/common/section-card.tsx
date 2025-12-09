@@ -11,7 +11,7 @@ interface SectionCardProps {
 
 export function SectionCard({ icon: Icon, title, children }: SectionCardProps) {
 	return (
-		<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
+		<div className="border rounded-lg bg-muted/50 bg-transparent m-2 p-4">
 			<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
 				<Icon className="size-5" />
 				{title}

@@ -9,11 +9,12 @@ interface AlertCreatorProps {
 
 export function Message({ icon: Icon, title, description }: AlertCreatorProps) {
 	return (
-		<Alert>
-			<Icon />
-			<AlertTitle>{title}</AlertTitle>
-			<AlertDescription>{description}</AlertDescription>
-		</Alert>
+		<div className="m-2">
+			<Alert>
+				<Icon />
+				<AlertTitle>{title}</AlertTitle>
+				<AlertDescription>{description}</AlertDescription>
+			</Alert>
+		</div>
 	);
 }
-
