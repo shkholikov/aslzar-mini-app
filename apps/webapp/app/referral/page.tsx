@@ -109,7 +109,7 @@ export default function ReferralPage() {
 				</h2>
 				<div className="text-sm text-gray-700 mb-2">
 					<p>
-						<strong>Do'stlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
+						<strong>Doʻstlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
 					</p>
 				</div>
 				<div className="flex flex-col items-center justify-center">
