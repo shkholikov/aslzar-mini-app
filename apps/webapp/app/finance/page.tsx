@@ -1,27 +1,42 @@
 "use client";
 
 import { Header } from "@/components/common/header";
-import { Message } from "./components/message";
 import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
+import { DataLoading } from "@/components/common/data-loading";
 import { useUser } from "@/hooks/useUser";
-import { Briefcase, UserRoundX } from "lucide-react";
+import { Briefcase } from "lucide-react";
+import { CallToActionItem } from "@/components/common/call-to-action-item";
+import { useTelegram } from "@/hooks/useTelegram";
+import { useRouter } from "next/navigation";
 
 export default function FinancePage() {
 	const { data, loading } = useUser();
+	const tg = useTelegram();
+	const router = useRouter();
 
 	return (
 		<div className="pt-12">
-			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko’rsatiladi." icon={Briefcase} />
+			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko'rsatiladi." icon={Briefcase} />
 			<div>
-				<FinancialStatistics data={data} loading={loading} />
-				<Contracts contracts={data?.contract?.ids || []} loading={loading} />
-
-				<Message
-					icon={UserRoundX}
-					title="Moliyaviy ma’lumotlar topilmadi."
-					description="Sizning moliyaviy ma’lumotlaringiz hozircha topilmadi. Iltimos, platformada to’liq ro’yxatdan o’tganingizga ishonch hosil qiling."
-				/>
+				{loading ? (
+					<DataLoading />
+				) : data && data.code === 0 ? (
+					<>
+						<FinancialStatistics data={data} loading={loading} />
+						<Contracts contracts={data?.contract?.ids || []} loading={loading} />
+					</>
+				) : (
+					<CallToActionItem
+						title="Siz hali ASLZAR mijozi emassiz."
+						description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
+						buttonText="Kirish"
+						onButtonClick={() => {
+							router.push("/register");
+							tg?.HapticFeedback?.impactOccurred("light");
+						}}
+					/>
+				)}
 			</div>
 		</div>
 	);

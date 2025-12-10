@@ -4,17 +4,21 @@ import { useEffect } from "react";
 import { Profile } from "@/components/common/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useUser } from "@/hooks/useUser";
 import { Link } from "@/components/common/link";
 import { Gem } from "lucide-react";
 import { BonusPrograms } from "@/components/common/bonus-programs";
 import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
+import { CallToActionItem } from "@/components/common/call-to-action-item";
+import { DataLoading } from "@/components/common/data-loading";
 
 export default function HomePage() {
+	const { data, loading } = useUser();
+	const tg = useTelegram();
 	const pathname = usePathname();
 	const router = useRouter();
-	const tg = useTelegram();
 
 	useEffect(() => {
 		if (!tg) return;
@@ -31,9 +35,25 @@ export default function HomePage() {
 				<div>
 					<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
 					<PlatformInfo />
-					<UserInfo />
-					<News />
-					<BonusPrograms />
+					{loading ? (
+						<DataLoading />
+					) : data && data.code === 0 ? (
+						<>
+							<UserInfo />
+							<News />
+							<BonusPrograms />
+						</>
+					) : (
+						<CallToActionItem
+							title="Siz hali ASLZAR mijozi emassiz."
+							description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
+							buttonText="Kirish"
+							onButtonClick={() => {
+								router.push("/register");
+								tg?.HapticFeedback?.impactOccurred("light");
+							}}
+						/>
+					)}
 				</div>
 			</>
 		</main>

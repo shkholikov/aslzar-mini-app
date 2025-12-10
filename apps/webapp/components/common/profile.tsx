@@ -1,19 +1,17 @@
 import { useEffect, useState } from "react";
-import { BadgeCheckIcon, BadgeInfo, BadgeXIcon } from "lucide-react";
+import { BadgeCheckIcon, BadgeXIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { Spinner } from "../ui/spinner";
 import { useUser } from "@/hooks/useUser";
 import { Loading } from "./loading";
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "../ui/item";
-import { RippleButton } from "../ui/shadcn-io/ripple-button";
 import { useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 
 const DEFAULT_PROFILE_INFO = {
 	verified: false,
-	uroven: "Aniqlanmagan",
+	uroven: "Silver",
 	nachislenie: "0",
 	contracts: 0
 };
@@ -54,58 +52,43 @@ export function Profile() {
 				<span>
 					<h4 className="text-center font-semibold tracking-tight">ASLZAR platformasiga xush kelibsiz!</h4>
 				</span>
-				{loading ? (
-					<div className="flex justify-center my-2">
-						<Loading />
-					</div>
-				) : (
-					<div className="mx-2">
-						<div className="flex justify-center my-2">
-							{profileInfo.verified ? (
-								<Badge variant="secondary" className="bg-blue-500 text-white">
-									<BadgeCheckIcon />
-									Tasdiqlangan Mijoz
-								</Badge>
-							) : (
-								<Badge variant="secondary" className="bg-amber-400 text-white">
-									<BadgeXIcon />
-									Tasdiqlanmagan Mijoz
-								</Badge>
-							)}
-						</div>
-						<Separator className="my-2" />
-						{profileInfo.verified ? (
-							<div className="flex h-5 items-center space-x-4 text-sm">
-								<Badge variant="outline">Level: {profileInfo.uroven}</Badge>
-								<Separator orientation="vertical" />
-								<Badge variant="outline">Cachback: {profileInfo.nachislenie}</Badge>
-								<Separator orientation="vertical" />
-								<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
-							</div>
+
+				<div className="mx-2">
+					<div className="flex justify-center">
+						{loading ? (
+							<Loading />
+						) : profileInfo.verified ? (
+							<Badge variant="secondary" className="bg-blue-500 text-white my-2">
+								<BadgeCheckIcon />
+								Tasdiqlangan Mijoz
+							</Badge>
 						) : (
-							<Item variant="outline">
-								<ItemMedia>
-									<BadgeInfo className="size-5" />
-								</ItemMedia>
-								<ItemContent>
-									<ItemTitle>Siz hali ASLZAR mijozi emassiz.</ItemTitle>
-									<ItemDescription>Ro‘yxatdan o‘ting va Aslzar mijoziga aylaning!</ItemDescription>
-								</ItemContent>
-								<ItemActions>
-									<RippleButton
-										variant="outline"
-										onClick={() => {
-											router.push("/register");
-											tg?.HapticFeedback?.impactOccurred("light");
-										}}
-									>
-										Kirish
-									</RippleButton>
-								</ItemActions>
-							</Item>
+							<Badge variant="secondary" className="bg-amber-400 text-white my-2">
+								<BadgeXIcon />
+								Tasdiqlanmagan Mijoz
+							</Badge>
 						)}
 					</div>
-				)}
+					<Separator className="my-2" />
+
+					<div className="flex justify-center items-center h-5 space-x-4 text-sm">
+						<Badge variant="outline">Level: {profileInfo.uroven}</Badge>
+						<Separator orientation="vertical" />
+						<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
+						<Separator orientation="vertical" />
+						<Badge variant="outline">Cachback: {profileInfo.nachislenie}</Badge>
+					</div>
+
+					{/* <CallToActionItem
+						title="Siz hali ASLZAR mijozi emassiz."
+						description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
+						buttonText="Kirish"
+						onButtonClick={() => {
+							router.push("/register");
+							tg?.HapticFeedback?.impactOccurred("light");
+						}}
+					/> */}
+				</div>
 			</div>
 		</>
 	);
