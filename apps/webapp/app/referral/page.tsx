@@ -30,11 +30,13 @@ export default function ReferralPage() {
 	const { data, loading } = useUser();
 	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
 	const [referrals, setReferrals] = useState<IReferral[]>([]);
+	const [referralsLoading, setReferralsLoading] = useState(false);
 
 	useEffect(() => {
 		const fetchUserReferrals = async () => {
 			if (!data) return;
 			try {
+				setReferralsLoading(true);
 				const clientId = data.clientId;
 
 				const response = await fetch(`/api/referral?clientId=${clientId}`);
@@ -48,6 +50,8 @@ export default function ReferralPage() {
 				setReferrals(referralsData?.list);
 			} catch (error) {
 				console.error("Error fetching user's referrals data from 1C:", error);
+			} finally {
+				setReferralsLoading(false);
 			}
 		};
 
@@ -106,7 +110,7 @@ export default function ReferralPage() {
 				<>
 					<BonusInfo />
 					<ReferralQRCode referralLink={referralLink} preparedMessageId={preparedMessageId} onCopy={handleCopy} onShare={handleShare} />
-					<ReferralsList referrals={referrals} />
+					<ReferralsList referrals={referrals} loading={referralsLoading} />
 				</>
 			) : (
 				<CallToActionItem

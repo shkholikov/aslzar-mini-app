@@ -17,14 +17,14 @@ export function BonusInfo() {
 		<SectionCard icon={ReceiptText} title="Bonus ma'lumotlari">
 			<div className="flex flex-wrap justify-center items-center gap-3 mt-2">
 				<Badge variant="outline" className="flex items-center gap-1.5">
-					<Award className="size-3.5" />
-					<span className="font-medium">Daraja:</span>
+					<Award />
+					<span className="font-medium">Level:</span>
 					<span>{level}</span>
 				</Badge>
 				<Badge variant="outline" className="flex items-center gap-1.5">
-					<Coins className="size-3.5" />
+					<Coins />
 					<span className="font-medium">Qoldiq bonus:</span>
-					<span>{remainingBonus}</span>
+					<span>{remainingBonus} so'm</span>
 				</Badge>
 			</div>
 		</SectionCard>
