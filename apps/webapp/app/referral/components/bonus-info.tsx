@@ -24,7 +24,7 @@ export function BonusInfo() {
 				<Badge variant="outline" className="flex items-center gap-1.5">
 					<Coins />
 					<span className="font-medium">Qoldiq bonus:</span>
-					<span>{remainingBonus} so'm</span>
+					<span>{remainingBonus} so&apos;m</span>
 				</Badge>
 			</div>
 		</SectionCard>
