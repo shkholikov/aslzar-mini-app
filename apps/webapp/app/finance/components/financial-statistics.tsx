@@ -92,7 +92,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 						<Calendar1 />
 					</ItemMedia>
 					<ItemContent>
-						<ItemTitle>Joriy oy bo'yicha qarzdorlik</ItemTitle>
+						<ItemTitle>Joriy oy bo’yicha qarzdorlik</ItemTitle>
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
@@ -108,7 +108,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 						<CalendarClockIcon />
 					</ItemMedia>
 					<ItemContent>
-						<ItemTitle>Kechikkan to'lovlar summasi</ItemTitle>
+						<ItemTitle>Kechikkan to’lovlar summasi</ItemTitle>
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>

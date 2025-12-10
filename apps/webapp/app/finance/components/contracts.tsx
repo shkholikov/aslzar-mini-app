@@ -26,7 +26,7 @@ export function Contracts({ contracts, loading }: ContractsProps) {
 					<TableHeader>
 						<TableRow>
 							<TableHead className="w-[100px]">Summa</TableHead>
-							<TableHead>Oylik to'lov</TableHead>
+							<TableHead>Oylik to’lov</TableHead>
 							<TableHead>Muddati</TableHead>
 							<TableHead>Sana</TableHead>
 							<TableHead>Qoldiq</TableHead>
