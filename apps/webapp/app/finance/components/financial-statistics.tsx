@@ -81,7 +81,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					<ItemContent>
 						<ItemDescription>
 							<Badge variant="default" className="bg-blue-500">
-								{data?.debt} so'm
+								{data?.debt} so&apos;m
 							</Badge>
 						</ItemDescription>
 					</ItemContent>
@@ -92,12 +92,12 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 						<Calendar1 />
 					</ItemMedia>
 					<ItemContent>
-						<ItemTitle>Joriy oy bo'yicha qarzdorlik</ItemTitle>
+						<ItemTitle>Joriy oy bo&apos;yicha qarzdorlik</ItemTitle>
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
 							<Badge variant="default" className="bg-blue-500">
-								{data?.remain} so'm
+								{data?.remain} so&apos;m
 							</Badge>
 						</ItemDescription>
 					</ItemContent>
@@ -108,12 +108,12 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 						<CalendarClockIcon />
 					</ItemMedia>
 					<ItemContent>
-						<ItemTitle>Kechikkan to'lovlar summasi</ItemTitle>
+						<ItemTitle>Kechikkan to&apos;lovlar summasi</ItemTitle>
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
 							<Badge variant="default" className="bg-blue-500">
-								{data?.latePayment} so'm
+								{data?.latePayment} so&apos;m
 							</Badge>
 						</ItemDescription>
 					</ItemContent>

@@ -6,7 +6,6 @@ import { Separator } from "../ui/separator";
 import { Spinner } from "../ui/spinner";
 import { useUser } from "@/hooks/useUser";
 import { Loading } from "./loading";
-import { useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 
 const DEFAULT_PROFILE_INFO = {
@@ -19,7 +18,6 @@ const DEFAULT_PROFILE_INFO = {
 export function Profile() {
 	const tg = useTelegram();
 	const { data, loading } = useUser();
-	const router = useRouter();
 	const [profileInfo, setProfileInfo] = useState(DEFAULT_PROFILE_INFO);
 
 	const userData = tg?.initDataUnsafe?.user;
