@@ -3,6 +3,7 @@ import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator
 import { SectionCard } from "@/components/common/section-card";
 import { BookX, Calendar1, CalendarClockIcon, ChartAreaIcon, FileCheckIcon, HandCoinsIcon, ReceiptTextIcon } from "lucide-react";
 import { Loading } from "@/components/common/loading";
+import { cn } from "@/lib/utils";
 
 interface FinancialStatisticsProps {
 	data: {
@@ -55,6 +56,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 						</ItemDescription>
 					</ItemContent>
 				</Item>
+				<ItemSeparator />
 				<Item>
 					<ItemMedia variant="icon">
 						<BookX />
@@ -80,7 +82,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default" className="bg-blue-500">
+							<Badge variant="default" className={cn(data?.debt && data?.debt > 0 ? "bg-amber-400" : "bg-blue-500")}>
 								{data?.debt} so&apos;m
 							</Badge>
 						</ItemDescription>
@@ -96,7 +98,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default" className="bg-blue-500">
+							<Badge variant="default" className={cn(data?.remain && data?.remain > 0 ? "bg-amber-400" : "bg-blue-500")}>
 								{data?.remain} so&apos;m
 							</Badge>
 						</ItemDescription>
@@ -112,7 +114,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default" className="bg-blue-500">
+							<Badge variant="default" className={cn(data?.latePayment && data?.latePayment > 0 ? "bg-amber-400" : "bg-blue-500")}>
 								{data?.latePayment} so&apos;m
 							</Badge>
 						</ItemDescription>
