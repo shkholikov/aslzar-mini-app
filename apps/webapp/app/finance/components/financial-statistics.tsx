@@ -33,7 +33,9 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default">{data?.contract?.active} ta</Badge>
+							<Badge variant="destructive" className="bg-blue-500">
+								{data?.contract?.active} ta
+							</Badge>
 						</ItemDescription>
 					</ItemContent>
 				</Item>
@@ -47,7 +49,9 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default">{data?.contract?.ended} ta</Badge>
+							<Badge variant="default" className="bg-blue-500">
+								{data?.contract?.ended} ta
+							</Badge>
 						</ItemDescription>
 					</ItemContent>
 				</Item>
@@ -60,7 +64,9 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default">{data?.contract?.returned} ta</Badge>
+							<Badge variant="default" className="bg-blue-500">
+								{data?.contract?.returned} ta
+							</Badge>
 						</ItemDescription>
 					</ItemContent>
 				</Item>
@@ -74,7 +80,9 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default">{data?.debt} so'm</Badge>
+							<Badge variant="default" className="bg-blue-500">
+								{data?.debt} so'm
+							</Badge>
 						</ItemDescription>
 					</ItemContent>
 				</Item>
@@ -88,7 +96,9 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default">{data?.remain} so'm</Badge>
+							<Badge variant="default" className="bg-blue-500">
+								{data?.remain} so'm
+							</Badge>
 						</ItemDescription>
 					</ItemContent>
 				</Item>
@@ -102,7 +112,9 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
-							<Badge variant="default">{data?.latePayment} so'm</Badge>
+							<Badge variant="default" className="bg-blue-500">
+								{data?.latePayment} so'm
+							</Badge>
 						</ItemDescription>
 					</ItemContent>
 				</Item>

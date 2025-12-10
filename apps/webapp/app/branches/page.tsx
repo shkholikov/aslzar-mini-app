@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components/common/header";
-import { Loading } from "@/components/common/loading";
+import { SectionCard } from "@/components/common/section-card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Separator } from "@/components/ui/separator";
@@ -9,14 +9,16 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { CopyCheck, MapPinned, Phone, Store, StoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Loading } from "@/components/common/loading";
 
 export default function BranchesPage() {
 	const tg = useTelegram();
-	const [dataLoaded, setDataLoaded] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [branches, setBranches] = useState<{ id: number; name: string; address: string; phone1?: string; phone2?: string }[]>([]);
 
 	const fetchBranchData = async () => {
 		try {
+			setLoading(true);
 			const response = await fetch("/api/branches");
 			console.log(response);
 
@@ -26,9 +28,10 @@ export default function BranchesPage() {
 
 			const responseData = await response.json();
 			setBranches(responseData);
-			setDataLoaded(true);
 		} catch (error) {
-			console.error("Error fetching 1C user data:", error);
+			console.error("Error fetching branch data:", error);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -46,22 +49,18 @@ export default function BranchesPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Filiallar" description="Filiallar va manzillar ro‘yhati shu yerda ko‘rsatiladi." icon={StoreIcon} />
-			{dataLoaded ? (
-				<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
-					<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
-						<MapPinned className="size-5" />
-						Bizning Filiallar
-					</h2>
-					<div className="text-sm text-gray-700 mb-2">
-						<p>
-							<strong>Bizning filiallar manzillari va telefon raqamlari:</strong>
-						</p>
-					</div>
-					{branches?.map((branch) => {
-						return (
-							<Accordion key={branch.id} type="single" collapsible>
-								<AccordionItem value="item-1">
+			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." icon={StoreIcon} />
+			{loading ? (
+				<Loading />
+			) : (
+				<SectionCard icon={MapPinned} title="Bizning Filiallar">
+					<p className="mb-2">
+						<strong>Bizning filiallar manzillari va telefon raqamlari:</strong>
+					</p>
+					<Accordion type="single" collapsible>
+						{branches?.map((branch) => {
+							return (
+								<AccordionItem key={branch.id} value={`branch-${branch.id}`}>
 									<AccordionTrigger>{branch.name}</AccordionTrigger>
 									<AccordionContent>
 										<Item>
@@ -109,14 +108,10 @@ export default function BranchesPage() {
 									)}
 									<Separator />
 								</AccordionItem>
-							</Accordion>
-						);
-					})}
-				</div>
-			) : (
-				<div className="flex flex-col items-center">
-					<Loading />
-				</div>
+							);
+						})}
+					</Accordion>
+				</SectionCard>
 			)}
 		</div>
 	);

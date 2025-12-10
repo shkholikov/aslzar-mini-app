@@ -78,16 +78,6 @@ export function Profile() {
 						<Separator orientation="vertical" />
 						<Badge variant="outline">Cachback: {profileInfo.nachislenie}</Badge>
 					</div>
-
-					{/* <CallToActionItem
-						title="Siz hali ASLZAR mijozi emassiz."
-						description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
-						buttonText="Kirish"
-						onButtonClick={() => {
-							router.push("/register");
-							tg?.HapticFeedback?.impactOccurred("light");
-						}}
-					/> */}
 				</div>
 			</div>
 		</>
