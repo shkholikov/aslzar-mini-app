@@ -16,7 +16,7 @@ export function SectionCard({ icon: Icon, title, children }: SectionCardProps) {
 				<Icon className="size-5" />
 				{title}
 			</h2>
-			<div className="text-sm text-gray-700 mb-2">{children}</div>
+			<div className="mb-2">{children}</div>
 		</div>
 	);
 }
