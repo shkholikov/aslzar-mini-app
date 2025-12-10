@@ -1,18 +1,16 @@
 "use client";
 
 import { Header } from "@/components/common/header";
-import { DataLoading } from "@/components/common/data-loading";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
-import { QRCodeGenerator } from "./components/qrcode-generator";
-import { Button } from "@/components/ui/button";
-import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ReferralQRCode } from "./components/referral-qr-code";
+import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
-import { CopyCheck, Forward, QrCode, ReceiptText, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Loading } from "@/components/common/loading";
 
 interface IReferral {
 	id: string;
@@ -102,71 +100,11 @@ export default function ReferralPage() {
 			/>
 
 			{loading ? (
-				<DataLoading />
+				<Loading />
 			) : data && data.code === 0 ? (
 				<>
-					{/* referal qr code */}
-					<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
-						<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
-							<QrCode className="size-5" />
-							Sizning referral QR kodingiz
-						</h2>
-						<div className="text-sm text-gray-700 mb-2">
-							<p>
-								<strong>Doʻstlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
-							</p>
-						</div>
-						<div className="flex flex-col items-center justify-center">
-							<QRCodeGenerator href={referralLink} />
-							<Button variant="link" disabled={true}>
-								{referralLink}
-							</Button>
-						</div>
-						<div className="flex flex-wrap items-center justify-center mt-2 gap-2 md:flex-row">
-							<RippleButton variant="outline" onClick={handleCopy}>
-								<CopyCheck /> Nusxa olish
-							</RippleButton>
-							<RippleButton
-								variant="outline"
-								onClick={handleShare}
-								disabled={!preparedMessageId}
-								title={!preparedMessageId ? "Ulashish uchun hozircha referral tayyorlangan emas" : undefined}
-							>
-								<Forward /> Ulashish
-							</RippleButton>
-						</div>
-					</div>
-
-					{/* referrals block */}
-					<div className="m-2 border rounded-lg bg-muted/50 bg-transparent p-4">
-						<h2 className="flex items-center gap-2 font-semibold text-xl mb-2">
-							<ReceiptText className="size-5" />
-							Referallar
-						</h2>
-						<div className="mt-2">
-							<Table>
-								<TableCaption>Sizning taklif qilingan referralaringiz.</TableCaption>
-								<TableHeader>
-									<TableRow>
-										<TableHead className="w-[100px]">Raqam</TableHead>
-										<TableHead>Ism</TableHead>
-										<TableHead>Statusi</TableHead>
-										<TableHead>Sana</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{referrals.map((referral: IReferral) => (
-										<TableRow key={referral.id}>
-											<TableCell className="font-medium">{referral.phone}</TableCell>
-											<TableCell>{referral.imya || "Nomaʼlum"}</TableCell>
-											<TableCell>{referral.contract ? "Xarid qilgan" : "Xarid qilmagan"}</TableCell>
-											<TableCell>{new Date(referral.chislo).toLocaleDateString("uz-UZ")}</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
-					</div>
+					<ReferralQRCode referralLink={referralLink} preparedMessageId={preparedMessageId} onCopy={handleCopy} onShare={handleShare} />
+					<ReferralsList referrals={referrals} />
 				</>
 			) : (
 				<CallToActionItem

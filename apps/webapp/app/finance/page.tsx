@@ -3,12 +3,12 @@
 import { Header } from "@/components/common/header";
 import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
-import { DataLoading } from "@/components/common/data-loading";
 import { useUser } from "@/hooks/useUser";
 import { Briefcase } from "lucide-react";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useRouter } from "next/navigation";
+import { Loading } from "@/components/common/loading";
 
 export default function FinancePage() {
 	const { data, loading } = useUser();
@@ -20,7 +20,7 @@ export default function FinancePage() {
 			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko'rsatiladi." icon={Briefcase} />
 			<div>
 				{loading ? (
-					<DataLoading />
+					<Loading />
 				) : data && data.code === 0 ? (
 					<>
 						<FinancialStatistics data={data} loading={loading} />
