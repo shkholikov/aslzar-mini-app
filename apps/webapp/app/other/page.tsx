@@ -37,7 +37,7 @@ export default function OtherPage() {
 			<SectionCard icon={HelpCircle} title="Ko'p so'raladigan savollar">
 				<FAQ items={faqItems} />
 			</SectionCard>
-			<Link title="ASLZAR Instagram rasmiy sahifasi." href="https://t.me/ASLZAR_tilla" icon={Instagram} />
+			<Link title="ASLZAR Instagram rasmiy sahifasi." href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
 			<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
 		</div>
 	);
