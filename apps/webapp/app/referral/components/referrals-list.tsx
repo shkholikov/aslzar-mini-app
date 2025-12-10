@@ -2,7 +2,7 @@
 
 import { SectionCard } from "@/components/common/section-card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ReceiptText } from "lucide-react";
+import { Users } from "lucide-react";
 
 interface IReferral {
 	id: string;
@@ -21,7 +21,7 @@ interface ReferralsListProps {
 
 export function ReferralsList({ referrals }: ReferralsListProps) {
 	return (
-		<SectionCard icon={ReceiptText} title="Referallar">
+		<SectionCard icon={Users} title="Referallar">
 			<div className="mt-2">
 				<Table>
 					<TableCaption>Sizning taklif qilingan referralaringiz.</TableCaption>
@@ -48,4 +48,3 @@ export function ReferralsList({ referrals }: ReferralsListProps) {
 		</SectionCard>
 	);
 }
-

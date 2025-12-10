@@ -11,6 +11,7 @@ import { Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/common/loading";
+import { BonusInfo } from "./components/bonus-info";
 
 interface IReferral {
 	id: string;
@@ -103,6 +104,7 @@ export default function ReferralPage() {
 				<Loading />
 			) : data && data.code === 0 ? (
 				<>
+					<BonusInfo />
 					<ReferralQRCode referralLink={referralLink} preparedMessageId={preparedMessageId} onCopy={handleCopy} onShare={handleShare} />
 					<ReferralsList referrals={referrals} />
 				</>
