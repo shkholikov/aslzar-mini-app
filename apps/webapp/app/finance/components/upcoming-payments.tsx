@@ -46,7 +46,7 @@ function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment
 		const contractId = contract.contractId || contract.id || "N/A";
 
 		contract.schedule.forEach((item: ScheduleItem) => {
-			if (item.status === true) {
+			if (item.status === false) {
 				upcomingPayments.push({
 					contractId,
 					step: item.step,
