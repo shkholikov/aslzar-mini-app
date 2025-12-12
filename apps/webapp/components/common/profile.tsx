@@ -11,7 +11,7 @@ import { useTelegram } from "@/hooks/useTelegram";
 const DEFAULT_PROFILE_INFO = {
 	verified: false,
 	uroven: "Silver",
-	nachislenie: "0",
+	bonusOstatok: 0,
 	contracts: 0
 };
 
@@ -29,7 +29,7 @@ export function Profile() {
 			setProfileInfo({
 				verified: data.code === 0,
 				uroven: data.bonusInfo.uroven ?? DEFAULT_PROFILE_INFO.uroven,
-				nachislenie: data.bonusInfo.nachislenie ?? DEFAULT_PROFILE_INFO.nachislenie,
+				bonusOstatok: data.bonusOstatok ?? DEFAULT_PROFILE_INFO.bonusOstatok,
 				contracts: data.contract.ids.length ?? DEFAULT_PROFILE_INFO.contracts
 			});
 		} else {
@@ -69,13 +69,12 @@ export function Profile() {
 					</div>
 					<Separator className="my-2" />
 
-					<div className="flex justify-center items-center h-5 space-x-4 text-sm">
+					<div className="flex flex-wrap justify-center items-center gap-2 text-sm">
 						<Badge variant="outline">Level: {profileInfo.uroven}</Badge>
-						<Separator orientation="vertical" />
 						<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
-						<Separator orientation="vertical" />
-						<Badge variant="outline">Cachback: {profileInfo.nachislenie}</Badge>
+						<Badge variant="outline">Bonus: {profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m</Badge>
 					</div>
+					<Separator className="my-2" />
 				</div>
 			</div>
 		</>

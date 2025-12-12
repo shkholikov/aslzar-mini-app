@@ -12,7 +12,7 @@ import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
-import { DataLoading } from "@/components/common/data-loading";
+import { Loading } from "@/components/common/loading";
 
 export default function HomePage() {
 	const { data, loading } = useUser();
@@ -36,7 +36,7 @@ export default function HomePage() {
 					<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
 					<PlatformInfo />
 					{loading ? (
-						<DataLoading />
+						<Loading />
 					) : data && data.code === 0 ? (
 						<>
 							<UserInfo />
