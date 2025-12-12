@@ -3,6 +3,7 @@
 import { Header } from "@/components/common/header";
 import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
+import { UpcomingPayments } from "./components/upcoming-payments";
 import { useUser } from "@/hooks/useUser";
 import { Briefcase } from "lucide-react";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
@@ -24,6 +25,7 @@ export default function FinancePage() {
 				) : data && data.code === 0 ? (
 					<>
 						<FinancialStatistics data={data} loading={loading} />
+						<UpcomingPayments contracts={data?.contract?.ids || []} loading={loading} />
 						<Contracts contracts={data?.contract?.ids || []} loading={loading} />
 					</>
 				) : (
