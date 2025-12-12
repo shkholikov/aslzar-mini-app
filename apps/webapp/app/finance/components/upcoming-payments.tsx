@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SectionCard } from "@/components/common/section-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CalendarClock, ClockAlert } from "lucide-react";
