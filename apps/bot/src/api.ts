@@ -1,4 +1,5 @@
 import { config } from "dotenv";
+import { I1CUserData } from "./types";
 
 config();
 
@@ -12,7 +13,7 @@ const API_PASSWORD = process.env.API_PASSWORD || "";
  * @param phone - Phone number (with or without + prefix)
  * @returns User data if found (status code === 0), null otherwise
  */
-export async function searchUserByPhone(phone: string) {
+export async function searchUserByPhone(phone: string): Promise<Partial<I1CUserData> | null> {
 	try {
 		// Validate environment variables
 		if (!API_BASE_URL || !API_USERNAME || !API_PASSWORD) {
@@ -48,7 +49,7 @@ export async function searchUserByPhone(phone: string) {
 			return null;
 		}
 
-		const data = await response.json();
+		const data = (await response.json()) as Partial<I1CUserData>;
 
 		// Check if status code === 0 (user exists)
 		if (data.code === 0) {

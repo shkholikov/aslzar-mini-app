@@ -4,6 +4,7 @@ import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { checkSubscriptionFlow, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
+import { searchUserByPhone } from "./api";
 
 config();
 
@@ -33,7 +34,8 @@ async function bootstrap() {
 				lastMessageId: undefined,
 				preparedMessageId: undefined,
 				createdAt: new Date(),
-				isVerified: undefined
+				isVerified: undefined,
+				user1CData: undefined
 			}),
 			getSessionKey: (ctx) => {
 				// Use user ID as session key
@@ -76,6 +78,13 @@ async function bootstrap() {
 
 		// Save contact to session
 		ctx.session.phone_number = contact.phone_number;
+
+		// Load 1C user data once when phone is received
+		const user1CData = await searchUserByPhone(contact.phone_number);
+		if (user1CData) {
+			ctx.session.user1CData = user1CData;
+			ctx.session.isVerified = true;
+		}
 
 		// Remove the contact request button
 		await ctx.reply("✅ Telefon raqamingiz qabul qilindi!", {
