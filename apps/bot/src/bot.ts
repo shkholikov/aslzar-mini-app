@@ -32,7 +32,8 @@ async function bootstrap() {
 				isChannelMember: undefined,
 				lastMessageId: undefined,
 				preparedMessageId: undefined,
-				createdAt: new Date()
+				createdAt: new Date(),
+				isVerified: undefined
 			}),
 			getSessionKey: (ctx) => {
 				// Use user ID as session key
@@ -44,6 +45,16 @@ async function bootstrap() {
 
 	// start command
 	bot.command("start", async (ctx) => {
+		// Check if there's a referral code in the start parameter
+		// Format: /start 6764272076
+		const referralCode = ctx.match as string | undefined;
+
+		if (referralCode) {
+			// Handle referral code
+			console.log(ctx.match);
+			console.log(ctx.session.isVerified);
+		}
+
 		if (!ctx.session.preparedMessageId) {
 			await prepareReferralMessage(ctx);
 		}

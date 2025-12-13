@@ -10,6 +10,7 @@ export interface ISessionData {
 	lastMessageId?: number;
 	preparedMessageId?: string;
 	createdAt: Date;
+	isVerified?: boolean;
 }
 
 export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;
