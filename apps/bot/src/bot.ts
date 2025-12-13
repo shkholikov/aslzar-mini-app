@@ -3,7 +3,7 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import { checkSubscriptionFlow, initializeSession, prepareReferralMessage, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
+import { checkSubscriptionFlow, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
 
 config();
 
@@ -53,10 +53,6 @@ async function bootstrap() {
 			// Handle referral code
 			console.log(ctx.match);
 			console.log(ctx.session.isVerified);
-		}
-
-		if (!ctx.session.preparedMessageId) {
-			await prepareReferralMessage(ctx);
 		}
 
 		if (!ctx.session?.phone_number) {
