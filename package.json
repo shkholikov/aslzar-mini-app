@@ -10,6 +10,7 @@
 		"dev:api": "pnpm --filter ./apps/api dev",
 		"dev:bot": "pnpm --filter ./apps/bot dev",
 		"dev:webapp": "pnpm --filter ./apps/webapp dev",
+		"dev:admin": "pnpm --filter ./apps/admin dev",
 		"build": "turbo run build"
 	},
 	"devDependencies": {
