@@ -32,31 +32,31 @@ export default function ReferralPage() {
 	const [referrals, setReferrals] = useState<IReferral[]>([]);
 	const [referralsLoading, setReferralsLoading] = useState(false);
 
-	useEffect(() => {
-		const fetchUserReferrals = async () => {
-			if (!data) return;
-			try {
-				setReferralsLoading(true);
-				const clientId = data.clientId;
+	const fetchUserReferrals = useCallback(async () => {
+		if (!data) return;
+		try {
+			setReferralsLoading(true);
+			const clientId = data.clientId;
 
-				const response = await fetch(`/api/referral?clientId=${clientId}`);
-				if (!response.ok) {
-					throw new Error(`Failed to fetch referrals data: ${response.status}`);
-				}
-
-				const referralsData = await response.json();
-				console.log(referralsData);
-
-				setReferrals(referralsData?.list);
-			} catch (error) {
-				console.error("Error fetching user's referrals data from 1C:", error);
-			} finally {
-				setReferralsLoading(false);
+			const response = await fetch(`/api/referral?clientId=${clientId}`);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch referrals data: ${response.status}`);
 			}
-		};
 
-		fetchUserReferrals();
+			const referralsData = await response.json();
+			console.log(referralsData);
+
+			setReferrals(referralsData?.list);
+		} catch (error) {
+			console.error("Error fetching user's referrals data from 1C:", error);
+		} finally {
+			setReferralsLoading(false);
+		}
 	}, [data]);
+
+	useEffect(() => {
+		fetchUserReferrals();
+	}, [fetchUserReferrals]);
 
 	useEffect(() => {
 		if (!tg) return;
@@ -108,9 +108,16 @@ export default function ReferralPage() {
 				<Loading />
 			) : data && data.code === 0 ? (
 				<>
-					<BonusInfo />
+					<BonusInfo data={data} />
 					<ReferralQRCode referralLink={referralLink} preparedMessageId={preparedMessageId} onCopy={handleCopy} onShare={handleShare} />
-					<ReferralsList referrals={referrals} loading={referralsLoading} />
+					<ReferralsList
+						referrals={referrals}
+						loading={referralsLoading}
+						onReload={() => {
+							fetchUserReferrals();
+							tg?.HapticFeedback?.impactOccurred("light");
+						}}
+					/>
 				</>
 			) : (
 				<CallToActionItem

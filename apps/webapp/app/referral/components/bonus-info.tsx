@@ -2,12 +2,19 @@
 
 import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
-import { useUser } from "@/hooks/useUser";
 import { ReceiptText, Award, Coins } from "lucide-react";
 
-export function BonusInfo() {
-	const { data } = useUser();
+interface BonusInfoProps {
+	data?: {
+		code?: number;
+		bonusInfo?: {
+			uroven?: string;
+		};
+		bonusOstatok?: number;
+	};
+}
 
+export function BonusInfo({ data }: BonusInfoProps) {
 	if (!data || data.code !== 0 || !data.bonusInfo) return null;
 
 	const level = data.bonusInfo.uroven || "N/A";
