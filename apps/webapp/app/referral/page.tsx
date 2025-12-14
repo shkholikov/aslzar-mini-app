@@ -61,7 +61,8 @@ export default function ReferralPage() {
 	useEffect(() => {
 		if (!tg) return;
 
-		const userId = tg.initDataUnsafe.user.id;
+		const userId = tg.initDataUnsafe?.user?.id;
+		if (!userId) return;
 
 		// Always generate a fresh prepared message
 		const generate = async () => {
