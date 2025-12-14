@@ -3,7 +3,7 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import { checkSubscriptionFlow, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
+import { checkSubscriptionFlow, handleReferralCode, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
 import { searchUserByPhone } from "./api";
 
 config();
@@ -47,14 +47,12 @@ async function bootstrap() {
 
 	// start command
 	bot.command("start", async (ctx) => {
-		// Check if there's a referral code in the start parameter
-		// Format: /start 6764272076
+		// Check if there's a referral code in the start parameter | Format: /start 6764272076
 		const referralCode = ctx.match as string | undefined;
 
 		if (referralCode) {
-			// Handle referral code
-			console.log(ctx.match);
-			console.log(ctx.session.isVerified);
+			// Handle referral code - add to referrer's list in 1C
+			await handleReferralCode(ctx, referralCode);
 		}
 
 		if (!ctx.session?.phone_number) {

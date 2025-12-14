@@ -63,3 +63,79 @@ export async function searchUserByPhone(phone: string): Promise<Partial<I1CUserD
 		return null;
 	}
 }
+
+/**
+ * Adds a referral to a user's referral list in 1C API
+ * @param clientId - The referrer's clientId from 1C
+ * @param referredUserId - Telegram user ID of the person who opened the referral link
+ * @param referredUserName - Name of the person (first_name, last_name, or username)
+ * @returns true if successful, false otherwise
+ */
+export async function addReferral(clientId: string, referredUserId: number, referredUserName: string): Promise<boolean> {
+	try {
+		// Validate environment variables
+		if (!API_BASE_URL || !API_USERNAME || !API_PASSWORD) {
+			console.error("1C API configuration is missing");
+			return false;
+		}
+
+		// Format date as DD.MM.YYYY HH:mm:ss
+		// TODO: should be fixed later - date format handling is manual here
+		const now = new Date();
+		const day = String(now.getDate()).padStart(2, "0");
+		const month = String(now.getMonth() + 1).padStart(2, "0");
+		const year = now.getFullYear();
+		const hours = String(now.getHours()).padStart(2, "0");
+		const minutes = String(now.getMinutes()).padStart(2, "0");
+		const seconds = String(now.getSeconds()).padStart(2, "0");
+		const chislo = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+		// ------------------------------------------------------------
+
+		// Build the endpoint URL
+		const endpoint = `${API_BASE_URL}addReferral`;
+
+		// Prepare Basic Auth header
+		const auth = Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString("base64");
+		const headers: HeadersInit = {
+			"Content-Type": "application/json",
+			"Authorization": `Basic ${auth}`
+		};
+
+		// Prepare request body
+		const requestBody = {
+			clientId: clientId,
+			chislo: chislo,
+			familiya: "",
+			imya: referredUserName,
+			otchestvo: "",
+			phone: String(referredUserId)
+		};
+
+		// Call 1C API
+		const response = await fetch(endpoint, {
+			method: "POST",
+			headers,
+			body: JSON.stringify(requestBody)
+		});
+
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error("1C API error (addReferral):", errorText);
+			return false;
+		}
+
+		const result = await response.json();
+
+		// Check if response contains error code (non-zero code means error)
+		if (result.code !== undefined && result.code !== 0) {
+			console.error("1C API error (addReferral):", result.message || "Unknown error", "Code:", result.code);
+			return false;
+		}
+
+		console.log("Referral added successfully:", result);
+		return true;
+	} catch (error) {
+		console.error("Error adding referral to 1C API:", error);
+		return false;
+	}
+}

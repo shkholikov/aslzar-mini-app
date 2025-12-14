@@ -1,6 +1,8 @@
 import { InlineKeyboard, Keyboard } from "grammy";
 import { infoText, subscribeRequestText } from "./messages";
-import { MyContext } from "./types";
+import { ISessionData, MyContext } from "./types";
+import { users } from "./db";
+import { addReferral } from "./api";
 
 const WEBAPP_URL = process.env.WEBAPP_URL || "https://aslzar.uz";
 const CHANNEL_ID = process.env.CHANNEL_ID || "@ASLZAR_tilla";
@@ -111,4 +113,59 @@ export async function prepareReferralMessage(ctx: MyContext) {
 	ctx.session.preparedMessageId = result.id;
 
 	return result.id;
+}
+
+/**
+ * Handles referral code when a user joins via referral link
+ * @param ctx - Bot context (the person who opened the referral link)
+ * @param referralCode - The referral code (Telegram user ID of the referrer)
+ */
+export async function handleReferralCode(ctx: MyContext, referralCode: string) {
+	const currentUserId = ctx.from?.id;
+	if (!currentUserId) return;
+
+	// Parse referral code as number (Telegram user ID)
+	const referrerId = parseInt(referralCode, 10);
+
+	// Validate referral code
+	if (isNaN(referrerId) || referrerId <= 0) {
+		console.log(`Invalid referral code: ${referralCode}`);
+		return;
+	}
+
+	// Don't allow self-referral
+	if (referrerId === currentUserId) {
+		console.log(`User ${currentUserId} tried to refer themselves`);
+		return;
+	}
+
+	try {
+		// Get referrer's session data from database
+		const referrerSession = await users.findOne({ key: referrerId.toString() });
+		if (!referrerSession?.value) {
+			console.log(`Referrer ${referrerId} not found in database`);
+			return;
+		}
+
+		// Access user1CData from session (type assertion needed for MongoDB document)
+		const referrerSessionData = referrerSession.value as Partial<ISessionData>;
+		const referrer1CData = referrerSessionData.user1CData;
+		if (!referrer1CData?.clientId) {
+			console.log(`Referrer ${referrerId} doesn't have clientId in 1C data`);
+			return;
+		}
+
+		// Get referred user's name (first_name, last_name, or username)
+		const referredUserName = ctx.from?.first_name || ctx.from?.last_name || ctx.from?.username || "Nomaʼlum";
+
+		// Add referral to 1C
+		const success = await addReferral(referrer1CData.clientId, currentUserId, referredUserName);
+		if (success) {
+			console.log(`Referral registered: User ${currentUserId} was referred by ${referrerId}`);
+		} else {
+			console.error(`Failed to register referral for user ${currentUserId}`);
+		}
+	} catch (error) {
+		console.error("Error handling referral code:", error);
+	}
 }
