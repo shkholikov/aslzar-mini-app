@@ -1,3 +1,5 @@
+import { Separator } from "@/components/ui/separator";
+import { UsersList } from "@/components/users-list";
 import { Shield } from "lucide-react";
 
 export default function Home() {
@@ -12,7 +14,8 @@ export default function Home() {
 					<span>
 						<p className="text-center mt-2">Aslzar Telegram boti foydalanuvchilarini boshqarish</p>
 					</span>
-					<div className="h-px w-full my-2 bg-[var(--color-border)]" />
+					<Separator className="mt-2" />
+					<UsersList />
 				</div>
 			</div>
 		</main>
