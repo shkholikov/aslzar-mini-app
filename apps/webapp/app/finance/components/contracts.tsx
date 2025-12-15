@@ -40,8 +40,7 @@ export function Contracts({ contracts, loading }: ContractsProps) {
 					<TableHeader>
 						<TableRow>
 							<TableHead className="w-[100px]">Summa</TableHead>
-							<TableHead>Boshlang&apos;ich to&apos;lov</TableHead>
-							<TableHead>Chegirma</TableHead>
+
 							<TableHead>Muddati</TableHead>
 							<TableHead>Sana</TableHead>
 							<TableHead>Qoldiq</TableHead>
@@ -53,8 +52,6 @@ export function Contracts({ contracts, loading }: ContractsProps) {
 							return (
 								<TableRow key={idx}>
 									<TableCell className="font-medium">{contract.sum.toLocaleString("uz-UZ")} so&apos;m</TableCell>
-									<TableCell>{contract.vznos.toLocaleString("uz-UZ")} so&apos;m</TableCell>
-									<TableCell>{contract.skidka.toLocaleString("uz-UZ")} so&apos;m</TableCell>
 									<TableCell>{contract.months} oy</TableCell>
 									<TableCell>{new Date(contract.date).toLocaleDateString("uz-UZ")}</TableCell>
 									<TableCell>{remaining.toLocaleString("uz-UZ")} so&apos;m</TableCell>

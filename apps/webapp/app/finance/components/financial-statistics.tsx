@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item";
 import { SectionCard } from "@/components/common/section-card";
-import { BookX, Calendar1, CalendarClockIcon, ChartAreaIcon, FileCheckIcon, HandCoinsIcon, ReceiptTextIcon } from "lucide-react";
+import { BookX, Calendar1, CalendarClockIcon, ChartAreaIcon, HandCoinsIcon, ReceiptTextIcon } from "lucide-react";
 import { Loading } from "@/components/common/loading";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ interface FinancialStatisticsProps {
 		debt?: number;
 		remain?: number;
 		latePayment?: number;
+		bonusOstatok?: number;
 	};
 	loading: boolean;
 }
@@ -43,31 +44,15 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 				<ItemSeparator />
 				<Item>
 					<ItemMedia variant="icon">
-						<FileCheckIcon />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle>Yopilgan shartnomalar soni</ItemTitle>
-					</ItemContent>
-					<ItemContent>
-						<ItemDescription>
-							<Badge variant="default" className="bg-blue-500">
-								{data?.contract?.ended} ta
-							</Badge>
-						</ItemDescription>
-					</ItemContent>
-				</Item>
-				<ItemSeparator />
-				<Item>
-					<ItemMedia variant="icon">
 						<BookX />
 					</ItemMedia>
 					<ItemContent>
-						<ItemTitle>Qaytgan shartnomalar soni</ItemTitle>
+						<ItemTitle>Bonuslar miqdori</ItemTitle>
 					</ItemContent>
 					<ItemContent>
 						<ItemDescription>
 							<Badge variant="default" className="bg-blue-500">
-								{data?.contract?.returned} ta
+								{data?.bonusOstatok} so&apos;m
 							</Badge>
 						</ItemDescription>
 					</ItemContent>

@@ -7,7 +7,6 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { Link } from "@/components/common/link";
 import { Gem } from "lucide-react";
-import { BonusPrograms } from "@/components/common/bonus-programs";
 import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
@@ -41,7 +40,6 @@ export default function HomePage() {
 						<>
 							<UserInfo />
 							<News />
-							<BonusPrograms />
 						</>
 					) : (
 						<CallToActionItem
