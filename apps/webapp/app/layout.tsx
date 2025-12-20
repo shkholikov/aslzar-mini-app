@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Radley } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
@@ -8,9 +8,10 @@ import { UserProvider } from "@/hooks/useUser";
 import { Toaster } from "sonner";
 import { TelegramGuard } from "@/components/common/telegram-guard";
 
-const geistSans = Geist({
+const geistSans = Radley({
 	variable: "--font-geist-sans",
-	subsets: ["latin"]
+	subsets: ["latin"],
+	weight: "400"
 });
 
 const geistMono = Geist_Mono({

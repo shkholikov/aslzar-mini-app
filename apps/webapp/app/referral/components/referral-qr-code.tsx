@@ -24,7 +24,7 @@ export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShar
 			</p>
 			<div className="flex flex-col items-center justify-center">
 				<QRCodeGenerator href={referralLink} />
-				<Button variant="link" disabled={true}>
+				<Button variant="link" disabled={true} className="text-gray-800">
 					{referralLink}
 				</Button>
 			</div>

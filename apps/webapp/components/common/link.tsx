@@ -12,7 +12,7 @@ type LinkItemProps = {
 export function Link({ title, href, icon: Icon, rightIcon: RightIcon = ChevronRightIcon }: LinkItemProps) {
 	return (
 		<div className="m-2">
-			<Item variant="outline" size="sm" asChild>
+			<Item variant="outline" size="sm" asChild className="rounded-3xl">
 				<a href={href}>
 					<ItemMedia>
 						<Icon className="size-5" />

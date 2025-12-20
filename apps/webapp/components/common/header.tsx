@@ -13,10 +13,10 @@ export function Header({ title, description, icon: Icon }: HeaderProps) {
 	return (
 		<div>
 			<div className="flex flex-items justify-center pb-4">
-				<Icon className="w-12 h-12 text-gray-800" />
+				<Icon className="w-12 h-12 text-primary" strokeWidth={2.5} />
 			</div>
 			<div>
-				<h1 className="text-xl text-center text-gray-800 font-semibold">{title}</h1>
+				<h1 className="text-2xl text-center text-primary font-semibold">{title}</h1>
 				<span>
 					<p className="text-center text-sm text-muted-foreground mt-2">{description}</p>
 				</span>

@@ -4,7 +4,6 @@ import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
-import { Separator } from "@/components/ui/separator";
 import { useTelegram } from "@/hooks/useTelegram";
 import { CopyCheck, MapPinned, Phone, Store, StoreIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -106,7 +105,6 @@ export default function BranchesPage() {
 											</Item>
 										</AccordionContent>
 									)}
-									<Separator />
 								</AccordionItem>
 							);
 						})}
