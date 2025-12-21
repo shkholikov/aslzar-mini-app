@@ -54,7 +54,7 @@ export default function RootLayout({
 				<Script src="/scripts/disableZoom.js" strategy="afterInteractive" />
 			</head>
 			<body
-				className={`${montserratFont.variable} font-sans antialiased bg-gray-50`}
+				className={`${montserratFont.variable} font-sans antialiased`}
 				style={{
 					paddingTop: "var(--tg-content-safe-area-inset-top)",
 					paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px) + 100px)",
