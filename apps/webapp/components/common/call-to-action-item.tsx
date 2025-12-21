@@ -22,7 +22,7 @@ export function CallToActionItem({
 	variant = "outline"
 }: CallToActionItemProps) {
 	return (
-		<Item variant={variant} className="m-2">
+		<Item variant={variant} className="m-2 rounded-3xl">
 			<ItemMedia>
 				<Icon className="size-5" />
 			</ItemMedia>
