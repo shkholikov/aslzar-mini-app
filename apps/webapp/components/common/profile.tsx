@@ -56,12 +56,12 @@ export function Profile() {
 						{loading ? (
 							<Loading />
 						) : profileInfo.verified ? (
-							<Badge variant="secondary" className="bg-blue-500 text-white my-2">
+							<Badge variant="secondary" className="bg-blue-500 text-white my-2 shadow-sm">
 								<BadgeCheckIcon />
 								Tasdiqlangan Mijoz
 							</Badge>
 						) : (
-							<Badge variant="secondary" className="bg-amber-400 text-white my-2">
+							<Badge variant="secondary" className="bg-amber-400 text-white my-2 shadow-sm">
 								<BadgeXIcon />
 								Tasdiqlanmagan Mijoz
 							</Badge>
@@ -70,9 +70,15 @@ export function Profile() {
 					<Separator className="my-2" />
 
 					<div className="flex flex-wrap justify-center items-center gap-2 text-sm">
-						<Badge variant="outline">Level: {profileInfo.uroven}</Badge>
-						<Badge variant="outline">Shartnomalar: {profileInfo.contracts}</Badge>
-						<Badge variant="outline">Bonus: {profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m</Badge>
+						<Badge variant="outline" className="shadow-sm">
+							Level: {profileInfo.uroven}
+						</Badge>
+						<Badge variant="outline" className="shadow-sm">
+							Shartnomalar: {profileInfo.contracts}
+						</Badge>
+						<Badge variant="outline" className="shadow-sm">
+							Bonus: {profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
+						</Badge>
 					</div>
 					<Separator className="my-2" />
 				</div>
