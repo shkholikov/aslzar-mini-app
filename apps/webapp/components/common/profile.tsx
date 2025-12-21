@@ -22,7 +22,7 @@ export function Profile() {
 
 	const userData = tg?.initDataUnsafe?.user;
 	const photo_url = userData?.photo_url || "";
-	const first_name = userData?.first_name || "";
+	const first_name = userData?.first_name || userData?.last_name || "";
 
 	useEffect(() => {
 		if (data && data.bonusInfo) {
@@ -46,7 +46,7 @@ export function Profile() {
 				</AvatarFallback>
 			</Avatar>
 			<div>
-				<h1 className="text-xl text-center text-gray-800 font-semibold">Salom, {first_name} 👋</h1>
+				<h1 className="text-xl text-center font-bold">Salom {first_name} 👋</h1>
 				<span>
 					<h4 className="text-center font-semibold tracking-tight">ASLZAR platformasiga xush kelibsiz!</h4>
 				</span>

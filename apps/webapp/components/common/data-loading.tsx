@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function DataLoading() {
 	return (
-		<div className="flex flex-col space-y-3 w-full px-4">
+		<div className="flex flex-col space-y-3 w-full px-4 shadow-sm">
 			<Skeleton className="h-[125px] rounded-xl w-full bg-stone-100" />
 			<div className="space-y-2 w-full">
 				<Skeleton className="h-4 w-full bg-stone-100" />
@@ -11,4 +11,3 @@ export function DataLoading() {
 		</div>
 	);
 }
-

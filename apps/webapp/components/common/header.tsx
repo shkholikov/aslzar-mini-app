@@ -13,7 +13,7 @@ export function Header({ title, description, icon: Icon }: HeaderProps) {
 	return (
 		<div>
 			<div className="flex flex-items justify-center pb-4">
-				<Icon className="w-14 h-14 text-primary" strokeWidth={2.5} />
+				<Icon className="w-14 h-14 text-primary" strokeWidth={3} />
 			</div>
 			<div>
 				<h1 className="text-3xl text-center text-primary font-semibold">{title}</h1>
