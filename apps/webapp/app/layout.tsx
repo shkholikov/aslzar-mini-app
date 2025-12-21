@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Radley } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
@@ -8,15 +8,10 @@ import { UserProvider } from "@/hooks/useUser";
 import { Toaster } from "sonner";
 import { TelegramGuard } from "@/components/common/telegram-guard";
 
-const geistSans = Radley({
-	variable: "--font-geist-sans",
+const montserratFont = Montserrat({
+	variable: "--font-radley",
 	subsets: ["latin"],
-	weight: "400"
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"]
+	weight: ["300", "400", "500", "600", "700"]
 });
 
 export const metadata: Metadata = {
@@ -59,7 +54,7 @@ export default function RootLayout({
 				<Script src="/scripts/disableZoom.js" strategy="afterInteractive" />
 			</head>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+				className={`${montserratFont.variable} font-sans antialiased bg-gray-50`}
 				style={{
 					paddingTop: "var(--tg-content-safe-area-inset-top)",
 					paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px) + 100px)",
