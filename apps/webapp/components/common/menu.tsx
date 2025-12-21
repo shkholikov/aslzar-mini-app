@@ -11,7 +11,7 @@ export function Menu() {
 	const navItems = navigationItems.map((item) => ({
 		...item,
 		onClick: () => {
-			tg?.HapticFeedback?.impactOccurred("light");
+			tg?.HapticFeedback?.impactOccurred("heavy");
 			router.push(item.path);
 		}
 	}));
@@ -21,4 +21,3 @@ export function Menu() {
 		</div>
 	);
 }
-
