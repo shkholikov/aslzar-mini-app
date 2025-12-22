@@ -135,7 +135,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 							itemRefs.current[index] = el;
 						}}
 						className={cn(
-							"relative flex flex-col items-center justify-center rounded-lg transition-all duration-200",
+							"relative flex flex-col items-center justify-center rounded-3xl transition-all duration-200",
 							"hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 							styles.item,
 							isActive && "text-primary",
