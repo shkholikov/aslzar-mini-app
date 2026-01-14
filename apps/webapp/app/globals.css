@@ -44,7 +44,7 @@
 
 :root {
 	--radius: 0.625rem;
-	--background: #f3f3f3;
+	--background: #ffffff;
 	--foreground: #373736;
 	--card: #ffffff;
 	--card-foreground: #373736;
@@ -59,7 +59,7 @@
 	--accent: #f0e6d2;
 	--accent-foreground: #373736;
 	--destructive: oklch(0.577 0.245 27.325);
-	--border: #d9d9d9;
+	--border: #e3ecf6;
 	--input: #d9d9d9;
 	--ring: #be9941;
 	--chart-1: #be9941;
