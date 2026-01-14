@@ -106,7 +106,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 				return {
 					container: "p-2",
 					item: "p-2 min-w-14",
-					icon: "h-5 w-5",
+					icon: "h-6 w-6",
 					text: "text-sm"
 				};
 		}
@@ -161,7 +161,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 								ref={(el) => {
 									textRefs.current[index] = el;
 								}}
-								className={cn("font-medium transition-colors duration-200 capitalize", styles.text, "whitespace-nowrap")}
+								className={cn("font-bold transition-colors duration-200 capitalize", styles.text, "whitespace-nowrap")}
 							>
 								{item.label}
 							</span>
