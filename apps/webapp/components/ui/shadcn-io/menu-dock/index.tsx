@@ -117,7 +117,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 	return (
 		<nav
 			className={cn(
-				"relative inline-flex items-center rounded-3xl bg-card border shadow-sm",
+				"relative inline-flex items-center rounded-4xl bg-card border shadow-sm",
 				orientation === "horizontal" ? "flex-row" : "flex-col",
 				styles.container,
 				className
@@ -135,7 +135,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 							itemRefs.current[index] = el;
 						}}
 						className={cn(
-							"relative flex flex-col items-center justify-center rounded-3xl transition-all duration-200",
+							"relative flex flex-col items-center justify-center rounded-4xl transition-all duration-200",
 							"hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 							styles.item,
 							isActive && "text-primary",
