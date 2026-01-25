@@ -33,7 +33,7 @@ const faqItems = [
 export default function OtherPage() {
 	return (
 		<div className="pt-12">
-			<Header title="Boshqa" description="Platformadagi boshqa imkoniyat va menu elementlari shu yerda ko'rsatiladi." iconImage="/images/box.png" />
+			<Header title="Boshqa" description="Platformadagi boshqa imkoniyat va menu elementlari shu yerda ko'rsatiladi." iconImage="/icons/box.png" />
 			<SectionCard icon={HelpCircle} title="Ko'p so'raladigan savollar">
 				<FAQ items={faqItems} />
 			</SectionCard>

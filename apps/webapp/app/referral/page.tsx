@@ -101,7 +101,7 @@ export default function ReferralPage() {
 			<Header
 				title="Referral"
 				description="Sizning referal link va do'stlaringizni taklif qilib, qanday foyda olishingiz mumkinligi shu yerda ko'rsatiladi."
-				iconImage="/images/user.png"
+				iconImage="/icons/user.png"
 			/>
 
 			{loading ? (

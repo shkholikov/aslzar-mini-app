@@ -23,10 +23,10 @@ export interface MenuDockProps {
 }
 
 const defaultItems: MenuDockItem[] = [
-	{ label: "asosiy", iconImage: "/images/crown.png" },
-	{ label: "moliyaviy", iconImage: "/images/briefcase.png" },
-	{ label: "referral", iconImage: "/images/user.png" },
-	{ label: "boshqa", iconImage: "/images/box.png" },
+	{ label: "asosiy", iconImage: "/icons/bank.png" },
+	{ label: "moliyaviy", iconImage: "/icons/briefcase.png" },
+	{ label: "referral", iconImage: "/icons/user.png" },
+	{ label: "boshqa", iconImage: "/icons/box.png" },
 ];
 
 export const MenuDock: React.FC<MenuDockProps> = ({

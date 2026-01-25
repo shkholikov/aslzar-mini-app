@@ -85,7 +85,7 @@ export default function BranchesPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." iconImage="/images/bank.png" />
+			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." iconImage="/icons/location.png" />
 			{loading ? (
 				<Loading />
 			) : (

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { useTelegram } from "@/hooks/useTelegram";
-import { FileCheck, FileXIcon, UserPlus } from "lucide-react";
+import { FileCheck, FileXIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -76,7 +76,7 @@ export default function RegisterPage() {
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="pt-12">
-			<Header title="Ro‘yxatdan o‘tish" description="ASLZAR platformasida ro‘yxatdan o‘ting va mijozimizga aylaning." icon={UserPlus} />
+			<Header title="Ro‘yxatdan o‘tish" description="ASLZAR platformasida ro‘yxatdan o‘ting va mijozimizga aylaning." iconImage="/icons/paper.png" />
 
 			{loading ? (
 				<div className="flex flex-col items-center">

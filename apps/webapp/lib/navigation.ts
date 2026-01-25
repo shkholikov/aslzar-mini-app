@@ -1,9 +1,9 @@
 import { Home } from "lucide-react";
 
 export const navigationItems = [
-	{ label: "asosiy", iconImage: "/images/crown.png", Home, path: "/" },
-	{ label: "moliyaviy", iconImage: "/images/briefcase.png", path: "/finance" },
-	{ label: "referral", iconImage: "/images/user.png", path: "/referral" },
-	{ label: "filiallar", iconImage: "/images/bank.png", path: "/branches" },
-	{ label: "boshqa", iconImage: "/images/box.png", path: "/other" }
+	{ label: "asosiy", iconImage: "/icons/bank.png", Home, path: "/" },
+	{ label: "moliyaviy", iconImage: "/icons/briefcase.png", path: "/finance" },
+	{ label: "referral", iconImage: "/icons/user.png", path: "/referral" },
+	{ label: "filiallar", iconImage: "/icons/location.png", path: "/branches" },
+	{ label: "boshqa", iconImage: "/icons/box.png", path: "/other" }
 ];
