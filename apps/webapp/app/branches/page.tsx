@@ -5,7 +5,7 @@ import { SectionCard } from "@/components/common/section-card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { useTelegram } from "@/hooks/useTelegram";
-import { CopyCheck, MapPinned, Phone, Store, StoreIcon, Map, Clock, Navigation, ChevronRightIcon } from "lucide-react";
+import { CopyCheck, MapPinned, Phone, Store, Map, Clock, Navigation, ChevronRightIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/common/loading";
@@ -85,7 +85,7 @@ export default function BranchesPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." icon={StoreIcon} />
+			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." iconImage="/images/bank.png" />
 			{loading ? (
 				<Loading />
 			) : (

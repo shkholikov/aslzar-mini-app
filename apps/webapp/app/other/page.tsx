@@ -3,7 +3,7 @@
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { FAQ } from "./components/faq";
-import { LayoutGrid, HelpCircle, Instagram, Gem } from "lucide-react";
+import { HelpCircle, Instagram, Gem } from "lucide-react";
 import { Link } from "@/components/common/link";
 
 const faqItems = [
@@ -33,7 +33,7 @@ const faqItems = [
 export default function OtherPage() {
 	return (
 		<div className="pt-12">
-			<Header title="Boshqa" description="Platformadagi boshqa imkoniyat va menu elementlari shu yerda ko'rsatiladi." icon={LayoutGrid} />
+			<Header title="Boshqa" description="Platformadagi boshqa imkoniyat va menu elementlari shu yerda ko'rsatiladi." iconImage="/images/box.png" />
 			<SectionCard icon={HelpCircle} title="Ko'p so'raladigan savollar">
 				<FAQ items={faqItems} />
 			</SectionCard>

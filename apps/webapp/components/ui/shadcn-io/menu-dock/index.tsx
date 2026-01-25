@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Home, Briefcase, Settings, Users, LayoutGrid } from "lucide-react";
+import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 type IconComponentType = React.ElementType<{ className?: string }>;
 
 export interface MenuDockItem {
 	label: string;
-	icon: IconComponentType;
+	icon?: IconComponentType;
+	iconImage?: string;
 	onClick?: () => void;
 }
 
@@ -22,10 +24,10 @@ export interface MenuDockProps {
 }
 
 const defaultItems: MenuDockItem[] = [
-	{ label: "asosiy", icon: Home },
-	{ label: "moliyaviy", icon: Briefcase },
-	{ label: "referral", icon: Users },
-	{ label: "boshqa", icon: LayoutGrid },
+	{ label: "asosiy", iconImage: "/images/bank.png" },
+	{ label: "moliyaviy", iconImage: "/images/briefcase.png" },
+	{ label: "referral", iconImage: "/images/user.png" },
+	{ label: "boshqa", iconImage: "/images/box.png" },
 	{ label: "sozlama", icon: Settings }
 ];
 
@@ -153,7 +155,17 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 								orientation === "vertical" && showLabels ? "mb-1" : ""
 							)}
 						>
-							<IconComponent className={cn(styles.icon, "transition-colors duration-200")} />
+							{item.iconImage ? (
+								<Image 
+									src={item.iconImage} 
+									alt={item.label} 
+									width={24} 
+									height={24} 
+									className={cn(styles.icon, "object-contain transition-opacity duration-200", !isActive && "opacity-60")}
+								/>
+							) : IconComponent ? (
+								<IconComponent className={cn(styles.icon, "transition-colors duration-200")} />
+							) : null}
 						</div>
 
 						{showLabels && (

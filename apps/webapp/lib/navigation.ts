@@ -1,9 +1,9 @@
-import { Briefcase, Home, LayoutGrid, StoreIcon, Users } from "lucide-react";
+import { Home } from "lucide-react";
 
 export const navigationItems = [
-	{ label: "asosiy", icon: Home, path: "/" },
-	{ label: "moliyaviy", icon: Briefcase, path: "/finance" },
-	{ label: "referral", icon: Users, path: "/referral" },
-	{ label: "filiallar", icon: StoreIcon, path: "/branches" },
-	{ label: "boshqa", icon: LayoutGrid, path: "/other" }
+	{ label: "asosiy", iconImage: "/images/bank.png", Home, path: "/" },
+	{ label: "moliyaviy", iconImage: "/images/briefcase.png", path: "/finance" },
+	{ label: "referral", iconImage: "/images/user.png", path: "/referral" },
+	{ label: "filiallar", iconImage: "/images/bank.png", path: "/branches" },
+	{ label: "boshqa", iconImage: "/images/box.png", path: "/other" }
 ];

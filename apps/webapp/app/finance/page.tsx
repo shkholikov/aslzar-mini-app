@@ -5,7 +5,6 @@ import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
 import { UpcomingPayments } from "./components/upcoming-payments";
 import { useUser } from "@/hooks/useUser";
-import { Briefcase } from "lucide-react";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useRouter } from "next/navigation";
@@ -18,7 +17,7 @@ export default function FinancePage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko'rsatiladi." icon={Briefcase} />
+			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko'rsatiladi." iconImage="/images/briefcase.png" />
 			<div>
 				{loading ? (
 					<Loading />

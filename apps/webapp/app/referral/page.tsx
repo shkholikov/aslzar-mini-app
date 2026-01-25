@@ -7,7 +7,6 @@ import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
-import { Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/common/loading";
@@ -102,7 +101,7 @@ export default function ReferralPage() {
 			<Header
 				title="Referral"
 				description="Sizning referal link va do'stlaringizni taklif qilib, qanday foyda olishingiz mumkinligi shu yerda ko'rsatiladi."
-				icon={Users}
+				iconImage="/images/user.png"
 			/>
 
 			{loading ? (
