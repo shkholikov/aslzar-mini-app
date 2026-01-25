@@ -42,7 +42,7 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 					{title}
 				</h1>
 				<span>
-					<p className="text-center text-sm text-muted-foreground mt-2">{description}</p>
+					<p className="text-center text-sm mt-2">{description}</p>
 				</span>
 				<Separator className="my-2" />
 			</div>
