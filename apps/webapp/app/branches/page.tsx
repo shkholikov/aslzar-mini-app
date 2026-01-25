@@ -9,6 +9,7 @@ import { CopyCheck, MapPinned, Phone, Store, StoreIcon, Map, Clock, Navigation, 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/common/loading";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function BranchesPage() {
 	const tg = useTelegram();
@@ -64,6 +65,24 @@ export default function BranchesPage() {
 		tg?.openLink(url, { try_instant_view: true });
 	}
 
+	// Convert Yandex Maps URL to embed URL
+	// Format: https://yandex.ru/map-widget/v1/?orgid=235434378453&z=16
+	function getYandexEmbedUrl(url?: string): string | null {
+		if (!url) return null;
+		const orgIdMatch = url.match(/org\/(\d+)/);
+		if (orgIdMatch) {
+			return `https://yandex.ru/map-widget/v1/?orgid=${orgIdMatch[1]}&z=16`;
+		}
+		return null;
+	}
+
+	// Simple Google Maps embed using address (no API key needed)
+	function getGoogleEmbedUrlSimple(address?: string): string | null {
+		if (!address) return null;
+		const encodedAddress = encodeURIComponent(address);
+		return `https://www.google.com/maps?q=${encodedAddress}&output=embed`;
+	}
+
 	return (
 		<div className="pt-12">
 			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." icon={StoreIcon} />
@@ -89,6 +108,86 @@ export default function BranchesPage() {
 											</ItemContent>
 										</Item>
 									</AccordionContent>
+									{(branch.yandexMaps || branch.googleMaps || branch.address) && (
+										<AccordionContent>
+											<div className="w-full rounded-lg overflow-hidden border border-border">
+												{(() => {
+													const hasYandex = branch.yandexMaps && getYandexEmbedUrl(branch.yandexMaps);
+													const hasGoogle = (branch.googleMaps || branch.address) && getGoogleEmbedUrlSimple(branch.address);
+													
+													// Show tabs if both maps are available
+													if (hasYandex && hasGoogle) {
+														return (
+															<Tabs defaultValue="yandex" className="w-full">
+																<TabsList className="w-full grid grid-cols-2">
+																	<TabsTrigger value="yandex">Yandex</TabsTrigger>
+																	<TabsTrigger value="google">Google</TabsTrigger>
+																</TabsList>
+																<TabsContent value="yandex" className="mt-0">
+																	<iframe
+																		src={getYandexEmbedUrl(branch.yandexMaps)!}
+																		width="100%"
+																		height="300"
+																		style={{ border: 0 }}
+																		allowFullScreen
+																		loading="lazy"
+																		referrerPolicy="no-referrer-when-downgrade"
+																		className="w-full"
+																	/>
+																</TabsContent>
+																<TabsContent value="google" className="mt-0">
+																	<iframe
+																		src={getGoogleEmbedUrlSimple(branch.address)!}
+																		width="100%"
+																		height="300"
+																		style={{ border: 0 }}
+																		allowFullScreen
+																		loading="lazy"
+																		referrerPolicy="no-referrer-when-downgrade"
+																		className="w-full"
+																	/>
+																</TabsContent>
+															</Tabs>
+														);
+													}
+													
+													// Show single Yandex map
+													if (hasYandex) {
+														return (
+															<iframe
+																src={getYandexEmbedUrl(branch.yandexMaps)!}
+																width="100%"
+																height="300"
+																style={{ border: 0 }}
+																allowFullScreen
+																loading="lazy"
+																referrerPolicy="no-referrer-when-downgrade"
+																className="w-full"
+															/>
+														);
+													}
+													
+													// Show single Google map
+													if (hasGoogle) {
+														return (
+															<iframe
+																src={getGoogleEmbedUrlSimple(branch.address)!}
+																width="100%"
+																height="300"
+																style={{ border: 0 }}
+																allowFullScreen
+																loading="lazy"
+																referrerPolicy="no-referrer-when-downgrade"
+																className="w-full"
+															/>
+														);
+													}
+													
+													return null;
+												})()}
+											</div>
+										</AccordionContent>
+									)}
 									{branch.orientir && (
 										<AccordionContent>
 											<Item>

@@ -17,7 +17,7 @@ export function Menu() {
 	}));
 	return (
 		<div className="flex items-end justify-center min-h-[120px] fixed bottom-6">
-			<MenuDock items={navItems} animated={false} />
+			<MenuDock items={navItems} animated={false} variant="compact" />
 		</div>
 	);
 }

@@ -92,7 +92,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 				return {
 					container: "p-1",
 					item: "p-2 min-w-12",
-					icon: "h-4 w-4",
+					icon: "h-5 w-5",
 					text: "text-xs"
 				};
 			case "large":
