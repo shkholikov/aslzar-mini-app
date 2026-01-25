@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -24,11 +23,10 @@ export interface MenuDockProps {
 }
 
 const defaultItems: MenuDockItem[] = [
-	{ label: "asosiy", iconImage: "/images/bank.png" },
+	{ label: "asosiy", iconImage: "/images/crown.png" },
 	{ label: "moliyaviy", iconImage: "/images/briefcase.png" },
 	{ label: "referral", iconImage: "/images/user.png" },
 	{ label: "boshqa", iconImage: "/images/box.png" },
-	{ label: "sozlama", icon: Settings }
 ];
 
 export const MenuDock: React.FC<MenuDockProps> = ({
@@ -94,7 +92,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 				return {
 					container: "p-1",
 					item: "p-2 min-w-12",
-					icon: "h-5 w-5",
+					icon: "h-7 w-7",
 					text: "text-xs"
 				};
 			case "large":

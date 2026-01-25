@@ -26,7 +26,21 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 				) : null}
 			</div>
 			<div>
-				<h1 className="text-3xl text-center text-primary font-bold uppercase">{title}</h1>
+				<h1 
+					className="text-4xl text-center font-bold uppercase"
+					style={{
+						backgroundImage: "url('/images/text-bg.png')",
+						backgroundSize: "cover",
+						backgroundPosition: "center",
+						backgroundClip: "text",
+						WebkitBackgroundClip: "text",
+						WebkitTextFillColor: "transparent",
+						textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+						filter: "drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))"
+					}}
+				>
+					{title}
+				</h1>
 				<span>
 					<p className="text-center text-sm text-muted-foreground mt-2">{description}</p>
 				</span>
