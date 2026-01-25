@@ -7,6 +7,7 @@ import { useUser } from "@/hooks/useUser";
 import { Loading } from "./loading";
 import { useTelegram } from "@/hooks/useTelegram";
 import { BadgeCheckIcon, BadgeXIcon } from "lucide-react";
+import Image from "next/image";
 
 const DEFAULT_PROFILE_INFO = {
 	verified: false,
@@ -69,16 +70,22 @@ export function Profile() {
 					</div>
 					<Separator className="my-2" />
 
-					<div className="flex flex-wrap justify-center items-center gap-2 text-sm">
-						<Badge variant="outline" className="shadow-sm">
-							Level: {profileInfo.uroven}
-						</Badge>
-						<Badge variant="outline" className="shadow-sm">
-							Shartnomalar: {profileInfo.contracts}
-						</Badge>
-						<Badge variant="outline" className="shadow-sm">
-							Bonus: {profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
-						</Badge>
+					<div className="flex flex-wrap justify-center items-stretch gap-2">
+						<div className="flex-1 min-w-0 backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border px-4 py-3 flex flex-col items-center gap-1">
+							<Image src="/icons/crown.png" alt="Level" width={50} height={50} className="object-contain" />
+							<div className="text-xs font-semibold text-center">Level:</div>
+							<div className="text-xs text-muted-foreground text-center">{profileInfo.uroven}</div>
+						</div>
+						<div className="flex-1 min-w-0 backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border px-4 py-3 flex flex-col items-center gap-1">
+							<Image src="/icons/contract.png" alt="Shartnomalar" width={50} height={50} className="object-contain" />
+							<div className="text-xs font-semibold text-center">Shartnomalar:</div>
+							<div className="text-xs text-muted-foreground text-center">{profileInfo.contracts}</div>
+						</div>
+						<div className="flex-1 min-w-0 backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border px-4 py-3 flex flex-col items-center gap-1">
+							<Image src="/icons/bonus.png" alt="Bonus" width={50} height={50} className="object-contain" />
+							<div className="text-xs font-semibold text-center">Bonus:</div>
+							<div className="text-xs text-muted-foreground text-center">{profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m</div>
+						</div>
 					</div>
 					<Separator className="my-2" />
 				</div>

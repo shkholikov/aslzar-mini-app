@@ -15,7 +15,7 @@ interface ReferralQRCodeProps {
 
 export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShare }: ReferralQRCodeProps) {
 	return (
-		<SectionCard iconImage="/icons/paper.png" title="Sizning referral QR kodingiz">
+		<SectionCard iconImage="/icons/qr.png" title="Sizning referral QR kodingiz">
 			<p className="mb-2">
 				<strong>Doʻstlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
 			</p>

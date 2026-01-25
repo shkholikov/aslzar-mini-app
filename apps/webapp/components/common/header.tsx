@@ -20,7 +20,7 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 		<div>
 			<div className="flex flex-items justify-center pb-4">
 				{iconImage ? (
-					<Image src={iconImage} alt={title} width={100} height={100} className="object-contain" />
+					<Image src={iconImage} alt={title} width={110} height={110} className="object-contain" />
 				) : Icon ? (
 					<Icon className="w-14 h-14 text-primary" strokeWidth={3} />
 				) : null}
