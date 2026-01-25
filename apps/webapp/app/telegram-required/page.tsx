@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
+import { InfoIcon } from "lucide-react";
 
 export default function TelegramRequiredPage() {
 	const tg = useTelegram();
@@ -19,6 +20,7 @@ export default function TelegramRequiredPage() {
 	return (
 		<main className="flex flex-col items-center justify-center min-h-screen pt-12 px-4">
 			<CallToActionItem
+				icon={InfoIcon}
 				title="Aslzar Telegram Boti"
 				description="Ushbu ilovadan foydalanish uchun Telegram orqali kirishingiz kerak. Bot orqali kirish uchun pastdagi tugmani bosing."
 				buttonText="Telegramda ochish"
