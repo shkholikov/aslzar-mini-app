@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { Link } from "@/components/common/link";
-import { Gem } from "lucide-react";
 import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
@@ -32,7 +31,7 @@ export default function HomePage() {
 			<>
 				<Profile />
 				<div>
-					<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+					<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" iconImage="/icons/ring.png" />
 					<PlatformInfo />
 					{loading ? (
 						<Loading />
@@ -43,6 +42,7 @@ export default function HomePage() {
 						</>
 					) : (
 						<CallToActionItem
+							iconImage="/icons/info.png"
 							title="Siz hali ASLZAR mijozi emassiz."
 							description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
 							buttonText="Kirish"

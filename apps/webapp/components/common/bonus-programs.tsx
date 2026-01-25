@@ -3,7 +3,6 @@
 import { SectionCard } from "@/components/common/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTelegram } from "@/hooks/useTelegram";
-import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Loading } from "./loading";
 
@@ -81,7 +80,7 @@ export function BonusPrograms() {
 	if (!bonusProgramList || bonusProgramList.length === 0) return null;
 
 	return (
-		<SectionCard icon={Trophy} title="Bonus darajalari haqida">
+		<SectionCard iconImage="/icons/crown.png" title="Bonus darajalari haqida">
 			<Tabs defaultValue={bonusProgramList[0]?.uroven} className="w-full items-center">
 				<TabsList>
 					{bonusProgramList.map((program) => (

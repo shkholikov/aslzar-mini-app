@@ -1,6 +1,5 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SectionCard } from "@/components/common/section-card";
-import { ReceiptText } from "lucide-react";
 import { Loading } from "@/components/common/loading";
 
 interface Pay {
@@ -33,7 +32,7 @@ export function Contracts({ contracts, loading }: ContractsProps) {
 	if (loading) return <Loading />;
 
 	return (
-		<SectionCard icon={ReceiptText} title="Shartnomalar">
+		<SectionCard iconImage="/icons/contract.png" title="Shartnomalar">
 			<div className="mt-2">
 				<Table>
 					<TableCaption>Sizning hamma aktiv shartnomalaringiz.</TableCaption>

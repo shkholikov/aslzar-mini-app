@@ -83,7 +83,7 @@ export function UpcomingPayments({ contracts, loading }: UpcomingPaymentsProps) 
 	const groupedPayments = groupPaymentsByContract(upcomingPayments);
 
 	return (
-		<SectionCard icon={CalendarClock} title="Kutilayotgan to'lovlar">
+		<SectionCard iconImage="/icons/paper.png" title="Kutilayotgan to'lovlar">
 			<div className="mt-2 space-y-4">
 				{Object.entries(groupedPayments).map(([contractId, payments]) => (
 					<Alert key={contractId} variant="default" className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">

@@ -4,7 +4,7 @@ import { SectionCard } from "@/components/common/section-card";
 import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { QRCodeGenerator } from "./qrcode-generator";
-import { CopyCheck, Forward, QrCode } from "lucide-react";
+import Image from "next/image";
 
 interface ReferralQRCodeProps {
 	referralLink: string;
@@ -15,7 +15,7 @@ interface ReferralQRCodeProps {
 
 export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShare }: ReferralQRCodeProps) {
 	return (
-		<SectionCard icon={QrCode} title="Sizning referral QR kodingiz">
+		<SectionCard iconImage="/icons/paper.png" title="Sizning referral QR kodingiz">
 			<p className="mb-2">
 				<strong>Doʻstlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
 			</p>
@@ -30,7 +30,7 @@ export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShar
 			</div>
 			<div className="flex flex-wrap items-center justify-center mt-2 gap-2 md:flex-row">
 				<RippleButton variant="outline" onClick={onCopy}>
-					<CopyCheck /> Nusxa olish
+					<Image src="/icons/paper.png" alt="" width={16} height={16} className="object-contain" /> Nusxa olish
 				</RippleButton>
 				<RippleButton
 					variant="outline"
@@ -38,7 +38,7 @@ export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShar
 					disabled={!preparedMessageId}
 					title={!preparedMessageId ? "Ulashish uchun hozircha referral tayyorlangan emas" : undefined}
 				>
-					<Forward /> Ulashish
+					<Image src="/icons/ring.png" alt="" width={16} height={16} className="object-contain" /> Ulashish
 				</RippleButton>
 			</div>
 		</SectionCard>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useUser } from "@/hooks/useUser";
-import { User } from "lucide-react";
 import { SectionCard } from "@/components/common/section-card";
 import { Loading } from "./common/loading";
 
@@ -13,7 +12,7 @@ export function UserInfo() {
 	if (!data || data.code !== 0) return null;
 
 	return (
-		<SectionCard icon={User} title="Asosiy Maʼlumotlar">
+		<SectionCard iconImage="/icons/user-info.png" title="Asosiy Maʼlumotlar">
 			<p>
 				<strong>FIO:</strong> {data.familiya} {data.imya} {data.otchestvo}
 			</p>

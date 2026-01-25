@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { BadgeCheckIcon, BadgeXIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
@@ -7,6 +6,7 @@ import { Spinner } from "../ui/spinner";
 import { useUser } from "@/hooks/useUser";
 import { Loading } from "./loading";
 import { useTelegram } from "@/hooks/useTelegram";
+import { BadgeCheckIcon, BadgeXIcon } from "lucide-react";
 
 const DEFAULT_PROFILE_INFO = {
 	verified: false,

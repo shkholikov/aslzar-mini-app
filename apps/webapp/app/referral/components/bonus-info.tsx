@@ -2,7 +2,7 @@
 
 import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
-import { ReceiptText, Award, Coins } from "lucide-react";
+import Image from "next/image";
 
 interface BonusInfoProps {
 	data?: {
@@ -21,15 +21,15 @@ export function BonusInfo({ data }: BonusInfoProps) {
 	const remainingBonus = data.bonusOstatok || 0;
 
 	return (
-		<SectionCard icon={ReceiptText} title="Bonus ma'lumotlari">
+		<SectionCard iconImage="/icons/wallet.png" title="Bonus ma'lumotlari">
 			<div className="flex flex-wrap justify-center items-center gap-3 mt-2">
 				<Badge variant="outline" className="flex items-center gap-1.5">
-					<Award />
+					<Image src="/icons/crown.png" alt="" width={16} height={16} className="object-contain" />
 					<span className="font-medium">Level:</span>
 					<span>{level}</span>
 				</Badge>
 				<Badge variant="outline" className="flex items-center gap-1.5">
-					<Coins />
+					<Image src="/icons/ring.png" alt="" width={16} height={16} className="object-contain" />
 					<span className="font-medium">Bonus: </span>
 					<span>{remainingBonus} so&apos;m</span>
 				</Badge>

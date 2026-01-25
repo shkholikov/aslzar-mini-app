@@ -3,8 +3,8 @@
 import { SectionCard } from "@/components/common/section-card";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loading } from "@/components/common/loading";
-import { Users, RefreshCw } from "lucide-react";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
+import Image from "next/image";
 
 interface IReferral {
 	id: string;
@@ -25,7 +25,7 @@ interface ReferralsListProps {
 
 export function ReferralsList({ referrals, loading, onReload }: ReferralsListProps) {
 	return (
-		<SectionCard icon={Users} title="Referallar">
+		<SectionCard iconImage="/icons/user.png" title="Referallar">
 			<div className="mt-2">
 				{loading ? (
 					<Loading />
@@ -55,7 +55,7 @@ export function ReferralsList({ referrals, loading, onReload }: ReferralsListPro
 						{onReload && (
 							<div className="mt-4 flex justify-center">
 								<RippleButton onClick={onReload} variant="outline" size="sm">
-									<RefreshCw className="size-4" />
+									<Image src="/icons/ring.png" alt="" width={16} height={16} className="object-contain" />
 									Yangilash
 								</RippleButton>
 							</div>

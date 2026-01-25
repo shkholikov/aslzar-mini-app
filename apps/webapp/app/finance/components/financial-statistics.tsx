@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item";
 import { SectionCard } from "@/components/common/section-card";
-import { BookX, Calendar1, CalendarClockIcon, ChartAreaIcon, HandCoinsIcon, ReceiptTextIcon } from "lucide-react";
+import { BookX, Calendar1, CalendarClockIcon, HandCoinsIcon, ReceiptTextIcon } from "lucide-react";
 import { Loading } from "@/components/common/loading";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 	if (loading) return <Loading />;
 
 	return (
-		<SectionCard icon={ChartAreaIcon} title="Moliyaviy Statistika">
+		<SectionCard iconImage="/icons/statistics.png" title="Moliyaviy Statistika">
 			<ItemGroup>
 				<Item>
 					<ItemMedia variant="icon">
