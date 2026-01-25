@@ -1,9 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemSeparator, ItemTitle } from "@/components/ui/item";
 import { SectionCard } from "@/components/common/section-card";
-import { BookX, Calendar1, CalendarClockIcon, HandCoinsIcon, ReceiptTextIcon } from "lucide-react";
 import { Loading } from "@/components/common/loading";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface FinancialStatisticsProps {
 	data: {
@@ -25,87 +23,43 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 
 	return (
 		<SectionCard iconImage="/icons/statistics.png" title="Moliyaviy Statistika">
-			<ItemGroup>
-				<Item>
-					<ItemMedia variant="icon">
-						<ReceiptTextIcon />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle>Faol shartnomalar soni</ItemTitle>
-					</ItemContent>
-					<ItemContent>
-						<ItemDescription>
-							<Badge variant="destructive" className="bg-blue-500">
-								{data?.contract?.active} ta
-							</Badge>
-						</ItemDescription>
-					</ItemContent>
-				</Item>
-				<ItemSeparator />
-				<Item>
-					<ItemMedia variant="icon">
-						<BookX />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle>Bonuslar miqdori</ItemTitle>
-					</ItemContent>
-					<ItemContent>
-						<ItemDescription>
-							<Badge variant="default" className="bg-blue-500">
-								{data?.bonusOstatok} so&apos;m
-							</Badge>
-						</ItemDescription>
-					</ItemContent>
-				</Item>
-				<ItemSeparator />
-				<Item>
-					<ItemMedia variant="icon">
-						<HandCoinsIcon />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle>Umumiy qarzdorlik summasi</ItemTitle>
-					</ItemContent>
-					<ItemContent>
-						<ItemDescription>
-							<Badge variant="default" className={cn(data?.debt && data?.debt > 0 ? "bg-amber-400" : "bg-blue-500")}>
-								{data?.debt} so&apos;m
-							</Badge>
-						</ItemDescription>
-					</ItemContent>
-				</Item>
-				<ItemSeparator />
-				<Item>
-					<ItemMedia variant="icon">
-						<Calendar1 />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle>Joriy oy bo&apos;yicha qarzdorlik</ItemTitle>
-					</ItemContent>
-					<ItemContent>
-						<ItemDescription>
-							<Badge variant="default" className={cn(data?.remain && data?.remain > 0 ? "bg-amber-400" : "bg-blue-500")}>
-								{data?.remain} so&apos;m
-							</Badge>
-						</ItemDescription>
-					</ItemContent>
-				</Item>
-				<ItemSeparator />
-				<Item>
-					<ItemMedia variant="icon">
-						<CalendarClockIcon />
-					</ItemMedia>
-					<ItemContent>
-						<ItemTitle>Kechikkan to&apos;lovlar summasi</ItemTitle>
-					</ItemContent>
-					<ItemContent>
-						<ItemDescription>
-							<Badge variant="default" className={cn(data?.latePayment && data?.latePayment > 0 ? "bg-amber-400" : "bg-blue-500")}>
-								{data?.latePayment} so&apos;m
-							</Badge>
-						</ItemDescription>
-					</ItemContent>
-				</Item>
-			</ItemGroup>
+			<div className="flex flex-wrap gap-2">
+				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1">
+					<Image src="/icons/contract.png" alt="Faol shartnomalar" width={50} height={50} className="object-contain" />
+					<div className="text-xs font-semibold text-center">Faol shartnomalar soni:</div>
+					<Badge variant="destructive" className="bg-[#be9941] text-white">
+						{data?.contract?.active} ta
+					</Badge>
+				</div>
+				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1">
+					<Image src="/icons/bonus.png" alt="Bonuslar" width={50} height={50} className="object-contain" />
+					<div className="text-xs font-semibold text-center">Bonuslar miqdori:</div>
+					<Badge variant="default" className="bg-[#be9941] text-white">
+						{data?.bonusOstatok} so&apos;m
+					</Badge>
+				</div>
+				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1">
+					<Image src="/icons/wallet.png" alt="Qarzdorlik" width={50} height={50} className="object-contain" />
+					<div className="text-xs font-semibold text-center">Umumiy qarzdorlik summasi:</div>
+					<Badge variant="default" className="bg-[#be9941] text-white">
+						{data?.debt} so&apos;m
+					</Badge>
+				</div>
+				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1">
+					<Image src="/icons/paper.png" alt="Joriy oy qarzdorlik" width={50} height={50} className="object-contain" />
+					<div className="text-xs font-semibold text-center">Joriy oy bo&apos;yicha qarzdorlik:</div>
+					<Badge variant="default" className="bg-[#be9941] text-white">
+						{data?.remain} so&apos;m
+					</Badge>
+				</div>
+				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1">
+					<Image src="/icons/paper.png" alt="Kechikkan to'lovlar" width={50} height={50} className="object-contain" />
+					<div className="text-xs font-semibold text-center">Kechikkan to&apos;lovlar summasi:</div>
+					<Badge variant="default" className="bg-[#be9941] text-white">
+						{data?.latePayment} so&apos;m
+					</Badge>
+				</div>
+			</div>
 		</SectionCard>
 	);
 }
