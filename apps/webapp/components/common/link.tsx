@@ -18,7 +18,7 @@ type LinkItemPropsWithIcon =
 export function Link({ title, href, icon: Icon, iconImage, rightIcon: RightIcon, rightIconImage }: LinkItemPropsWithIcon) {
 	return (
 		<div className="m-2">
-			<Item variant="outline" size="sm" asChild className="backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm">
+			<Item variant="outline" size="sm" asChild className="backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2">
 				<a href={href}>
 					<ItemMedia>
 						{iconImage ? (
