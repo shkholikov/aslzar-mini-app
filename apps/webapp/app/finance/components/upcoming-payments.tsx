@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SectionCard } from "@/components/common/section-card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarClock, ClockAlert } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ClockAlert } from "lucide-react";
 import { Loading } from "@/components/common/loading";
 
 interface ScheduleItem {
@@ -32,10 +32,6 @@ interface UpcomingPayment {
 	sumPayed: number;
 }
 
-interface GroupedPayments {
-	[contractId: string]: UpcomingPayment[];
-}
-
 function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment[] {
 	const upcomingPayments: UpcomingPayment[] = [];
 
@@ -62,17 +58,6 @@ function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment
 	return upcomingPayments;
 }
 
-function groupPaymentsByContract(payments: UpcomingPayment[]): GroupedPayments {
-	return payments.reduce((acc, payment) => {
-		const contractId = String(payment.contractId);
-		if (!acc[contractId]) {
-			acc[contractId] = [];
-		}
-		acc[contractId].push(payment);
-		return acc;
-	}, {} as GroupedPayments);
-}
-
 export function UpcomingPayments({ contracts, loading }: UpcomingPaymentsProps) {
 	if (loading) return <Loading />;
 
@@ -80,38 +65,24 @@ export function UpcomingPayments({ contracts, loading }: UpcomingPaymentsProps) 
 
 	if (upcomingPayments.length === 0) return null;
 
-	const groupedPayments = groupPaymentsByContract(upcomingPayments);
-
 	return (
 		<SectionCard iconImage="/icons/paper.png" title="Kutilayotgan to'lovlar">
-			<div className="mt-2 space-y-4">
-				{Object.entries(groupedPayments).map(([contractId, payments]) => (
-					<Alert key={contractId} variant="default" className="bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800">
-						<ClockAlert />
-						<AlertDescription className="text-amber-800 dark:text-amber-200">
-							<div className="mb-3">
-								<p className="font-semibold text-amber-900 dark:text-amber-100">
-									Shartnoma {contractId} - {payments.length} ta kutilayotgan to&apos;lov
-								</p>
-							</div>
-							<div className="space-y-3 pl-4 border-l-2 border-amber-300 dark:border-amber-700">
-								{payments.map((payment, idx) => (
-									<div key={idx} className="space-y-1">
-										<p>
-											{payment.step}-to&apos;lov:{" "}
-											{new Date(payment.date).toLocaleDateString("uz-UZ", { year: "numeric", month: "long", day: "numeric" })} sanasida muddati
-											tugaydi.
-										</p>
-										<p>
-											To&apos;lov summasi:{" "}
-											<span className="font-semibold text-amber-700 dark:text-amber-300">{payment.sumToPay.toLocaleString("uz-UZ")} so&apos;m</span>
-										</p>
-										{idx < payments.length - 1 && <div className="border-t border-amber-200 dark:border-amber-800 pt-2 mt-2" />}
-									</div>
-								))}
-							</div>
-						</AlertDescription>
-					</Alert>
+			<div className="flex flex-wrap gap-2">
+				{upcomingPayments.map((payment, idx) => (
+					<div
+						key={idx}
+						className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1"
+					>
+						<ClockAlert className="w-12 h-12 text-[#be9941]" />
+						<div className="text-xs font-semibold text-center">Shartnoma {payment.contractId}</div>
+						<div className="text-xs text-muted-foreground text-center">{payment.step}-to&apos;lov</div>
+						<div className="text-xs text-muted-foreground text-center">
+							{new Date(payment.date).toLocaleDateString("uz-UZ", { year: "numeric", month: "long", day: "numeric" })}
+						</div>
+						<Badge variant="default" className="bg-[#be9941] text-white">
+							{payment.sumToPay.toLocaleString("uz-UZ")} so&apos;m
+						</Badge>
+					</div>
 				))}
 			</div>
 		</SectionCard>
