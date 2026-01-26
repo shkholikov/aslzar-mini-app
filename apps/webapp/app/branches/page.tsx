@@ -222,7 +222,7 @@ export default function BranchesPage() {
 									{branch.googleMaps && (
 										<AccordionContent>
 											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
-												<a type="button" onClick={() => handleOpenMap(branch.googleMaps)} className="w-full text-left cursor-pointer">
+												<a type="button" onClick={() => handleOpenMap(branch.googleMaps)}>
 													<ItemMedia>
 														<Map className="size-5 text-[#be9941]" />
 													</ItemMedia>
@@ -239,7 +239,7 @@ export default function BranchesPage() {
 									{branch.yandexMaps && (
 										<AccordionContent>
 											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
-												<a type="button" onClick={() => handleOpenMap(branch.yandexMaps)} className="w-full text-left cursor-pointer">
+												<a type="button" onClick={() => handleOpenMap(branch.yandexMaps)}>
 													<ItemMedia>
 														<Map className="size-5 text-[#be9941]" />
 													</ItemMedia>
