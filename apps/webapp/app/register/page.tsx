@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { useTelegram } from "@/hooks/useTelegram";
-import Image from "next/image";
+import { FileCheck, FileXIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -116,7 +116,7 @@ export default function RegisterPage() {
 
 						<Field orientation="vertical" className="mt-4 space-y-2">
 							<RippleButton type="submit" variant="outline">
-								<Image src="/icons/paper.png" alt="" width={16} height={16} className="object-contain" />
+								<FileCheck className="size-4 text-[#be9941]" />
 								Tasdiqlash
 							</RippleButton>
 
@@ -134,7 +134,7 @@ export default function RegisterPage() {
 									toast.success("Barcha maydonlar tozalandi. Qaytadan maʼlumot kiriting.");
 								}}
 							>
-								<Image src="/icons/box.png" alt="" width={16} height={16} className="object-contain" />
+								<FileXIcon className="size-4 text-[#be9941]" />
 								Tozalash
 							</RippleButton>
 						</Field>

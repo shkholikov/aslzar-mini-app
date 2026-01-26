@@ -26,7 +26,7 @@ export function FinancialStatistics({ data, loading }: FinancialStatisticsProps)
 			<div className="flex flex-wrap gap-2">
 				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2 px-4 py-3 flex flex-col items-center gap-1">
 					<Image src="/icons/contract.png" alt="Faol shartnomalar" width={50} height={50} className="object-contain" />
-					<div className="text-xs font-semibold text-center">Faol shartnomalar soni:</div>
+					<div className="text-xs font-semibold text-center">Faol shartnomalar:</div>
 					<Badge variant="destructive" className="bg-[#be9941] text-white">
 						{data?.contract?.active} ta
 					</Badge>
