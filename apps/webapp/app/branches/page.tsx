@@ -83,6 +83,12 @@ export default function BranchesPage() {
 		return `https://www.google.com/maps?q=${encodedAddress}&output=embed`;
 	}
 
+	function handleAccordionChange(value: string | undefined) {
+		if (value) {
+			tg?.HapticFeedback?.impactOccurred("heavy");
+		}
+	}
+
 	return (
 		<div className="pt-12">
 			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.png" />
@@ -90,18 +96,19 @@ export default function BranchesPage() {
 				<Loading />
 			) : (
 				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar">
-					<p className="mb-2">
-						<strong>Bizning filiallar manzillari va telefon raqamlari:</strong>
-					</p>
-					<Accordion type="single" collapsible>
+					<Accordion type="single" collapsible onValueChange={handleAccordionChange} className="space-y-2">
 						{branches?.map((branch) => {
 							return (
-								<AccordionItem key={branch.id} value={`branch-${branch.id}`}>
-									<AccordionTrigger>{branch.name}</AccordionTrigger>
+								<AccordionItem
+									key={branch.id}
+									value={`branch-${branch.id}`}
+									className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md px-4 mb-2 border-b-2"
+								>
+									<AccordionTrigger className="hover:no-underline py-3 font-semibold">{branch.name}</AccordionTrigger>
 									<AccordionContent>
 										<Item>
 											<ItemMedia>
-												<Store className="size-5" />
+												<Store className="size-5 text-[#be9941]" />
 											</ItemMedia>
 											<ItemContent>
 												<ItemTitle>{branch.address || "nomaʼlum"}</ItemTitle>
@@ -192,7 +199,7 @@ export default function BranchesPage() {
 										<AccordionContent>
 											<Item>
 												<ItemMedia>
-													<Navigation className="size-5" />
+													<Navigation className="size-5 text-[#be9941]" />
 												</ItemMedia>
 												<ItemContent>
 													<ItemTitle>{branch.orientir}</ItemTitle>
@@ -204,7 +211,7 @@ export default function BranchesPage() {
 										<AccordionContent>
 											<Item>
 												<ItemMedia>
-													<Clock className="size-5" />
+													<Clock className="size-5 text-[#be9941]" />
 												</ItemMedia>
 												<ItemContent>
 													<ItemTitle>{branch.worktime.replace("|", " - ")}</ItemTitle>
@@ -214,16 +221,16 @@ export default function BranchesPage() {
 									)}
 									{branch.googleMaps && (
 										<AccordionContent>
-											<Item asChild variant="outline">
+											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
 												<a type="button" onClick={() => handleOpenMap(branch.googleMaps)} className="w-full text-left cursor-pointer">
 													<ItemMedia>
-														<Map className="size-5" />
+														<Map className="size-5 text-[#be9941]" />
 													</ItemMedia>
 													<ItemContent>
 														<ItemTitle>Google xaritada koʻrish</ItemTitle>
 													</ItemContent>
 													<ItemActions>
-														<ChevronRightIcon className="size-4" />
+														<ChevronRightIcon className="size-4 text-[#be9941]" />
 													</ItemActions>
 												</a>
 											</Item>
@@ -231,16 +238,16 @@ export default function BranchesPage() {
 									)}
 									{branch.yandexMaps && (
 										<AccordionContent>
-											<Item asChild variant="outline">
+											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
 												<a type="button" onClick={() => handleOpenMap(branch.yandexMaps)} className="w-full text-left cursor-pointer">
 													<ItemMedia>
-														<Map className="size-5" />
+														<Map className="size-5 text-[#be9941]" />
 													</ItemMedia>
 													<ItemContent>
 														<ItemTitle>Yandex xaritada koʻrish</ItemTitle>
 													</ItemContent>
 													<ItemActions>
-														<ChevronRightIcon className="size-4" />
+														<ChevronRightIcon className="size-4 text-[#be9941]" />
 													</ItemActions>
 												</a>
 											</Item>
@@ -248,16 +255,16 @@ export default function BranchesPage() {
 									)}
 									{branch.phone1 && (
 										<AccordionContent>
-											<Item asChild variant="outline">
+											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
 												<a href={`tel:${branch.phone1}`} onClick={() => handleCopyPhone(branch.phone1)}>
 													<ItemMedia>
-														<Phone className="size-5" />
+														<Phone className="size-5 text-[#be9941]" />
 													</ItemMedia>
 													<ItemContent>
 														<ItemTitle>{branch.phone1}</ItemTitle>
 													</ItemContent>
 													<ItemActions>
-														<CopyCheck className="size-4" />
+														<CopyCheck className="size-4 text-[#be9941]" />
 													</ItemActions>
 												</a>
 											</Item>
@@ -265,16 +272,16 @@ export default function BranchesPage() {
 									)}
 									{branch.phone2 && (
 										<AccordionContent>
-											<Item asChild variant="outline">
+											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
 												<a href={`tel:${branch.phone2}`} onClick={() => handleCopyPhone(branch.phone2)}>
 													<ItemMedia>
-														<Phone className="size-5" />
+														<Phone className="size-5 text-[#be9941]" />
 													</ItemMedia>
 													<ItemContent>
 														<ItemTitle>{branch.phone2}</ItemTitle>
 													</ItemContent>
 													<ItemActions>
-														<CopyCheck className="size-4" />
+														<CopyCheck className="size-4 text-[#be9941]" />
 													</ItemActions>
 												</a>
 											</Item>
