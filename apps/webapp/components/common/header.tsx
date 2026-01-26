@@ -11,9 +11,7 @@ interface HeaderProps {
 	iconImage?: string;
 }
 
-type HeaderPropsWithIcon = 
-	| (HeaderProps & { icon: ElementType; iconImage?: never })
-	| (HeaderProps & { iconImage: string; icon?: never });
+type HeaderPropsWithIcon = (HeaderProps & { icon: ElementType; iconImage?: never }) | (HeaderProps & { iconImage: string; icon?: never });
 
 export function Header({ title, description, icon: Icon, iconImage }: HeaderPropsWithIcon) {
 	return (
@@ -26,7 +24,7 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 				) : null}
 			</div>
 			<div>
-				<h1 
+				<h1
 					className="text-4xl text-center font-bold uppercase"
 					style={{
 						backgroundImage: "url('/images/text-bg.png')",
@@ -42,7 +40,7 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 					{title}
 				</h1>
 				<span>
-					<p className="text-center text-sm mt-2">{description}</p>
+					<p className="text-center text-md font-semibold mt-2">{description}</p>
 				</span>
 				<Separator className="my-2" />
 			</div>

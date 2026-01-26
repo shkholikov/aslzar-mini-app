@@ -85,7 +85,7 @@ export default function BranchesPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati shu yerda ko'rsatiladi." iconImage="/icons/location.png" />
+			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.png" />
 			{loading ? (
 				<Loading />
 			) : (
@@ -114,7 +114,7 @@ export default function BranchesPage() {
 												{(() => {
 													const hasYandex = branch.yandexMaps && getYandexEmbedUrl(branch.yandexMaps);
 													const hasGoogle = (branch.googleMaps || branch.address) && getGoogleEmbedUrlSimple(branch.address);
-													
+
 													// Show tabs if both maps are available
 													if (hasYandex && hasGoogle) {
 														return (
@@ -150,7 +150,7 @@ export default function BranchesPage() {
 															</Tabs>
 														);
 													}
-													
+
 													// Show single Yandex map
 													if (hasYandex) {
 														return (
@@ -166,7 +166,7 @@ export default function BranchesPage() {
 															/>
 														);
 													}
-													
+
 													// Show single Google map
 													if (hasGoogle) {
 														return (
@@ -182,7 +182,7 @@ export default function BranchesPage() {
 															/>
 														);
 													}
-													
+
 													return null;
 												})()}
 											</div>

@@ -17,7 +17,7 @@ export default function FinancePage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz shu yerda ko'rsatiladi." iconImage="/icons/briefcase.png" />
+			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz" iconImage="/icons/briefcase.png" />
 			<div>
 				{loading ? (
 					<Loading />

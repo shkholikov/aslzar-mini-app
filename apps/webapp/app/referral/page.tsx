@@ -98,11 +98,7 @@ export default function ReferralPage() {
 
 	return (
 		<div className="pt-12">
-			<Header
-				title="Referral"
-				description="Sizning referal link va do'stlaringizni taklif qilib, qanday foyda olishingiz mumkinligi shu yerda ko'rsatiladi."
-				iconImage="/icons/user.png"
-			/>
+			<Header title="Referral" description="Sizning referal ma'lumotlaringiz" iconImage="/icons/user.png" />
 
 			{loading ? (
 				<Loading />
