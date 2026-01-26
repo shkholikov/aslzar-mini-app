@@ -83,7 +83,7 @@ export default function RegisterPage() {
 					<Loading />
 				</div>
 			) : (
-				<div className="m-2 border rounded-4xl shadow-sm bg-muted/50 bg-transparent p-4">
+				<div className="border-2 backdrop-blur-[4px] rounded-4xl bg-muted/50 bg-transparent m-2 p-4 shadow-sm">
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend>Ro‘yxatdan o‘tish ma’lumotlari</FieldLegend>
