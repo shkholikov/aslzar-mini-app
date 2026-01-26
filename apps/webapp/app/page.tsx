@@ -48,7 +48,7 @@ export default function HomePage() {
 							buttonText="Kirish"
 							onButtonClick={() => {
 								router.push("/register");
-								tg?.HapticFeedback?.impactOccurred("light");
+								tg?.HapticFeedback?.impactOccurred("heavy");
 							}}
 						/>
 					)}

@@ -35,7 +35,7 @@ export default function FinancePage() {
 						buttonText="Kirish"
 						onButtonClick={() => {
 							router.push("/register");
-							tg?.HapticFeedback?.impactOccurred("light");
+							tg?.HapticFeedback?.impactOccurred("heavy");
 						}}
 					/>
 				)}

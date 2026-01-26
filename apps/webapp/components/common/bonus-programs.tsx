@@ -84,7 +84,7 @@ export function BonusPrograms() {
 			<Tabs defaultValue={bonusProgramList[0]?.uroven} className="w-full items-center">
 				<TabsList>
 					{bonusProgramList.map((program) => (
-						<TabsTrigger key={program.uroven} value={program.uroven} onClick={() => tg?.HapticFeedback?.impactOccurred("light")}>
+						<TabsTrigger key={program.uroven} value={program.uroven} onClick={() => tg?.HapticFeedback?.impactOccurred("heavy")}>
 							{program.uroven}
 						</TabsTrigger>
 					))}

@@ -31,7 +31,7 @@ export function CallToActionItem({
 	return (
 
 
-		<Item variant={variant} className="m-2 backdrop-blur-[4px] bg-muted/50 bg-transparent rounded-4xl shadow-sm border-2">
+		<Item variant={variant} className="m-2 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2">
 			<ItemMedia>
 				{iconImage ? (
 					<Image src={iconImage} alt={title} width={35} height={35} className="object-contain" />

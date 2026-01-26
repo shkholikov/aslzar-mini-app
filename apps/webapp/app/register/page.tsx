@@ -49,7 +49,7 @@ export default function RegisterPage() {
 	}, [data, setValue]);
 
 	const onSubmit = async (data: RegisterSchema) => {
-		tg?.HapticFeedback?.impactOccurred("light");
+		tg?.HapticFeedback?.impactOccurred("heavy");
 
 		try {
 			const response = await fetch("/api/users", {
@@ -83,7 +83,7 @@ export default function RegisterPage() {
 					<Loading />
 				</div>
 			) : (
-				<div className="border-2 backdrop-blur-[4px] rounded-4xl bg-muted/50 bg-transparent m-2 p-4 shadow-sm">
+				<div className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent m-2 p-4 shadow-md">
 					<FieldGroup>
 						<FieldSet>
 							<FieldLegend>Ro‘yxatdan o‘tish ma’lumotlari</FieldLegend>
@@ -130,7 +130,7 @@ export default function RegisterPage() {
 										const phone = data.tgData.phone_number.startsWith("+") ? data.tgData.phone_number : `+${data.tgData.phone_number}`;
 										setValue("phone", phone);
 									}
-									tg?.HapticFeedback?.impactOccurred("light");
+									tg?.HapticFeedback?.impactOccurred("heavy");
 									toast.success("Barcha maydonlar tozalandi. Qaytadan maʼlumot kiriting.");
 								}}
 							>

@@ -52,7 +52,7 @@ export default function BranchesPage() {
 	}, []);
 
 	function handleCopyPhone(phone?: string) {
-		tg?.HapticFeedback?.impactOccurred("light");
+		tg?.HapticFeedback?.impactOccurred("heavy");
 		if (phone) {
 			navigator.clipboard.writeText(phone);
 			toast.success("Raqam nusxasi olindi!");
@@ -61,7 +61,7 @@ export default function BranchesPage() {
 
 	function handleOpenMap(url?: string) {
 		if (!url) return;
-		tg?.HapticFeedback?.impactOccurred("light");
+		tg?.HapticFeedback?.impactOccurred("heavy");
 		tg?.openLink(url, { try_instant_view: true });
 	}
 

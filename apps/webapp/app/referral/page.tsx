@@ -81,14 +81,14 @@ export default function ReferralPage() {
 	}, [tg]);
 
 	const handleCopy = useCallback(() => {
-		tg?.HapticFeedback?.impactOccurred("light");
+		tg?.HapticFeedback?.impactOccurred("heavy");
 		const referralMsg = `ASLZAR💎 platformasiga qo'shiling!\n\n🔗 Mening taklif havolam orqali ro'yxatdan o'tishingiz mumkin:\n\n${referralLink}`;
 		navigator.clipboard.writeText(referralMsg);
 		toast.success("Referral link nusxasi olindi!");
 	}, [referralLink, tg]);
 
 	const handleShare = useCallback(() => {
-		tg?.HapticFeedback?.impactOccurred("light");
+		tg?.HapticFeedback?.impactOccurred("heavy");
 		if (!preparedMessageId) {
 			toast.error("Referral ulashish uchun hozircha tayyorlangan link topilmadi.");
 			return;
@@ -115,7 +115,7 @@ export default function ReferralPage() {
 						loading={referralsLoading}
 						onReload={() => {
 							fetchUserReferrals();
-							tg?.HapticFeedback?.impactOccurred("light");
+							tg?.HapticFeedback?.impactOccurred("heavy");
 						}}
 					/>
 				</>
@@ -127,7 +127,7 @@ export default function ReferralPage() {
 					buttonText="Kirish"
 					onButtonClick={() => {
 						router.push("/register");
-						tg?.HapticFeedback?.impactOccurred("light");
+						tg?.HapticFeedback?.impactOccurred("heavy");
 					}}
 				/>
 			)}
