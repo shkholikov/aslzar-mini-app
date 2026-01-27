@@ -117,7 +117,7 @@ export default function ReferralPage() {
 				</>
 			) : (
 				<CallToActionItem
-					iconImage="/icons/info.png"
+					iconImage="/icons/user.png"
 					title="Siz hali ASLZAR mijozi emassiz."
 					description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
 					buttonText="Kirish"

@@ -76,7 +76,7 @@ export default function RegisterPage() {
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="pt-12">
-			<Header title="Ro‘yxatdan o‘tish" description="ASLZAR platformasida ro‘yxatdan o‘ting va mijozimizga aylaning." iconImage="/icons/paper.png" />
+			<Header title="Ro‘yxatdan o‘tish" description="ASLZAR platformasida ro‘yxatdan o‘ting va mijozimizga aylaning" iconImage="/icons/paper.png" />
 
 			{loading ? (
 				<div className="flex flex-col items-center">

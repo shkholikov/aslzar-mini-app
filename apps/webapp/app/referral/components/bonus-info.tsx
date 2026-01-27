@@ -21,7 +21,7 @@ export function BonusInfo({ data }: BonusInfoProps) {
 	const remainingBonus = data.bonusOstatok || 0;
 
 	return (
-		<SectionCard iconImage="/icons/wallet.png" title="Bonus ma'lumotlari">
+		<SectionCard iconImage="/icons/oxup.png" title="Bonus ma'lumotlari">
 			<div className="flex flex-wrap gap-2">
 				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
 					<Image src="/icons/crown.png" alt="Level" width={50} height={50} className="object-contain" />

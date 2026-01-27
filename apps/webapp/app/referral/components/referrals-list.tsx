@@ -25,7 +25,7 @@ interface ReferralsListProps {
 
 export function ReferralsList({ referrals, loading, onReload }: ReferralsListProps) {
 	return (
-		<SectionCard iconImage="/icons/user.png" title="Referallar">
+		<SectionCard iconImage="/icons/book.png" title="Referallar">
 			<div className="mt-2">
 				{loading ? (
 					<Loading />
