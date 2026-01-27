@@ -35,7 +35,8 @@ async function bootstrap() {
 				preparedMessageId: undefined,
 				createdAt: new Date(),
 				isVerified: undefined,
-				user1CData: undefined
+				user1CData: undefined,
+				pendingReferralCode: undefined
 			}),
 			getSessionKey: (ctx) => {
 				// Use user ID as session key
@@ -51,8 +52,13 @@ async function bootstrap() {
 		const referralCode = ctx.match as string | undefined;
 
 		if (referralCode) {
-			// Handle referral code - add to referrer's list in 1C
-			await handleReferralCode(ctx, referralCode);
+			// If user already has phone number, process referral immediately
+			if (ctx.session?.phone_number) {
+				await handleReferralCode(ctx, referralCode);
+			} else {
+				// Store referral code in session - will be processed after phone verification
+				ctx.session.pendingReferralCode = referralCode;
+			}
 		}
 
 		if (!ctx.session?.phone_number) {
@@ -82,6 +88,13 @@ async function bootstrap() {
 		if (user1CData) {
 			ctx.session.user1CData = user1CData;
 			ctx.session.isVerified = true;
+		}
+
+		// Process pending referral code if exists (after phone verification)
+		if (ctx.session.pendingReferralCode) {
+			await handleReferralCode(ctx, ctx.session.pendingReferralCode);
+			// Clear the pending referral code after processing
+			ctx.session.pendingReferralCode = undefined;
 		}
 
 		// Remove the contact request button

@@ -67,11 +67,17 @@ export async function searchUserByPhone(phone: string): Promise<Partial<I1CUserD
 /**
  * Adds a referral to a user's referral list in 1C API
  * @param clientId - The referrer's clientId from 1C
- * @param referredUserId - Telegram user ID of the person who opened the referral link
- * @param referredUserName - Name of the person (first_name, last_name, or username)
+ * @param referredUserPhone - Phone number of the person who opened the referral link
+ * @param referredUserFirstName - First name of the referred user
+ * @param referredUserLastName - Last name of the referred user
  * @returns true if successful, false otherwise
  */
-export async function addReferral(clientId: string, referredUserId: number, referredUserName: string): Promise<boolean> {
+export async function addReferral(
+	clientId: string,
+	referredUserPhone: string,
+	referredUserFirstName: string,
+	referredUserLastName: string
+): Promise<boolean> {
 	try {
 		// Validate environment variables
 		if (!API_BASE_URL || !API_USERNAME || !API_PASSWORD) {
@@ -101,14 +107,17 @@ export async function addReferral(clientId: string, referredUserId: number, refe
 			"Authorization": `Basic ${auth}`
 		};
 
+		// Remove + prefix from phone number if present (API expects phone without +)
+		const formattedPhone = referredUserPhone.startsWith("+") ? referredUserPhone.slice(1) : referredUserPhone;
+
 		// Prepare request body
 		const requestBody = {
 			clientId: clientId,
 			chislo: chislo,
-			familiya: "",
-			imya: referredUserName,
+			familiya: referredUserLastName || "",
+			imya: referredUserFirstName || "",
 			otchestvo: "",
-			phone: String(referredUserId)
+			phone: formattedPhone
 		};
 
 		// Call 1C API

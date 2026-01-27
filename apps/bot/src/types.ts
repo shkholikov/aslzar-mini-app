@@ -91,6 +91,7 @@ export interface ISessionData {
 	createdAt: Date;
 	isVerified?: boolean;
 	user1CData?: Partial<I1CUserData>; // Store 1C user data in session (all properties optional)
+	pendingReferralCode?: string; // Store referral code until user registers with phone
 }
 
 export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;

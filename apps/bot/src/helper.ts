@@ -124,6 +124,12 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 	const currentUserId = ctx.from?.id;
 	if (!currentUserId) return;
 
+	// Check if user has provided phone number (required for referral)
+	if (!ctx.session?.phone_number) {
+		console.log(`User ${currentUserId} hasn't provided phone number yet`);
+		return;
+	}
+
 	// Parse referral code as number (Telegram user ID)
 	const referrerId = parseInt(referralCode, 10);
 
@@ -155,15 +161,22 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 			return;
 		}
 
-		// Get referred user's name (first_name, last_name, or username)
-		const referredUserName = ctx.from?.first_name || ctx.from?.last_name || ctx.from?.username || "Nomaʼlum";
+		// Get referred user's phone number, first name, and last name
+		const referredUserPhone = ctx.session.phone_number;
+		const referredUserFirstName = ctx.from?.first_name || ctx.session.first_name || "";
+		const referredUserLastName = ctx.from?.last_name || ctx.session.last_name || "";
 
 		// Add referral to 1C
-		const success = await addReferral(referrer1CData.clientId, currentUserId, referredUserName);
+		const success = await addReferral(
+			referrer1CData.clientId,
+			referredUserPhone,
+			referredUserFirstName,
+			referredUserLastName
+		);
 		if (success) {
-			console.log(`Referral registered: User ${currentUserId} was referred by ${referrerId}`);
+			console.log(`Referral registered: User ${referredUserPhone} was referred by ${referrerId}`);
 		} else {
-			console.error(`Failed to register referral for user ${currentUserId}`);
+			console.error(`Failed to register referral for user ${referredUserPhone}`);
 		}
 	} catch (error) {
 		console.error("Error handling referral code:", error);
