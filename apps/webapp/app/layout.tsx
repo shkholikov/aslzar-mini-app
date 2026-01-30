@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
+import { BackgroundImage } from "@/components/common/background-image";
 import { TelegramProvider } from "@/hooks/useTelegram";
 import { UserProvider } from "@/hooks/useUser";
 import { Toaster } from "sonner";
@@ -62,6 +63,7 @@ export default function RootLayout({
 					paddingRight: "env(safe-area-inset-right, 0px)"
 				}}
 			>
+				<BackgroundImage />
 				<TelegramProvider>
 					<TelegramGuard>
 						<UserProvider>

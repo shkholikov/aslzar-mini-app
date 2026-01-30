@@ -4,6 +4,9 @@ import { Separator } from "../ui/separator";
 import type { ElementType } from "react";
 import Image from "next/image";
 
+// Use Next.js Image Optimization so text-bg is served as WebP/AVIF and cached
+const TEXT_BG_OPTIMIZED = "/_next/image?url=" + encodeURIComponent("/images/text-bg.png") + "&w=828&q=75";
+
 interface HeaderProps {
 	title: string;
 	description: string;
@@ -27,7 +30,7 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 				<h1
 					className="text-4xl text-center font-bold uppercase"
 					style={{
-						backgroundImage: "url('/images/text-bg.png')",
+						backgroundImage: `url('${TEXT_BG_OPTIMIZED}')`,
 						backgroundSize: "cover",
 						backgroundPosition: "center",
 						backgroundClip: "text",
