@@ -99,6 +99,9 @@ importers:
       mongodb:
         specifier: ^7.0.0
         version: 7.0.0
+      node-cron:
+        specifier: ^3.0.3
+        version: 3.0.3
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.7.2)(typescript@5.9.3)
@@ -106,6 +109,9 @@ importers:
       '@types/node':
         specifier: ^24.7.2
         version: 24.7.2
+      '@types/node-cron':
+        specifier: ^3.0.11
+        version: 3.0.11
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1248,6 +1254,9 @@ packages:
 
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
+
+  '@types/node-cron@3.0.11':
+    resolution: {integrity: sha512-0ikrnug3/IyneSHqCBeslAhlK2aBfYek1fGo4bP4QnZPmiqSGRK+Oy7ZMisLWkesffJvQ1cqAcBnJC+8+nxIAg==}
 
   '@types/node@20.19.21':
     resolution: {integrity: sha512-CsGG2P3I5y48RPMfprQGfy4JPRZ6csfC3ltBZSRItG3ngggmNY/qs2uZKp4p9VbrpqNNSMzUZNFZKzgOGnd/VA==}
@@ -2624,6 +2633,10 @@ packages:
     resolution: {integrity: sha512-UzsyGiJ4yTTQLCQD11k1DQaMwq2/SsztBg2b34zAqcyjS25qjDpogMKPaCKHwe/APRTHeel3iDXcVctk5CNaCQ==}
     engines: {node: '>=14.2'}
     hasBin: true
+
+  node-cron@3.0.3:
+    resolution: {integrity: sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A==}
+    engines: {node: '>=6.0.0'}
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -4508,6 +4521,8 @@ snapshots:
     dependencies:
       '@types/node': 24.7.2
 
+  '@types/node-cron@3.0.11': {}
+
   '@types/node@20.19.21':
     dependencies:
       undici-types: 6.21.0
@@ -6090,6 +6105,10 @@ snapshots:
       hpagent: 0.1.2
     transitivePeerDependencies:
       - supports-color
+
+  node-cron@3.0.3:
+    dependencies:
+      uuid: 8.3.2
 
   node-fetch@2.7.0:
     dependencies:

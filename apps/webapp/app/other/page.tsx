@@ -3,6 +3,7 @@
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { FAQ } from "./components/faq";
+import { SuggestionsForm } from "./components/suggestions-form";
 import { Instagram, Gem } from "lucide-react";
 import { Link } from "@/components/common/link";
 
@@ -39,6 +40,7 @@ export default function OtherPage() {
 			</SectionCard>
 			<Link title="ASLZAR Instagram rasmiy sahifasi." href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
 			<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
+			<SuggestionsForm />
 		</div>
 	);
 }

@@ -4,6 +4,7 @@ import { MongoClient, Document } from "mongodb";
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
 const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
+const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
 
 /**
  * Session data structure stored in MongoDB by MongoDBAdapter
@@ -62,6 +63,63 @@ export async function getUserDataByUserId(userId: string): Promise<MongoDBUserDo
 		return user.value;
 	} catch (error) {
 		console.error("Error fetching user data from database:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
+}
+
+/** Suggestion/complaint document stored in MongoDB */
+export interface SuggestionDocument extends Document {
+	text: string;
+	userId?: string;
+	firstName?: string;
+	lastName?: string;
+	username?: string;
+	createdAt: Date;
+}
+
+/** Options for inserting a suggestion (Telegram user info when available) */
+export interface InsertSuggestionOptions {
+	userId?: string;
+	firstName?: string;
+	lastName?: string;
+	username?: string;
+}
+
+/**
+ * Inserts a suggestion or complaint into MongoDB
+ * @param text - The suggestion or complaint text
+ * @param options - Optional Telegram user info (userId, firstName, lastName, username)
+ */
+export async function insertSuggestion(text: string, options?: InsertSuggestionOptions): Promise<void> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !suggestionsCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
+
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const db = client.db(dbName);
+		const suggestions = db.collection<SuggestionDocument>(suggestionsCollection);
+
+		const doc: SuggestionDocument = {
+			text,
+			createdAt: new Date()
+		};
+		if (options?.userId) doc.userId = options.userId;
+		if (options?.firstName) doc.firstName = options.firstName;
+		if (options?.lastName) doc.lastName = options.lastName;
+		if (options?.username) doc.username = options.username;
+
+		await suggestions.insertOne(doc);
+	} catch (error) {
+		console.error("Error inserting suggestion:", error);
 		throw error;
 	} finally {
 		if (client) {
