@@ -55,6 +55,8 @@ function getUpcomingPayments(session: SessionWith1C): UpcomingPayment[] {
 		const contractId = contract.id ?? "N/A";
 
 		for (const item of schedule) {
+			if (item.status === true) continue;
+
 			const sumToPay = Number(item.sumToPay);
 			const sumPayed = Number(item.sumPayed ?? 0);
 			if (sumPayed >= sumToPay) continue;
