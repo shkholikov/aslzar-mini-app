@@ -5,6 +5,7 @@ import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { checkSubscriptionFlow, handleReferralCode, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
 import { searchUserByPhone } from "./api";
+import { startPaymentReminderScheduler } from "./scheduler";
 
 config();
 
@@ -124,6 +125,9 @@ async function bootstrap() {
 			console.error("Unknown error:", e);
 		}
 	});
+
+	// Payment reminder: daily at 10:00 Tashkent; logs to reminder_logs
+	startPaymentReminderScheduler(bot.api);
 
 	// Start the bot
 	bot.start();

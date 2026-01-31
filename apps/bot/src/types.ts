@@ -95,3 +95,19 @@ export interface ISessionData {
 }
 
 export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;
+
+/** Log entry when a payment reminder is sent (or failed) to a user */
+export interface ReminderLogEntry {
+	telegramUserId: string;
+	sentAt: Date;
+	status: "sent" | "failed";
+	messageText: string;
+	paymentCount: number;
+	contractIds: string[];
+	paymentDates: string[];
+	telegramMessageId?: number;
+	error?: string;
+	source: "cron" | "test";
+	/** YYYY-MM-DD in Tashkent; used for idempotency (one reminder per user per day for cron) */
+	reminderDate?: string;
+}

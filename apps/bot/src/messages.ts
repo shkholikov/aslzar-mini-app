@@ -23,7 +23,28 @@ export const infoText = `
 `;
 
 export const subscribeRequestText = `
-Iltimos, *ASLZAR💎* Rasmiy telegram kanaliga a’zo bo‘ling\\.
+Iltimos, *ASLZAR💎* Rasmiy telegram kanaliga a'zo bo'ling\\.
 
-✅ A’zo bo‘lgach, "🔎 A’zolikni tekshirish" tugmasini bosing\\.
+✅ A'zo bo'lgach, "🔎 A'zolikni tekshirish" tugmasini bosing\\.
+`;
+
+// ——— Payment reminder. Replace {paymentList} with one or more blocks (each block: {contractId}, {date}, {sum}) ———
+
+export const paymentReminderText = `
+ASLZAR💎 To'lov eslatmasi
+
+⏰ Hurmatli mijoz, yaqinlashib kelayotgan to'lovlaringiz haqida eslatamiz:
+
+{paymentList}
+
+To'lovlaringizni o'z vaqtida amalga oshirishingizni so'rab qolamiz!
+
+Hurmat bilan, ASLZAR💎
+`;
+
+/** One payment block (repeat for each payment). Placeholders: {contractId}, {date}, {sum} */
+export const paymentReminderItem = `
+📑 Shartnoma raqami: {contractId}
+📅 To'lov sanasi: {date}
+🧾 Miqdor: {sum}
 `;
