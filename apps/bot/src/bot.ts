@@ -6,6 +6,7 @@ import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { checkSubscriptionFlow, handleReferralCode, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
 import { searchUserByPhone } from "./api";
 import { startPaymentReminderScheduler } from "./scheduler";
+import { startBroadcastScheduler } from "./broadcast";
 
 config();
 
@@ -128,6 +129,9 @@ async function bootstrap() {
 
 	// Payment reminder: daily at 10:00 Tashkent; logs to reminder_logs
 	startPaymentReminderScheduler(bot.api);
+
+	// Broadcast: process pending jobs from admin every minute
+	startBroadcastScheduler(bot.api);
 
 	// Start the bot
 	bot.start();

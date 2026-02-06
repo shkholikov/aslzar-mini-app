@@ -96,6 +96,19 @@ export interface ISessionData {
 
 export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;
 
+/** Broadcast job created by admin; processed by bot */
+export interface BroadcastJob {
+	_id?: unknown;
+	message: string;
+	status: "pending" | "processing" | "completed" | "failed";
+	createdAt: Date;
+	completedAt?: Date;
+	totalUsers?: number;
+	sentCount?: number;
+	failedCount?: number;
+	error?: string;
+}
+
 /** Log entry when a payment reminder is sent (or failed) to a user */
 export interface ReminderLogEntry {
 	telegramUserId: string;

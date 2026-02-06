@@ -4,6 +4,20 @@ import { MongoClient, Document } from "mongodb";
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
 const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
+const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
+
+/** Broadcast job (same shape as bot's BroadcastJob) */
+export interface BroadcastJobDoc {
+	_id?: unknown;
+	message: string;
+	status: "pending" | "processing" | "completed" | "failed";
+	createdAt: Date;
+	completedAt?: Date;
+	totalUsers?: number;
+	sentCount?: number;
+	failedCount?: number;
+	error?: string;
+}
 
 /**
  * User document structure from MongoDB
@@ -127,5 +141,46 @@ export async function getAllUsers(): Promise<UserDocument[]> {
 		if (client) {
 			await client.close();
 		}
+	}
+}
+
+/**
+ * Creates a new broadcast job (status: pending). Bot will pick it up and send to all users with phone.
+ */
+export async function createBroadcastJob(message: string): Promise<BroadcastJobDoc> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
+		const doc: BroadcastJobDoc = {
+			message,
+			status: "pending",
+			createdAt: new Date()
+		};
+		const result = await coll.insertOne(doc as Document);
+		return { ...doc, _id: result.insertedId };
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Gets recent broadcast jobs for admin UI
+ */
+export async function getBroadcastJobs(limit = 50): Promise<BroadcastJobDoc[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
+		return list as BroadcastJobDoc[];
+	} finally {
+		if (client) await client.close();
 	}
 }
