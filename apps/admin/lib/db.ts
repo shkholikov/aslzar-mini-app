@@ -5,6 +5,18 @@ const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
 const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
+const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
+
+/** Suggestion/complaint from webapp (same collection as webapp) */
+export interface SuggestionDoc {
+	_id?: unknown;
+	text: string;
+	userId?: string;
+	firstName?: string;
+	lastName?: string;
+	username?: string;
+	createdAt: Date;
+}
 
 /** Broadcast job (same shape as bot's BroadcastJob) */
 export interface BroadcastJobDoc {
@@ -180,6 +192,24 @@ export async function getBroadcastJobs(limit = 50): Promise<BroadcastJobDoc[]> {
 		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
 		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
 		return list as BroadcastJobDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Gets recent suggestions/complaints from the webapp's collection (for admin view)
+ */
+export async function getSuggestions(limit = 200): Promise<SuggestionDoc[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<SuggestionDoc>(suggestionsCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
+		return list as SuggestionDoc[];
 	} finally {
 		if (client) await client.close();
 	}

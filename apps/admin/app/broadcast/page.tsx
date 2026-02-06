@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Megaphone, ArrowLeft, Loader2 } from "lucide-react";
+import { Megaphone, Loader2 } from "lucide-react";
 import type { BroadcastJobDoc } from "@/lib/db";
+import { Loading } from "@/components/common/loading";
 
 export default function BroadcastPage() {
 	const [message, setMessage] = useState("");
@@ -77,18 +77,11 @@ export default function BroadcastPage() {
 	return (
 		<main className="flex min-h-screen w-full container flex-col py-8 px-4">
 			<div className="w-full max-w-2xl mx-auto">
-				<div className="flex items-center gap-4 pb-4">
-					<Link href="/">
-						<Button variant="ghost" size="icon" aria-label="Orqaga">
-							<ArrowLeft className="h-5 w-5" />
-						</Button>
-					</Link>
-					<div className="flex items-center gap-2">
-						<Megaphone className="w-10 h-10 text-gray-800" />
-						<div>
-							<h1 className="text-2xl text-gray-800 font-semibold">Broadcast</h1>
-							<p className="text-sm text-gray-600">Barcha foydalanuvchilarga xabar yuborish</p>
-						</div>
+				<div className="flex items-center gap-2 pb-4">
+					<Megaphone className="w-10 h-10 text-gray-800" />
+					<div>
+						<h1 className="text-2xl text-gray-800 font-semibold">Broadcast</h1>
+						<p className="text-sm text-gray-600">Barcha foydalanuvchilarga xabar yuborish</p>
 					</div>
 				</div>
 				<Separator className="mb-6" />
@@ -122,7 +115,7 @@ export default function BroadcastPage() {
 				<div>
 					<h2 className="text-lg font-medium text-gray-800 mb-3">So'nggi broadcastlar</h2>
 					{loadingJobs ? (
-						<p className="text-sm text-muted-foreground">Yuklanmoqda...</p>
+						<Loading />
 					) : jobs.length === 0 ? (
 						<p className="text-sm text-muted-foreground">Hali broadcastlar yo'q.</p>
 					) : (

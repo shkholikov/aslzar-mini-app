@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { UsersList } from "@/components/users-list";
-import { Button } from "@/components/ui/button";
-import { Shield, Megaphone } from "lucide-react";
+import { Shield } from "lucide-react";
 
 export default function Home() {
 	return (
@@ -16,14 +14,6 @@ export default function Home() {
 					<span>
 						<p className="text-center mt-2">Aslzar Telegram boti foydalanuvchilarini boshqarish</p>
 					</span>
-					<div className="flex justify-center mt-3">
-						<Link href="/broadcast">
-							<Button variant="outline" size="sm">
-								<Megaphone className="w-4 h-4 mr-2" />
-								Broadcast
-							</Button>
-						</Link>
-					</div>
 					<Separator className="mt-2" />
 					<UsersList />
 				</div>

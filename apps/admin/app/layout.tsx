@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AdminNav } from "@/components/admin-nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +32,10 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-				<div className="flex justify-center">{children}</div>
+				<div className="flex min-h-screen flex-col">
+					<AdminNav />
+					<div className="flex flex-1 justify-center">{children}</div>
+				</div>
 			</body>
 		</html>
 	);
