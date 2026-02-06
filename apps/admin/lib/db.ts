@@ -9,7 +9,7 @@ const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "su
 
 /** Suggestion/complaint from webapp (same collection as webapp) */
 export interface SuggestionDoc {
-	_id?: unknown;
+	_id?: string;
 	text: string;
 	userId?: string;
 	firstName?: string;
@@ -20,7 +20,7 @@ export interface SuggestionDoc {
 
 /** Broadcast job (same shape as bot's BroadcastJob) */
 export interface BroadcastJobDoc {
-	_id?: unknown;
+	_id?: string;
 	message: string;
 	status: "pending" | "processing" | "completed" | "failed";
 	createdAt: Date;
@@ -172,7 +172,7 @@ export async function createBroadcastJob(message: string): Promise<BroadcastJobD
 			status: "pending",
 			createdAt: new Date()
 		};
-		const result = await coll.insertOne(doc as Document);
+		const result = await coll.insertOne(doc);
 		return { ...doc, _id: result.insertedId };
 	} finally {
 		if (client) await client.close();
