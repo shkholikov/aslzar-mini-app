@@ -92,7 +92,18 @@ export const columns: ColumnDef<User>[] = [
 				</Button>
 			);
 		},
-		cell: ({ row }) => <div className="lowercase">{row.original.value.username || "-"}</div>
+		cell: ({ row }) => <div className="lowercase">{row.original.value.username || "-"}</div>,
+		filterFn: (row, _columnId, filterValue) => {
+			if (!filterValue || typeof filterValue !== "string") return true;
+			const v = filterValue.trim().toLowerCase();
+			if (!v) return true;
+			const val = row.original.value;
+			const first = (val.first_name ?? "").toString().toLowerCase();
+			const last = (val.last_name ?? "").toString().toLowerCase();
+			const user = (val.username ?? "").toString().toLowerCase();
+			const phone = (val.phone_number ?? "").toString().toLowerCase();
+			return first.includes(v) || last.includes(v) || user.includes(v) || phone.includes(v);
+		}
 	},
 	{
 		accessorFn: (row) => row.value.phone_number,
@@ -282,12 +293,7 @@ export function UsersList() {
 				<Input
 					placeholder="Foydalanuvchi nomi, telefon yoki ism bo'yicha qidirish..."
 					value={(table.getColumn("username")?.getFilterValue() as string) ?? ""}
-					onChange={(event) => {
-						const value = event.target.value;
-						table.getColumn("username")?.setFilterValue(value);
-						table.getColumn("phone_number")?.setFilterValue(value);
-						table.getColumn("first_name")?.setFilterValue(value);
-					}}
+					onChange={(event) => table.getColumn("username")?.setFilterValue(event.target.value)}
 					className="max-w-sm"
 				/>
 				<DropdownMenu>
