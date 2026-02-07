@@ -38,7 +38,6 @@ export default function HomePage() {
 					) : data && data.code === 0 ? (
 						<>
 							<UserInfo />
-							<News />
 						</>
 					) : (
 						<CallToActionItem
@@ -52,6 +51,7 @@ export default function HomePage() {
 							}}
 						/>
 					)}
+					<News />
 				</div>
 			</>
 		</main>
