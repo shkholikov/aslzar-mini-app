@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserDataByUserId } from "@/lib/db";
+import { getUserDataByUserId, updateUserSession1CData } from "@/lib/db";
 
 // 1C API configuration from environment variables
 const API_BASE_URL = process.env.API_BASE_URL || "";
@@ -74,17 +74,18 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/users
- * Creates a new user in 1C API
+ * Creates a new user in 1C API and updates MongoDB session with 1C data so the bot treats them as verified.
  *
  * Request body:
  * - firstName: string (required) - User's first name
  * - lastName: string (required) - User's last name
  * - phone: string (required) - User's phone number in format +998XXXXXXXXX
+ * - userId: string (optional) - Telegram user ID; if provided, session in MongoDB is updated with 1C data
  */
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
-		const { firstName, lastName, phone } = body;
+		const { firstName, lastName, phone, userId } = body;
 
 		// Validate required fields
 		if (!firstName || !lastName || !phone) {
@@ -96,28 +97,22 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "1C API configuration is missing" }, { status: 500 });
 		}
 
-		// Build the full endpoint URL
-		const endpoint = `${API_BASE_URL}CreateUser`;
-
-		// Prepare Basic Auth header
+		const endpointCreate = `${API_BASE_URL}CreateUser`;
 		const auth = Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString("base64");
 		const headers: HeadersInit = {
 			"Content-Type": "application/json",
 			"Authorization": `Basic ${auth}`
 		};
 
-		// Format data for 1C API
-		const requestBody = {
-			phone: phone,
-			familiya: lastName,
-			imya: firstName
-		};
-
 		// Call 1C API to create user
-		const response = await fetch(endpoint, {
+		const response = await fetch(endpointCreate, {
 			method: "POST",
 			headers,
-			body: JSON.stringify(requestBody)
+			body: JSON.stringify({
+				phone: phone,
+				familiya: lastName,
+				imya: firstName
+			})
 		});
 
 		if (!response.ok) {
@@ -127,6 +122,22 @@ export async function POST(request: NextRequest) {
 		}
 
 		const data = await response.json();
+
+		// If Telegram userId was sent, fetch full 1C data and update session so bot (reminders, referrals) sees user as verified
+		if (userId && typeof userId === "string") {
+			const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+			const searchResponse = await fetch(`${API_BASE_URL}search`, {
+				method: "POST",
+				headers,
+				body: JSON.stringify({ phone: formattedPhone })
+			});
+			if (searchResponse.ok) {
+				const searchData = (await searchResponse.json()) as { code?: number };
+				if (searchData.code === 0) {
+					await updateUserSession1CData(userId, searchData as Record<string, unknown>, true);
+				}
+			}
+		}
 
 		return NextResponse.json(data, { status: 200 });
 	} catch (error) {

@@ -71,6 +71,48 @@ export async function getUserDataByUserId(userId: string): Promise<MongoDBUserDo
 	}
 }
 
+/**
+ * Updates the user's session in MongoDB with 1C data and verified flag.
+ * Used after webapp registration so the bot (reminders, referrals) sees the user as verified.
+ *
+ * @param userId - Telegram user ID (session key)
+ * @param user1CData - Full 1C API response (search result with code === 0)
+ * @param isVerified - Whether the user is verified in 1C
+ */
+export async function updateUserSession1CData(
+	userId: string,
+	user1CData: Record<string, unknown>,
+	isVerified: boolean
+): Promise<boolean> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
+
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const db = client.db(dbName);
+		const users = db.collection<MongoDBUserDocument>(usersCollection);
+
+		const result = await users.updateOne(
+			{ key: userId },
+			{ $set: { "value.user1CData": user1CData, "value.isVerified": isVerified } }
+		);
+
+		return result.matchedCount > 0 && result.modifiedCount > 0;
+	} catch (error) {
+		console.error("Error updating user session 1C data:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
+}
+
 /** Suggestion/complaint document stored in MongoDB */
 export interface SuggestionDocument extends Document {
 	text: string;

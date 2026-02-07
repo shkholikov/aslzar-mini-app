@@ -52,12 +52,13 @@ export default function RegisterPage() {
 		tg?.HapticFeedback?.impactOccurred("heavy");
 
 		try {
+			const userId = tg?.initDataUnsafe?.user?.id?.toString();
 			const response = await fetch("/api/users", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
 				},
-				body: JSON.stringify(data)
+				body: JSON.stringify({ ...data, ...(userId && { userId }) })
 			});
 
 			if (!response.ok) {
