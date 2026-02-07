@@ -63,6 +63,10 @@ export async function GET(request: NextRequest) {
 		}
 
 		const data = await response.json();
+		// Refresh cached 1C data in MongoDB so the bot (reminders, referrals) uses up-to-date data
+		if (data?.code === 0) {
+			await updateUserSession1CData(userId, data as Record<string, unknown>, true);
+		}
 		const userData = { ...data, tgData: tgSessionData };
 
 		return NextResponse.json(userData, { status: 200 });

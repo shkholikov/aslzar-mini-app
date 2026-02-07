@@ -69,11 +69,18 @@ async function bootstrap() {
 			// Request a contact
 			await sendContactRequest(ctx);
 			// User exists - send webapp URL directly
-		} else if (!ctx.session.isChannelMember) {
-			// send subscribe request
-			await sendSubscribeRequest(ctx);
 		} else {
-			await sendWebApp(ctx);
+			// Refresh cached 1C data for returning users so reminders/referrals use fresh data
+			const fresh1C = await searchUserByPhone(ctx.session.phone_number);
+			if (fresh1C) {
+				ctx.session.user1CData = fresh1C;
+				ctx.session.isVerified = true;
+			}
+			if (!ctx.session.isChannelMember) {
+				await sendSubscribeRequest(ctx);
+			} else {
+				await sendWebApp(ctx);
+			}
 		}
 	});
 
