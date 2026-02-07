@@ -79,11 +79,7 @@ export async function getUserDataByUserId(userId: string): Promise<MongoDBUserDo
  * @param user1CData - Full 1C API response (search result with code === 0)
  * @param isVerified - Whether the user is verified in 1C
  */
-export async function updateUserSession1CData(
-	userId: string,
-	user1CData: Record<string, unknown>,
-	isVerified: boolean
-): Promise<boolean> {
+export async function updateUserSession1CData(userId: string, user1CData: Record<string, unknown>, isVerified: boolean): Promise<boolean> {
 	let client: MongoClient | null = null;
 
 	try {
@@ -97,10 +93,7 @@ export async function updateUserSession1CData(
 		const db = client.db(dbName);
 		const users = db.collection<MongoDBUserDocument>(usersCollection);
 
-		const result = await users.updateOne(
-			{ key: userId },
-			{ $set: { "value.user1CData": user1CData, "value.isVerified": isVerified } }
-		);
+		const result = await users.updateOne({ key: userId }, { $set: { "value.user1CData": user1CData, "value.isVerified": isVerified } });
 
 		return result.matchedCount > 0 && result.modifiedCount > 0;
 	} catch (error) {
