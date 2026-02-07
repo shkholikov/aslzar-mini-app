@@ -1,6 +1,7 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SectionCard } from "@/components/common/section-card";
 import { Loading } from "@/components/common/loading";
+import { format1CDate } from "@/lib/format1cDate";
 
 interface Pay {
 	id: number;
@@ -52,7 +53,7 @@ export function Contracts({ contracts, loading }: ContractsProps) {
 								<TableRow key={idx}>
 									<TableCell className="font-medium">{contract.sum.toLocaleString("uz-UZ")} so&apos;m</TableCell>
 									<TableCell>{contract.months} oy</TableCell>
-									<TableCell>{new Date(contract.date).toLocaleDateString("uz-UZ")}</TableCell>
+									<TableCell>{format1CDate(contract.date)}</TableCell>
 									<TableCell>{remaining.toLocaleString("uz-UZ")} so&apos;m</TableCell>
 								</TableRow>
 							);

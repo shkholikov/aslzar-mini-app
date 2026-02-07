@@ -3,6 +3,7 @@ import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
 import { ClockAlert } from "lucide-react";
 import { Loading } from "@/components/common/loading";
+import { format1CDate } from "@/lib/format1cDate";
 
 interface ScheduleItem {
 	status: boolean;
@@ -77,7 +78,7 @@ export function UpcomingPayments({ contracts, loading }: UpcomingPaymentsProps) 
 						<div className="text-xs font-semibold text-center">Shartnoma {payment.contractId}</div>
 						<div className="text-xs text-muted-foreground text-center">{payment.step}-to&apos;lov</div>
 						<div className="text-xs text-muted-foreground text-center">
-							{new Date(payment.date).toLocaleDateString("uz-UZ", { year: "numeric", month: "long", day: "numeric" })}
+							{format1CDate(payment.date, { year: "numeric", month: "long", day: "numeric" })}
 						</div>
 						<Badge variant="default" className="bg-[#be9941] text-white">
 							{payment.sumToPay.toLocaleString("uz-UZ")} so&apos;m

@@ -5,6 +5,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Loading } from "@/components/common/loading";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { RefreshCw } from "lucide-react";
+import { format1CDate } from "@/lib/format1cDate";
 
 interface IReferral {
 	id: string;
@@ -47,7 +48,7 @@ export function ReferralsList({ referrals, loading, onReload }: ReferralsListPro
 										<TableCell className="font-medium">{referral.phone}</TableCell>
 										<TableCell>{referral.imya || "Nomaʼlum"}</TableCell>
 										<TableCell>{referral.contract ? "Xarid qilgan" : "Xarid qilmagan"}</TableCell>
-										<TableCell>{new Date(referral.chislo).toLocaleDateString("uz-UZ")}</TableCell>
+										<TableCell>{format1CDate(referral.chislo)}</TableCell>
 									</TableRow>
 								))}
 							</TableBody>

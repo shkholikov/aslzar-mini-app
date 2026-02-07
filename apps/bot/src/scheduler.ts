@@ -10,6 +10,7 @@ import type { Api } from "grammy";
 import { users, reminderLogs } from "./db";
 import { paymentReminderItem, paymentReminderText } from "./messages";
 import type { I1CUserData, ReminderLogEntry } from "./types";
+import { format1CDate } from "./format1cDate";
 
 const TZ = "Asia/Tashkent";
 const REMINDER_DAYS = new Set([0, 3, 5]);
@@ -87,11 +88,7 @@ function buildReminderMessage(payments: UpcomingPayment[]): string {
 	if (payments.length === 0) return "";
 
 	const blocks = payments.map((p) => {
-		const dateFormatted = new Date(p.date).toLocaleDateString("uz-UZ", {
-			year: "numeric",
-			month: "long",
-			day: "numeric"
-		});
+		const dateFormatted = format1CDate(p.date);
 		const sumFormatted = p.sumToPay.toLocaleString("uz-UZ") + " so'm";
 		return paymentReminderItem.replace("{contractId}", p.contractId).replace("{date}", dateFormatted).replace("{sum}", sumFormatted).trim();
 	});
