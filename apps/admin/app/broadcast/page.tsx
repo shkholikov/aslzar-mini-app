@@ -82,9 +82,7 @@ export default function BroadcastPage() {
 		try {
 			const res = await fetch(`/api/broadcast/${id}/cancel`, { method: "PATCH" });
 			if (!res.ok) throw new Error("Bekor qilib bo‘lmadi");
-			setJobs((prev) =>
-				prev.map((j) => (String(j._id) === String(id) ? { ...j, status: "cancelled" as const } : j))
-			);
+			setJobs((prev) => prev.map((j) => (String(j._id) === String(id) ? { ...j, status: "cancelled" as const } : j)));
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Xatolik");
 		}
@@ -138,10 +136,7 @@ export default function BroadcastPage() {
 						) : (
 							<ul className="space-y-3">
 								{jobs.map((job) => (
-									<li
-										key={String(job._id)}
-										className="rounded-lg border border-border bg-card p-4 text-card-foreground"
-									>
+									<li key={String(job._id)} className="rounded-lg border border-border bg-card p-4 text-card-foreground">
 										<div className="flex justify-between items-start gap-2 mb-2">
 											<span
 												className={`text-xs font-medium px-2 py-0.5 rounded ${

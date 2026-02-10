@@ -20,7 +20,7 @@ export interface SuggestionDoc {
 
 /** Broadcast job (same shape as bot's BroadcastJob) */
 export interface BroadcastJobDoc {
-	_id?: string;
+	_id?: string | ObjectId;
 	message: string;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
@@ -205,7 +205,8 @@ export async function cancelBroadcastJob(jobId: string): Promise<boolean> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
-		const id = ObjectId.isValid(jobId) ? new ObjectId(jobId) : jobId;
+		if (!ObjectId.isValid(jobId)) return false;
+		const id = new ObjectId(jobId);
 		client = new MongoClient(dbUri);
 		await client.connect();
 		const db = client.db(dbName);
