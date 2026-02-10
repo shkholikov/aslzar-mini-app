@@ -40,8 +40,36 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 
 	let sentCount = 0;
 	let failedCount = 0;
+	const CHECK_CANCEL_EVERY = 5;
 
-	for (const telegramUserId of keys) {
+	// Check once before starting in case admin cancelled right after we claimed
+	const freshBefore = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
+	if (freshBefore?.status === "cancelled") {
+		console.log(`[Broadcast] job ${id} was cancelled before sending`);
+		return;
+	}
+
+	for (let i = 0; i < keys.length; i++) {
+		const telegramUserId = keys[i];
+		// Check if job was cancelled (e.g. by admin) so we can stop sending
+		if (i > 0 && i % CHECK_CANCEL_EVERY === 0) {
+			const updated = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
+			if (updated?.status === "cancelled") {
+				await broadcastJobs.updateOne(
+					{ _id: id } as Filter<BroadcastJob>,
+					{
+						$set: {
+							totalUsers: keys.length,
+							sentCount,
+							failedCount,
+							completedAt: new Date()
+						}
+					}
+				);
+				console.log(`[Broadcast] job ${id} cancelled by user: ${sentCount} sent, ${failedCount} failed before stop`);
+				return;
+			}
+		}
 		try {
 			await api.sendMessage(telegramUserId, job.message);
 			sentCount++;

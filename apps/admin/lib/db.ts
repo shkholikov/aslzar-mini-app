@@ -1,4 +1,4 @@
-import { MongoClient, Document } from "mongodb";
+import { MongoClient, Document, ObjectId } from "mongodb";
 
 // MongoDB configuration
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
@@ -22,7 +22,7 @@ export interface SuggestionDoc {
 export interface BroadcastJobDoc {
 	_id?: string;
 	message: string;
-	status: "pending" | "processing" | "completed" | "failed";
+	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
 	completedAt?: Date;
 	totalUsers?: number;
@@ -192,6 +192,29 @@ export async function getBroadcastJobs(limit = 50): Promise<BroadcastJobDoc[]> {
 		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
 		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
 		return list as BroadcastJobDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Cancel a broadcast job. Only cancels if status is "pending" or "processing".
+ * Returns true if the job was found and cancelled.
+ */
+export async function cancelBroadcastJob(jobId: string): Promise<boolean> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		const id = ObjectId.isValid(jobId) ? new ObjectId(jobId) : jobId;
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
+		const result = await coll.updateOne(
+			{ _id: id, status: { $in: ["pending", "processing"] } },
+			{ $set: { status: "cancelled", completedAt: new Date() } }
+		);
+		return result.matchedCount === 1 && result.modifiedCount === 1;
 	} finally {
 		if (client) await client.close();
 	}

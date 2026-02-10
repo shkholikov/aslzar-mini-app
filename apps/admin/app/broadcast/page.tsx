@@ -70,9 +70,24 @@ export default function BroadcastPage() {
 			pending: "Kutilmoqda",
 			processing: "Yuborilmoqda",
 			completed: "Tugallandi",
-			failed: "Xatolik"
+			failed: "Xatolik",
+			cancelled: "Bekor qilindi"
 		};
 		return map[status] ?? status;
+	}
+
+	async function handleCancel(job: BroadcastJobDoc) {
+		const id = job._id;
+		if (!id || (job.status !== "pending" && job.status !== "processing")) return;
+		try {
+			const res = await fetch(`/api/broadcast/${id}/cancel`, { method: "PATCH" });
+			if (!res.ok) throw new Error("Bekor qilib bo‘lmadi");
+			setJobs((prev) =>
+				prev.map((j) => (String(j._id) === String(id) ? { ...j, status: "cancelled" as const } : j))
+			);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Xatolik");
+		}
 	}
 
 	return (
@@ -134,9 +149,11 @@ export default function BroadcastPage() {
 														? "bg-green-100 text-green-800"
 														: job.status === "failed"
 															? "bg-red-100 text-red-800"
-															: job.status === "processing"
-																? "bg-blue-100 text-blue-800"
-																: "bg-gray-100 text-gray-800"
+															: job.status === "cancelled"
+																? "bg-amber-100 text-amber-800"
+																: job.status === "processing"
+																	? "bg-blue-100 text-blue-800"
+																	: "bg-gray-100 text-gray-800"
 												}`}
 											>
 												{statusLabel(job.status)}
@@ -144,6 +161,19 @@ export default function BroadcastPage() {
 											<span className="text-xs text-muted-foreground">{formatDate(job.createdAt)}</span>
 										</div>
 										<p className="text-sm whitespace-pre-wrap break-words">{job.message}</p>
+										{(job.status === "pending" || job.status === "processing") && (
+											<div className="mt-2">
+												<Button
+													type="button"
+													variant="outline"
+													size="sm"
+													onClick={() => handleCancel(job)}
+													className="text-destructive border-destructive/50 hover:bg-destructive/10"
+												>
+													Bekor qilish
+												</Button>
+											</div>
+										)}
 										{(job.sentCount !== undefined || job.failedCount !== undefined) && (
 											<p className="text-xs text-muted-foreground mt-2">
 												Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}

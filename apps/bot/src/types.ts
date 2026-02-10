@@ -100,7 +100,7 @@ export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;
 export interface BroadcastJob {
 	_id?: unknown;
 	message: string;
-	status: "pending" | "processing" | "completed" | "failed";
+	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
 	completedAt?: Date;
 	totalUsers?: number;
