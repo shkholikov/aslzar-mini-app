@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
 	flexRender,
 	getCoreRowModel,
@@ -245,26 +246,36 @@ export function UsersList() {
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = React.useState({});
+	const router = useRouter();
 	const [users, setUsers] = React.useState<User[]>([]);
 	const [loading, setLoading] = React.useState(true);
+	const [error, setError] = React.useState<string | null>(null);
 
 	React.useEffect(() => {
 		async function fetchUsers() {
 			try {
+				setError(null);
 				const response = await fetch("/api/users");
+				if (response.status === 401) {
+					router.replace("/login");
+					return;
+				}
 				if (!response.ok) {
-					throw new Error("Foydalanuvchilarni yuklashda xatolik");
+					const data = await response.json().catch(() => ({}));
+					setError(data.error || "Foydalanuvchilarni yuklashda xatolik");
+					return;
 				}
 				const data = await response.json();
 				setUsers(data.users || []);
-			} catch (error) {
-				console.error("Foydalanuvchilarni yuklashda xatolik:", error);
+			} catch (err) {
+				console.error("Foydalanuvchilarni yuklashda xatolik:", err);
+				setError("Foydalanuvchilarni yuklashda xatolik");
 			} finally {
 				setLoading(false);
 			}
 		}
 		fetchUsers();
-	}, []);
+	}, [router]);
 
 	const table = useReactTable({
 		data: users,
@@ -286,6 +297,11 @@ export function UsersList() {
 	});
 
 	if (loading) return <Loading />;
+	if (error) {
+		return (
+			<p className="text-sm text-destructive py-4">{error}</p>
+		);
+	}
 
 	return (
 		<div className="w-full">

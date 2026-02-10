@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Megaphone, Loader2 } from "lucide-react";
 import type { BroadcastJobDoc } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
+import { AdminGuard } from "@/components/common/admin-guard";
 
 export default function BroadcastPage() {
 	const [message, setMessage] = useState("");
@@ -75,86 +76,88 @@ export default function BroadcastPage() {
 	}
 
 	return (
-		<main className="flex min-h-screen w-full container flex-col py-8 px-4">
-			<div className="w-full max-w-2xl mx-auto">
-				<div className="flex items-center gap-2 pb-4">
-					<Megaphone className="w-10 h-10 text-gray-800" />
+		<AdminGuard>
+			<main className="flex min-h-screen w-full container flex-col py-8 px-4">
+				<div className="w-full max-w-2xl mx-auto">
+					<div className="flex items-center gap-2 pb-4">
+						<Megaphone className="w-10 h-10 text-gray-800" />
+						<div>
+							<h1 className="text-2xl text-gray-800 font-semibold">Broadcast</h1>
+							<p className="text-sm text-gray-600">Barcha foydalanuvchilarga xabar yuborish</p>
+						</div>
+					</div>
+					<Separator className="mb-6" />
+
+					<form onSubmit={handleSubmit} className="space-y-4 mb-8">
+						<label className="block text-sm font-medium text-gray-700" htmlFor="message">
+							Xabar matni
+						</label>
+						<textarea
+							id="message"
+							value={message}
+							onChange={(e) => setMessage(e.target.value)}
+							placeholder="Yubormoqchi bo'lgan xabaringizni yozing..."
+							rows={5}
+							className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] placeholder:text-muted-foreground disabled:opacity-50"
+							disabled={sending}
+						/>
+						{error && <p className="text-sm text-destructive">{error}</p>}
+						<Button type="submit" disabled={sending || !message.trim()}>
+							{sending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Yuborilmoqda...
+								</>
+							) : (
+								"Yuborish"
+							)}
+						</Button>
+					</form>
+
 					<div>
-						<h1 className="text-2xl text-gray-800 font-semibold">Broadcast</h1>
-						<p className="text-sm text-gray-600">Barcha foydalanuvchilarga xabar yuborish</p>
+						<h2 className="text-lg font-medium text-gray-800 mb-3">So'nggi broadcastlar</h2>
+						{loadingJobs ? (
+							<Loading />
+						) : jobs.length === 0 ? (
+							<p className="text-sm text-muted-foreground">Hali broadcastlar yo'q.</p>
+						) : (
+							<ul className="space-y-3">
+								{jobs.map((job) => (
+									<li
+										key={String(job._id)}
+										className="rounded-lg border border-border bg-card p-4 text-card-foreground"
+									>
+										<div className="flex justify-between items-start gap-2 mb-2">
+											<span
+												className={`text-xs font-medium px-2 py-0.5 rounded ${
+													job.status === "completed"
+														? "bg-green-100 text-green-800"
+														: job.status === "failed"
+															? "bg-red-100 text-red-800"
+															: job.status === "processing"
+																? "bg-blue-100 text-blue-800"
+																: "bg-gray-100 text-gray-800"
+												}`}
+											>
+												{statusLabel(job.status)}
+											</span>
+											<span className="text-xs text-muted-foreground">{formatDate(job.createdAt)}</span>
+										</div>
+										<p className="text-sm whitespace-pre-wrap break-words">{job.message}</p>
+										{(job.sentCount !== undefined || job.failedCount !== undefined) && (
+											<p className="text-xs text-muted-foreground mt-2">
+												Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}
+												{job.totalUsers != null && ` (jami: ${job.totalUsers})`}
+											</p>
+										)}
+										{job.error && <p className="text-xs text-destructive mt-1">{job.error}</p>}
+									</li>
+								))}
+							</ul>
+						)}
 					</div>
 				</div>
-				<Separator className="mb-6" />
-
-				<form onSubmit={handleSubmit} className="space-y-4 mb-8">
-					<label className="block text-sm font-medium text-gray-700" htmlFor="message">
-						Xabar matni
-					</label>
-					<textarea
-						id="message"
-						value={message}
-						onChange={(e) => setMessage(e.target.value)}
-						placeholder="Yubormoqchi bo'lgan xabaringizni yozing..."
-						rows={5}
-						className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] placeholder:text-muted-foreground disabled:opacity-50"
-						disabled={sending}
-					/>
-					{error && <p className="text-sm text-destructive">{error}</p>}
-					<Button type="submit" disabled={sending || !message.trim()}>
-						{sending ? (
-							<>
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								Yuborilmoqda...
-							</>
-						) : (
-							"Yuborish"
-						)}
-					</Button>
-				</form>
-
-				<div>
-					<h2 className="text-lg font-medium text-gray-800 mb-3">So'nggi broadcastlar</h2>
-					{loadingJobs ? (
-						<Loading />
-					) : jobs.length === 0 ? (
-						<p className="text-sm text-muted-foreground">Hali broadcastlar yo'q.</p>
-					) : (
-						<ul className="space-y-3">
-							{jobs.map((job) => (
-								<li
-									key={String(job._id)}
-									className="rounded-lg border border-border bg-card p-4 text-card-foreground"
-								>
-									<div className="flex justify-between items-start gap-2 mb-2">
-										<span
-											className={`text-xs font-medium px-2 py-0.5 rounded ${
-												job.status === "completed"
-													? "bg-green-100 text-green-800"
-													: job.status === "failed"
-														? "bg-red-100 text-red-800"
-														: job.status === "processing"
-															? "bg-blue-100 text-blue-800"
-															: "bg-gray-100 text-gray-800"
-											}`}
-										>
-											{statusLabel(job.status)}
-										</span>
-										<span className="text-xs text-muted-foreground">{formatDate(job.createdAt)}</span>
-									</div>
-									<p className="text-sm whitespace-pre-wrap break-words">{job.message}</p>
-									{(job.sentCount !== undefined || job.failedCount !== undefined) && (
-										<p className="text-xs text-muted-foreground mt-2">
-											Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}
-											{job.totalUsers != null && ` (jami: ${job.totalUsers})`}
-										</p>
-									)}
-									{job.error && <p className="text-xs text-destructive mt-1">{job.error}</p>}
-								</li>
-							))}
-						</ul>
-					)}
-				</div>
-			</div>
-		</main>
+			</main>
+		</AdminGuard>
 	);
 }

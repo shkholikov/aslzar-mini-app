@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { createBroadcastJob, getBroadcastJobs } from "@/lib/db";
+import { isAuthenticatedRequest } from "@/lib/auth";
 
 /**
  * GET /api/broadcast
  * Returns recent broadcast jobs
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
 	try {
+		const ok = await isAuthenticatedRequest(request);
+		if (!ok) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
 		const jobs = await getBroadcastJobs();
 		return NextResponse.json({ jobs }, { status: 200 });
 	} catch (error) {
@@ -26,8 +32,13 @@ export async function GET() {
  * Body: { message: string }
  * Creates a new broadcast job (pending). Bot processes it within ~1 minute.
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
 	try {
+		const ok = await isAuthenticatedRequest(request);
+		if (!ok) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
 		const body = await request.json();
 		const message = typeof body?.message === "string" ? body.message.trim() : "";
 		if (!message) {
