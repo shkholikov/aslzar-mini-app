@@ -3,7 +3,7 @@ import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
 import { ClockAlert } from "lucide-react";
 import { Loading } from "@/components/common/loading";
-import { format1CDate } from "@/lib/format1cDate";
+import { format1CDate, parse1CDate } from "@/lib/format1cDate";
 
 interface ScheduleItem {
 	status: boolean;
@@ -33,6 +33,13 @@ interface UpcomingPayment {
 	sumPayed: number;
 }
 
+function isInCurrentMonth(dateStr: string): boolean {
+	const d = parse1CDate(dateStr);
+	if (!d) return false;
+	const now = new Date();
+	return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
 function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment[] {
 	const upcomingPayments: UpcomingPayment[] = [];
 
@@ -44,7 +51,7 @@ function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment
 		const contractId = contract.contractId || contract.id || "N/A";
 
 		contract.schedule.forEach((item: ScheduleItem) => {
-			if (item.status === true) {
+			if (item.status === true && isInCurrentMonth(item.date)) {
 				upcomingPayments.push({
 					contractId,
 					step: item.step,
