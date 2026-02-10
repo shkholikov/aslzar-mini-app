@@ -16,7 +16,7 @@ export function AdminNav() {
 
 	return (
 		<nav className="border-b border-border bg-card">
-			<div className="container flex h-12 items-center justify-between gap-3 px-4">
+			<div className="container flex h-12 w-full max-w-full items-center gap-3 px-4">
 				<div className="flex items-center gap-1">
 					{tabs.map(({ href, label, icon: Icon }) => {
 						const active = pathname === href || (href !== "/" && pathname.startsWith(href));
@@ -37,21 +37,22 @@ export function AdminNav() {
 						);
 					})}
 				</div>
-
-				<button
-					type="button"
-					onClick={async () => {
-						try {
-							await fetch("/api/admin/logout", { method: "POST" });
-							window.location.href = "/login";
-						} catch {
-							// ignore
-						}
-					}}
-					className="inline-flex items-center justify-center rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
-				>
-					Chiqish
-				</button>
+				<div className="ml-auto shrink-0">
+					<button
+						type="button"
+						onClick={async () => {
+							try {
+								await fetch("/api/admin/logout", { method: "POST" });
+								window.location.href = "/login";
+							} catch {
+								// ignore
+							}
+						}}
+						className="inline-flex items-center justify-center rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition hover:bg-muted hover:text-foreground"
+					>
+						Chiqish
+					</button>
+				</div>
 			</div>
 		</nav>
 	);
