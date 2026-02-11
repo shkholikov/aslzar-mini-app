@@ -96,10 +96,14 @@ export interface ISessionData {
 
 export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;
 
+/** Broadcast audience: all, or by isVerified (verified = true, non_verified = not true) */
+export type BroadcastAudience = "all" | "verified" | "non_verified";
+
 /** Broadcast job created by admin; processed by bot */
 export interface BroadcastJob {
 	_id?: unknown;
 	message: string;
+	audience?: BroadcastAudience;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
 	completedAt?: Date;

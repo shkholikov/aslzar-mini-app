@@ -1,7 +1,7 @@
 /**
  * Broadcast job processor
  * - Picks up jobs with status "pending" from broadcast_jobs collection
- * - Sends message to all users with phone_number via Telegram API
+ * - Filters users by audience (isVerified: verified = true, non_verified = not true), sends via Telegram API
  * - Updates job status and counts
  */
 import cron from "node-cron";
@@ -28,13 +28,18 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 
 	const claimed = await claimJob(id);
 	if (!claimed) {
-		// Another worker (or previous run) already claimed this job — skip to avoid duplicate sends
 		return;
 	}
 
-	const cursor = users.find({
-		"value.phone_number": { $exists: true, $ne: "" }
-	});
+	const audience = job.audience ?? "all";
+	// Filter by isVerified only; Telegram user ID (key) is enough to send, phone not required
+	const userFilter: Record<string, unknown> =
+		audience === "verified"
+			? { "value.isVerified": true }
+			: audience === "non_verified"
+				? { "value.isVerified": { $ne: true } }
+				: {};
+	const cursor = users.find(userFilter as Parameters<typeof users.find>[0]);
 	const docs = await cursor.toArray();
 	const keys = docs.map((d) => (d as { key?: string }).key).filter((k): k is string => !!k);
 
@@ -42,16 +47,18 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 	let failedCount = 0;
 	const CHECK_CANCEL_EVERY = 5;
 
-	// Check once before starting in case admin cancelled right after we claimed
 	const freshBefore = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
 	if (freshBefore?.status === "cancelled") {
+		await broadcastJobs.updateOne(
+			{ _id: id } as Filter<BroadcastJob>,
+			{ $set: { totalUsers: keys.length, sentCount: 0, failedCount: 0, completedAt: new Date() } }
+		);
 		console.log(`[Broadcast] job ${id} was cancelled before sending`);
 		return;
 	}
 
 	for (let i = 0; i < keys.length; i++) {
 		const telegramUserId = keys[i];
-		// Check if job was cancelled (e.g. by admin) so we can stop sending
 		if (i > 0 && i % CHECK_CANCEL_EVERY === 0) {
 			const updated = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
 			if (updated?.status === "cancelled") {
@@ -66,7 +73,7 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 						}
 					}
 				);
-				console.log(`[Broadcast] job ${id} cancelled by user: ${sentCount} sent, ${failedCount} failed before stop`);
+				console.log(`[Broadcast] job ${id} cancelled: ${sentCount} sent, ${failedCount} failed`);
 				return;
 			}
 		}

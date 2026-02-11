@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createBroadcastJob, getBroadcastJobs } from "@/lib/db";
+import { createBroadcastJob, getBroadcastJobs, type BroadcastAudience } from "@/lib/db";
 import { isAuthenticatedRequest } from "@/lib/auth";
+
+const VALID_AUDIENCES: BroadcastAudience[] = ["all", "verified", "non_verified"];
 
 /**
  * GET /api/broadcast
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/broadcast
- * Body: { message: string }
+ * Body: { message: string, audience?: "all" | "verified" | "non_verified" }
  * Creates a new broadcast job (pending). Bot processes it within ~1 minute.
  */
 export async function POST(request: NextRequest) {
@@ -44,7 +46,12 @@ export async function POST(request: NextRequest) {
 		if (!message) {
 			return NextResponse.json({ error: "message is required and must be a non-empty string" }, { status: 400 });
 		}
-		const job = await createBroadcastJob(message);
+		const rawAudience = body?.audience;
+		const audience: BroadcastAudience =
+			typeof rawAudience === "string" && VALID_AUDIENCES.includes(rawAudience as BroadcastAudience)
+				? (rawAudience as BroadcastAudience)
+				: "all";
+		const job = await createBroadcastJob(message, audience);
 		return NextResponse.json({ job }, { status: 201 });
 	} catch (error) {
 		console.error("Error creating broadcast job:", error);

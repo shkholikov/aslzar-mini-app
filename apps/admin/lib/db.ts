@@ -18,10 +18,14 @@ export interface SuggestionDoc {
 	createdAt: Date;
 }
 
+/** Broadcast audience: all users, or filter by isVerified (verified = true, non_verified = not true) */
+export type BroadcastAudience = "all" | "verified" | "non_verified";
+
 /** Broadcast job (same shape as bot's BroadcastJob) */
 export interface BroadcastJobDoc {
 	_id?: string | ObjectId;
 	message: string;
+	audience?: BroadcastAudience;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
 	completedAt?: Date;
@@ -157,9 +161,12 @@ export async function getAllUsers(): Promise<UserDocument[]> {
 }
 
 /**
- * Creates a new broadcast job (status: pending). Bot will pick it up and send to all users with phone.
+ * Creates a new broadcast job (status: pending). Bot sends by audience (isVerified: verified = true, non_verified = not true).
  */
-export async function createBroadcastJob(message: string): Promise<BroadcastJobDoc> {
+export async function createBroadcastJob(
+	message: string,
+	audience: BroadcastAudience = "all"
+): Promise<BroadcastJobDoc> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
@@ -169,6 +176,7 @@ export async function createBroadcastJob(message: string): Promise<BroadcastJobD
 		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
 		const doc: BroadcastJobDoc = {
 			message,
+			audience,
 			status: "pending",
 			createdAt: new Date()
 		};

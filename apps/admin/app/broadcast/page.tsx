@@ -4,12 +4,19 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Megaphone, Loader2 } from "lucide-react";
-import type { BroadcastJobDoc } from "@/lib/db";
+import type { BroadcastJobDoc, BroadcastAudience } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
 
+const AUDIENCE_OPTIONS: { value: BroadcastAudience; label: string }[] = [
+	{ value: "all", label: "Barcha foydalanuvchilar" },
+	{ value: "verified", label: "Tasdiqlangan" },
+	{ value: "non_verified", label: "Tasdiqlanmagan" }
+];
+
 export default function BroadcastPage() {
 	const [message, setMessage] = useState("");
+	const [audience, setAudience] = useState<BroadcastAudience>("all");
 	const [sending, setSending] = useState(false);
 	const [jobs, setJobs] = useState<BroadcastJobDoc[]>([]);
 	const [loadingJobs, setLoadingJobs] = useState(true);
@@ -44,7 +51,7 @@ export default function BroadcastPage() {
 			const res = await fetch("/api/broadcast", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ message: text })
+				body: JSON.stringify({ message: text, audience })
 			});
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.error || "Failed to create broadcast");
@@ -102,6 +109,21 @@ export default function BroadcastPage() {
 					<Separator className="mb-6" />
 
 					<form onSubmit={handleSubmit} className="space-y-4 mb-8">
+						<div>
+							<label className="block text-sm font-medium text-gray-700 mb-2">Qaysi foydalanuvchilarga</label>
+							<select
+								value={audience}
+								onChange={(e) => setAudience(e.target.value as BroadcastAudience)}
+								disabled={sending}
+								className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:opacity-50"
+							>
+								{AUDIENCE_OPTIONS.map((opt) => (
+									<option key={opt.value} value={opt.value}>
+										{opt.label}
+									</option>
+								))}
+							</select>
+						</div>
 						<label className="block text-sm font-medium text-gray-700" htmlFor="message">
 							Xabar matni
 						</label>
@@ -137,22 +159,29 @@ export default function BroadcastPage() {
 							<ul className="space-y-3">
 								{jobs.map((job) => (
 									<li key={String(job._id)} className="rounded-lg border border-border bg-card p-4 text-card-foreground">
-										<div className="flex justify-between items-start gap-2 mb-2">
-											<span
-												className={`text-xs font-medium px-2 py-0.5 rounded ${
-													job.status === "completed"
-														? "bg-green-100 text-green-800"
-														: job.status === "failed"
-															? "bg-red-100 text-red-800"
-															: job.status === "cancelled"
-																? "bg-amber-100 text-amber-800"
-																: job.status === "processing"
-																	? "bg-blue-100 text-blue-800"
-																	: "bg-gray-100 text-gray-800"
-												}`}
-											>
-												{statusLabel(job.status)}
-											</span>
+										<div className="flex justify-between items-start gap-2 mb-2 flex-wrap">
+											<div className="flex items-center gap-2 flex-wrap">
+												<span
+													className={`text-xs font-medium px-2 py-0.5 rounded ${
+														job.status === "completed"
+															? "bg-green-100 text-green-800"
+															: job.status === "failed"
+																? "bg-red-100 text-red-800"
+																: job.status === "cancelled"
+																	? "bg-amber-100 text-amber-800"
+																	: job.status === "processing"
+																		? "bg-blue-100 text-blue-800"
+																		: "bg-gray-100 text-gray-800"
+													}`}
+												>
+													{statusLabel(job.status)}
+												</span>
+												{job.audience && job.audience !== "all" && (
+													<span className="text-xs text-muted-foreground">
+														{AUDIENCE_OPTIONS.find((o) => o.value === job.audience)?.label ?? job.audience}
+													</span>
+												)}
+											</div>
 											<span className="text-xs text-muted-foreground">{formatDate(job.createdAt)}</span>
 										</div>
 										<p className="text-sm whitespace-pre-wrap break-words">{job.message}</p>
