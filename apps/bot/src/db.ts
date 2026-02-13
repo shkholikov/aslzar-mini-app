@@ -1,10 +1,8 @@
 // db.ts
+import "./config";
 import { Collection, MongoClient } from "mongodb";
 import { ISession } from "@grammyjs/storage-mongodb";
-import { config } from "dotenv";
 import type { BroadcastJob, ReminderLogEntry } from "./types";
-
-config();
 
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
 const dbName = process.env.MONGO_DB_NAME || "";

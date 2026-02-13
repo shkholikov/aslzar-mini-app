@@ -1,4 +1,4 @@
-import { config } from "dotenv";
+import "./config";
 import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
@@ -7,8 +7,6 @@ import { checkSubscriptionFlow, handleReferralCode, initializeSession, sendConta
 import { searchUserByPhone } from "./api";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
-
-config();
 
 // Get bot token and webapp url from environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;

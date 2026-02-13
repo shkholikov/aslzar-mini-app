@@ -3,9 +3,11 @@
 	"version": "1.0.0",
 	"main": "dist/bot.js",
 	"scripts": {
-		"dev": "export DEBUG=\"grammy*\"&& ts-node src/bot.ts",
+		"dev": "NODE_ENV=development export DEBUG=\"grammy*\"&& ts-node src/bot.ts",
 		"build": "tsc",
-		"start": "node dist/bot.js"
+		"start": "NODE_ENV=production node dist/bot.js",
+		"start:dev": "NODE_ENV=development node dist/bot.js",
+		"start:prod": "NODE_ENV=production node dist/bot.js"
 	},
 	"keywords": [],
 	"author": "",

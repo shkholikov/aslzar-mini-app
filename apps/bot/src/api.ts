@@ -1,7 +1,5 @@
-import { config } from "dotenv";
+import "./config";
 import { I1CUserData } from "./types";
-
-config();
 
 // 1C API configuration from environment variables
 const API_BASE_URL = process.env.API_BASE_URL || "";
