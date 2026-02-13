@@ -6,6 +6,8 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { CallToActionItem } from "@/components/common/call-to-action-item";
 import { InfoIcon } from "lucide-react";
 
+const BOT_LINK = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
+
 export default function TelegramRequiredPage() {
 	const tg = useTelegram();
 	const router = useRouter();
@@ -25,11 +27,10 @@ export default function TelegramRequiredPage() {
 				description="Ushbu ilovadan foydalanish uchun Telegram orqali kirishingiz kerak. Bot orqali kirish uchun pastdagi tugmani bosing."
 				buttonText="Telegramda ochish"
 				onButtonClick={() => {
-					const botLink = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
 					if (tg?.openTelegramLink) {
-						tg.openTelegramLink(botLink);
+						tg.openTelegramLink(BOT_LINK);
 					} else {
-						window.location.href = botLink;
+						window.location.href = BOT_LINK;
 					}
 				}}
 			/>
