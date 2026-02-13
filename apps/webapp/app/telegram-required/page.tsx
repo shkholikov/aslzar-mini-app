@@ -25,10 +25,11 @@ export default function TelegramRequiredPage() {
 				description="Ushbu ilovadan foydalanish uchun Telegram orqali kirishingiz kerak. Bot orqali kirish uchun pastdagi tugmani bosing."
 				buttonText="Telegramda ochish"
 				onButtonClick={() => {
+					const botLink = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
 					if (tg?.openTelegramLink) {
-						tg.openTelegramLink("https://t.me/aslzardevbot");
+						tg.openTelegramLink(botLink);
 					} else {
-						window.location.href = "https://t.me/aslzardevbot";
+						window.location.href = botLink;
 					}
 				}}
 			/>

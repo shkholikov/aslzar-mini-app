@@ -75,10 +75,11 @@ export default function ReferralPage() {
 	}, [tg]);
 
 	// Memoize referral link for stable reference
+	const botLink = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
 	const referralLink = useMemo(() => {
-		if (!tg?.initDataUnsafe?.user?.id) return "https://t.me/aslzardevbot";
-		return `https://t.me/aslzardevbot?start=${tg.initDataUnsafe.user.id}`;
-	}, [tg]);
+		if (!tg?.initDataUnsafe?.user?.id) return botLink;
+		return `${botLink}?start=${tg.initDataUnsafe.user.id}`;
+	}, [tg, botLink]);
 
 	const handleCopy = useCallback(() => {
 		tg?.HapticFeedback?.impactOccurred("heavy");

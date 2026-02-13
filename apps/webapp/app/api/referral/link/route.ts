@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BOT_TOKEN = process.env.BOT_TOKEN!;
+const BOT_TELEGRAM_LINK = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
 const BOT_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 // /api/referral/link
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "userId is required" }, { status: 400 });
 		}
 
-		const referralLink = `https://t.me/aslzardevbot?start=${userId}`;
+		const referralLink = `${BOT_TELEGRAM_LINK}?start=${userId}`;
 
 		// Build InlineQueryResultArticle
 		const inlineResult = {

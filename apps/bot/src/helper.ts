@@ -5,6 +5,7 @@ import { users } from "./db";
 import { addReferral } from "./api";
 
 const WEBAPP_URL = process.env.WEBAPP_URL || "https://aslzar.uz";
+const BOT_TELEGRAM_LINK = process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
 const CHANNEL_ID = process.env.CHANNEL_ID || "@ASLZAR_tilla";
 
 export function initializeSession(ctx: MyContext): void {
@@ -83,7 +84,7 @@ export async function prepareReferralMessage(ctx: MyContext) {
 		return ctx.session.preparedMessageId;
 	}
 
-	const referralLink = `https://t.me/aslzardevbot?start=${userId}`;
+	const referralLink = `${BOT_TELEGRAM_LINK}?start=${userId}`;
 
 	const result = await ctx.api.savePreparedInlineMessage(
 		userId,
