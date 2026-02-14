@@ -26,7 +26,7 @@ type RegisterSchema = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
 	const tg = useTelegram();
-	const { data, loading } = useUser();
+	const { data, loading, refreshUserData } = useUser();
 	const router = useRouter();
 
 	const {
@@ -68,6 +68,7 @@ export default function RegisterPage() {
 			}
 
 			toast.success("Ro'yxatdan o'tish muvaffaqiyatli yakunlandi! Xush kelibsiz!");
+			await refreshUserData();
 			router.push("/");
 		} catch (error) {
 			console.error("Registration error:", error);
