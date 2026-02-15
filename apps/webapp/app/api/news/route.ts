@@ -1,60 +1,40 @@
 import { NextResponse } from "next/server";
-import Parser from "rss-parser";
+import { getChannelPosts } from "@/lib/db";
 
-const parser = new Parser();
 const MAX_ITEMS = 10;
+
+/** Build Telegram file URL from file_path (from getFile). */
+function telegramFileUrl(filePath: string): string {
+	const token = process.env.BOT_TOKEN;
+	if (!token) return "";
+	return `https://api.telegram.org/file/bot${token}/${filePath}`;
+}
 
 /**
  * GET /api/news
- * Fetches posts from your Telegram channel via RSS and returns them as JSON.
- * Set NEWS_RSS_URL in .env to your channel's RSS feed (e.g. from https://rss.app – create a feed from your t.me/channel link).
+ * Returns latest posts from the Telegram channel (stored in MongoDB by the bot on channel_post).
  */
 export async function GET() {
-	const rssUrl = process.env.NEWS_RSS_URL;
-	if (!rssUrl) {
-		return NextResponse.json(
-			{ error: "NEWS_RSS_URL is not configured", items: [] },
-			{ status: 200 }
-		);
-	}
-
 	try {
-		const feed = await parser.parseURL(rssUrl);
-		const items = (feed.items ?? [])
-			.slice(0, MAX_ITEMS)
-			.map((item) => {
-				const content = item.content ?? item.contentSnippet ?? "";
-				const description = stripHtml(content).slice(0, 300);
-				const enclosure = item.enclosure;
-				const imageUrl = enclosure?.type?.startsWith("image/")
-					? enclosure.url
-					: extractFirstImageUrl(content);
-				const videoUrl = enclosure?.type?.startsWith("video/") ? enclosure.url : null;
-				return {
-					title: item.title ?? "",
-					link: item.link ?? item.guid ?? "",
-					pubDate: item.pubDate ?? "",
-					description: description || "",
-					imageUrl: imageUrl || null,
-					videoUrl: videoUrl || null,
-				};
-			});
-
+		const posts = await getChannelPosts(MAX_ITEMS);
+		const items = posts.map((p) => {
+			const title = (p.text?.slice(0, 100).split("\n")[0] || "").trim() || "Yangilik";
+			const link =
+				p.channelUsername && p.channelUsername !== "channel"
+					? `https://t.me/${p.channelUsername}/${p.messageId}`
+					: "";
+			return {
+				title,
+				link,
+				pubDate: p.date ? new Date(p.date).toISOString() : "",
+				description: (p.text ?? "").slice(0, 300),
+				imageUrl: p.photoFilePath ? telegramFileUrl(p.photoFilePath) : null,
+				videoUrl: p.videoFilePath ? telegramFileUrl(p.videoFilePath) : null,
+			};
+		});
 		return NextResponse.json({ items });
 	} catch (err) {
-		console.error("[news] RSS fetch error:", err);
-		return NextResponse.json(
-			{ error: "Failed to fetch news", items: [] },
-			{ status: 200 }
-		);
+		console.error("[news] Channel posts fetch error:", err);
+		return NextResponse.json({ error: "Failed to fetch news", items: [] }, { status: 200 });
 	}
-}
-
-function stripHtml(html: string): string {
-	return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-}
-
-function extractFirstImageUrl(html: string): string | null {
-	const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-	return match ? match[1] : null;
 }

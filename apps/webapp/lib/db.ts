@@ -5,6 +5,7 @@ const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
 const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
+const channelPostsCollection = process.env.MONGO_DB_COLLECTION_CHANNEL_POSTS || "channel_posts";
 
 /**
  * Session data structure stored in MongoDB by MongoDBAdapter
@@ -156,6 +157,53 @@ export async function insertSuggestion(text: string, options?: InsertSuggestionO
 	} catch (error) {
 		console.error("Error inserting suggestion:", error);
 		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
+}
+
+/** Stored channel post (from bot channel_post handler) */
+export interface ChannelPostRecord {
+	messageId: number;
+	chatId: number;
+	channelUsername: string;
+	date: Date;
+	text: string;
+	photoFileId?: string;
+	photoFilePath?: string;
+	videoFileId?: string;
+	videoFilePath?: string;
+	createdAt: Date;
+}
+
+const MAX_CHANNEL_POSTS = 10;
+
+/**
+ * Fetches latest channel posts from MongoDB (stored by the bot when it receives channel_post updates).
+ * Used by /api/news to display "Yangiliklar" from the Telegram channel.
+ */
+export async function getChannelPosts(limit: number = MAX_CHANNEL_POSTS): Promise<ChannelPostRecord[]> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !channelPostsCollection) {
+			return [];
+		}
+
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const db = client.db(dbName);
+		const posts = db.collection<ChannelPostRecord>(channelPostsCollection);
+
+		const cursor = posts.find({}).sort({ date: -1 }).limit(limit);
+		const list = await cursor.toArray();
+		return list;
+	} catch (error) {
+		console.error("Error fetching channel posts:", error);
+		return [];
 	} finally {
 		if (client) {
 			await client.close();

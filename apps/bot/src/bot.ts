@@ -1,6 +1,6 @@
 import "./config";
 import { Bot, GrammyError, HttpError, session } from "grammy";
-import { connectToDb, users } from "./db";
+import { connectToDb, users, channelPosts } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { checkSubscriptionFlow, handleReferralCode, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
@@ -116,6 +116,50 @@ async function bootstrap() {
 	// on check_subscription callback
 	bot.callbackQuery("check_subscription", async (ctx) => {
 		await checkSubscriptionFlow(ctx);
+	});
+
+	// Store channel posts from our channel for the webapp "Yangiliklar" section
+	const CHANNEL_ID = process.env.CHANNEL_ID;
+	bot.on("channel_post", async (ctx) => {
+		if (!CHANNEL_ID || !channelPosts) return;
+		const chat = ctx.chat;
+		if (!chat || chat.type !== "channel") return;
+		// Only store posts from the configured channel (env: -1001332344978 or @ASLZAR_tilla)
+		const envChannelId = CHANNEL_ID.trim();
+		const isMatch = envChannelId.startsWith("@")
+			? "username" in chat && chat.username === envChannelId.slice(1)
+			: String(chat.id) === envChannelId;
+		if (!isMatch) return;
+
+		const msg = ctx.channelPost;
+		const text = msg.text ?? msg.caption ?? "";
+		const channelUsername = "username" in chat ? (chat.username ?? "") : "";
+
+		const doc: import("./types").ChannelPostDocument = {
+			messageId: msg.message_id,
+			chatId: chat.id,
+			channelUsername: channelUsername || "channel",
+			date: new Date(msg.date * 1000),
+			text,
+			createdAt: new Date()
+		};
+
+		try {
+			if (msg.photo && msg.photo.length > 0) {
+				const largest = msg.photo[msg.photo.length - 1];
+				doc.photoFileId = largest.file_id;
+				const file = await ctx.api.getFile(largest.file_id);
+				if (file.file_path) doc.photoFilePath = file.file_path;
+			}
+			if (msg.video) {
+				doc.videoFileId = msg.video.file_id;
+				const file = await ctx.api.getFile(msg.video.file_id);
+				if (file.file_path) doc.videoFilePath = file.file_path;
+			}
+			await channelPosts.insertOne(doc);
+		} catch (err) {
+			console.error("[channel_post] Failed to store post:", err);
+		}
 	});
 
 	// Error Handler

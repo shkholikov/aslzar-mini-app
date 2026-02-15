@@ -128,3 +128,19 @@ export interface ReminderLogEntry {
 	/** YYYY-MM-DD in Tashkent; used for idempotency (one reminder per user per day for cron) */
 	reminderDate?: string;
 }
+
+/** Channel post stored when bot receives a channel_post from the configured channel */
+export interface ChannelPostDocument {
+	messageId: number;
+	chatId: number;
+	channelUsername: string;
+	date: Date;
+	text: string;
+	/** Telegram file_id for photo (largest size) */
+	photoFileId?: string;
+	/** From getFile; used to build URL: https://api.telegram.org/file/bot<token>/<path> */
+	photoFilePath?: string;
+	videoFileId?: string;
+	videoFilePath?: string;
+	createdAt: Date;
+}
