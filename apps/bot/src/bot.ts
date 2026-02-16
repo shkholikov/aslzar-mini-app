@@ -118,27 +118,30 @@ async function bootstrap() {
 		await checkSubscriptionFlow(ctx);
 	});
 
-	// Store channel posts from our channel for the webapp "Yangiliklar" section
-	const CHANNEL_ID = process.env.CHANNEL_ID;
-	bot.on("channel_post", async (ctx) => {
-		if (!CHANNEL_ID || !channelPosts) return;
+	// Store group messages for the webapp "Yangiliklar" section.
+	// grammY: chatType() filters by chat type so only group/supergroup messages reach this handler.
+	// @see https://grammy.dev/ref/core/composer#method_chattype
+	const GROUP_ID = process.env.CHANNEL_ID; // group id (e.g. -1001234567890) or @username
+	bot.chatType(["group", "supergroup"]).on("message", async (ctx) => {
+		if (!GROUP_ID || !channelPosts) return;
 		const chat = ctx.chat;
-		if (!chat || chat.type !== "channel") return;
-		// Only store posts from the configured channel (env: -1001332344978 or @ASLZAR_tilla)
-		const envChannelId = CHANNEL_ID.trim();
-		const isMatch = envChannelId.startsWith("@")
-			? "username" in chat && chat.username === envChannelId.slice(1)
-			: String(chat.id) === envChannelId;
+		const envGroupId = GROUP_ID.trim();
+		const isMatch = envGroupId.startsWith("@")
+			? "username" in chat && chat.username === envGroupId.slice(1)
+			: String(chat.id) === envGroupId;
 		if (!isMatch) return;
 
-		const msg = ctx.channelPost;
+		const msg = ctx.message;
 		const text = msg.text ?? msg.caption ?? "";
-		const channelUsername = "username" in chat ? (chat.username ?? "") : "";
+		const groupLabel =
+			("username" in chat && chat.username ? `@${chat.username}` : null) ??
+			("title" in chat ? chat.title : null) ??
+			"group";
 
 		const doc: import("./types").ChannelPostDocument = {
 			messageId: msg.message_id,
 			chatId: chat.id,
-			channelUsername: channelUsername || "channel",
+			channelUsername: groupLabel,
 			date: new Date(msg.date * 1000),
 			text,
 			createdAt: new Date()
@@ -158,7 +161,7 @@ async function bootstrap() {
 			}
 			await channelPosts.insertOne(doc);
 		} catch (err) {
-			console.error("[channel_post] Failed to store post:", err);
+			console.error("[group message] Failed to store post:", err);
 		}
 	});
 
