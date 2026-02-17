@@ -147,21 +147,43 @@ async function bootstrap() {
 			createdAt: new Date()
 		};
 
+		// Try to resolve file paths for media, but don't fail the whole insert if this breaks
 		try {
 			if (msg.photo && msg.photo.length > 0) {
 				const largest = msg.photo[msg.photo.length - 1];
 				doc.photoFileId = largest.file_id;
-				const file = await ctx.api.getFile(largest.file_id);
-				if (file.file_path) doc.photoFilePath = file.file_path;
+				try {
+					const file = await ctx.api.getFile(largest.file_id);
+					if (file.file_path) doc.photoFilePath = file.file_path;
+				} catch (mediaErr) {
+					// E.g. Bad Request: file is too big — we still keep file_id and store the post
+					console.error("[group message] Failed to get photo file path:", mediaErr);
+				}
 			}
 			if (msg.video) {
 				doc.videoFileId = msg.video.file_id;
-				const file = await ctx.api.getFile(msg.video.file_id);
-				if (file.file_path) doc.videoFilePath = file.file_path;
+				// Only use the video thumbnail as preview image (small, safe to fetch).
+				// We do NOT fetch or store the actual video file.
+				const thumb = (msg.video as any).thumbnail ?? (msg.video as any).thumb;
+				if (thumb && !doc.photoFileId) {
+					doc.photoFileId = thumb.file_id;
+					try {
+						const thumbFile = await ctx.api.getFile(thumb.file_id);
+						if (thumbFile.file_path) doc.photoFilePath = thumbFile.file_path;
+					} catch (thumbErr) {
+						console.error("[group message] Failed to get video thumbnail file path:", thumbErr);
+					}
+				}
 			}
+		} catch (err) {
+			// Should be very rare; log but continue to insert the post
+			console.error("[group message] Unexpected error while resolving media paths:", err);
+		}
+
+		try {
 			await channelPosts.insertOne(doc);
 		} catch (err) {
-			console.error("[group message] Failed to store post:", err);
+			console.error("[group message] Failed to insert post into DB:", err);
 		}
 	});
 
