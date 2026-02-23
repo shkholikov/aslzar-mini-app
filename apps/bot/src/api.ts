@@ -105,8 +105,8 @@ export async function addReferral(
 			"Authorization": `Basic ${auth}`
 		};
 
-		// Remove + prefix from phone number if present (API expects phone without +)
-		const formattedPhone = referredUserPhone.startsWith("+") ? referredUserPhone.slice(1) : referredUserPhone;
+		// Ensure phone number always has + prefix for consistent format in 1C
+		const formattedPhone = referredUserPhone.startsWith("+") ? referredUserPhone : `+${referredUserPhone}`;
 
 		// Prepare request body
 		const requestBody = {
