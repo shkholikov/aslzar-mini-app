@@ -6,6 +6,7 @@ import { Loading } from "@/components/common/loading";
 import { useTelegram } from "@/hooks/useTelegram";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { ExternalLink } from "lucide-react";
+import { goldButtonClass } from "@/components/common/button-variants";
 
 interface NewsItem {
 	title: string;
@@ -113,7 +114,7 @@ export function News() {
 				{latest.link && (
 					<RippleButton
 						variant="outline"
-						className="mt-4 w-full gap-2 bg-[#be9941] text-white border-[#be9941] hover:bg-[#a88538] hover:text-white"
+						className={`mt-4 w-full gap-2 ${goldButtonClass}`}
 						onClick={() => openPost(latest.link)}
 					>
 						<ExternalLink className="size-4 shrink-0" />

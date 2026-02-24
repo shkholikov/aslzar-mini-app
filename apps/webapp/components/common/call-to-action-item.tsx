@@ -4,6 +4,7 @@ import { LucideIcon } from "lucide-react";
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "../ui/item";
 import { RippleButton } from "../ui/shadcn-io/ripple-button";
 import Image from "next/image";
+import { goldButtonClass } from "@/components/common/button-variants";
 
 interface CallToActionItemProps {
 	title: string;
@@ -44,7 +45,7 @@ export function CallToActionItem({
 				<ItemDescription>{description}</ItemDescription>
 			</ItemContent>
 			<ItemActions>
-				<RippleButton variant="outline" onClick={onButtonClick}>
+				<RippleButton variant="outline" className={goldButtonClass} onClick={onButtonClick}>
 					{buttonText}
 				</RippleButton>
 			</ItemActions>

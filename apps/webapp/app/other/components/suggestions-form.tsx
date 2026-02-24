@@ -5,6 +5,7 @@ import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { useTelegram } from "@/hooks/useTelegram";
 import { cn } from "@/lib/utils";
 import { SendHorizontal } from "lucide-react";
+import { goldButtonClass } from "@/components/common/button-variants";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -87,8 +88,8 @@ export function SuggestionsForm() {
 							</Field>
 						</FieldGroup>
 						<Field orientation="vertical" className="mt-4 space-y-2">
-							<RippleButton type="submit" variant="outline" disabled={isSubmitting}>
-								<SendHorizontal className="size-4 text-[#be9941]" />
+							<RippleButton type="submit" variant="outline" className={goldButtonClass} disabled={isSubmitting}>
+								<SendHorizontal className="size-4" />
 								{isSubmitting ? "Yuborilmoqda..." : "Yuborish"}
 							</RippleButton>
 						</Field>

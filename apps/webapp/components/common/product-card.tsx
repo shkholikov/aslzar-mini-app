@@ -4,6 +4,8 @@ import Image from "next/image";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { Badge } from "@/components/ui/badge";
 import { useTelegram } from "@/hooks/useTelegram";
+import { goldButtonClass } from "@/components/common/button-variants";
+import { ShoppingCart } from "lucide-react";
 
 export interface ProductCardProps {
 	id: string;
@@ -45,12 +47,8 @@ export function ProductCard({ title, description, price, imageUrl, badgeLabel }:
 					<div className="text-sm font-semibold">
 						<span>{formattedPrice}</span> <span className="text-xs text-muted-foreground">so&apos;m</span>
 					</div>
-					<RippleButton
-						type="button"
-						variant="outline"
-						className="px-4 py-1 rounded-full bg-[#be9941] text-white border-[#be9941] hover:bg-[#a88538] hover:text-white"
-						onClick={handleBuy}
-					>
+					<RippleButton type="button" variant="outline" className={goldButtonClass} onClick={handleBuy}>
+						<ShoppingCart className="size-4" />
 						Sotib olish
 					</RippleButton>
 				</div>

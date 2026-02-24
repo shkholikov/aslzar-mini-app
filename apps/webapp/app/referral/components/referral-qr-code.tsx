@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { QRCodeGenerator } from "./qrcode-generator";
 import { CopyCheck, Forward } from "lucide-react";
+import { goldButtonClass } from "@/components/common/button-variants";
 
 interface ReferralQRCodeProps {
 	referralLink: string;
@@ -29,16 +30,17 @@ export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShar
 				</Button>
 			</div>
 			<div className="flex flex-wrap items-center justify-center mt-2 gap-2 md:flex-row">
-				<RippleButton variant="outline" onClick={onCopy}>
-					<CopyCheck className="size-4 text-[#be9941]" /> Nusxa olish
+				<RippleButton variant="outline" className={goldButtonClass} onClick={onCopy}>
+					<CopyCheck className="size-4" /> Nusxa olish
 				</RippleButton>
 				<RippleButton
 					variant="outline"
+					className={goldButtonClass}
 					onClick={onShare}
 					disabled={!preparedMessageId}
 					title={!preparedMessageId ? "Ulashish uchun hozircha referral tayyorlangan emas" : undefined}
 				>
-					<Forward className="size-4 text-[#be9941]" /> Ulashish
+					<Forward className="size-4" /> Ulashish
 				</RippleButton>
 			</div>
 		</SectionCard>

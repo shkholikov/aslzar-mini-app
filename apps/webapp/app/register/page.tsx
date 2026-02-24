@@ -5,6 +5,7 @@ import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet 
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
+import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
 import { FileCheck, FileXIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -117,14 +118,15 @@ export default function RegisterPage() {
 						</FieldSet>
 
 						<Field orientation="vertical" className="mt-4 space-y-2">
-							<RippleButton type="submit" variant="outline">
-								<FileCheck className="size-4 text-[#be9941]" />
+							<RippleButton type="submit" variant="outline" className={goldButtonClass}>
+								<FileCheck className="size-4" />
 								Tasdiqlash
 							</RippleButton>
 
 							<RippleButton
 								variant="outline"
 								type="button"
+								className={goldButtonClass}
 								onClick={() => {
 									reset();
 									// Restore phone number after reset
@@ -136,7 +138,7 @@ export default function RegisterPage() {
 									toast.success("Barcha maydonlar tozalandi. Qaytadan maʼlumot kiriting.");
 								}}
 							>
-								<FileXIcon className="size-4 text-[#be9941]" />
+								<FileXIcon className="size-4" />
 								Tozalash
 							</RippleButton>
 						</Field>
