@@ -6,6 +6,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useRouter } from "next/navigation";
 
 /** Props: title, href, and either icon (Lucide) or iconImage (path). Right icon defaults to ChevronRight; haptic feedback on click is always enabled. */
 export type LinkProps = {
@@ -20,9 +21,7 @@ export type LinkProps = {
 	rightIconImage?: string;
 };
 
-type LinkPropsWithIcon =
-	| (LinkProps & { icon: ElementType; iconImage?: never })
-	| (LinkProps & { iconImage: string; icon?: never });
+type LinkPropsWithIcon = (LinkProps & { icon: ElementType; iconImage?: never }) | (LinkProps & { iconImage: string; icon?: never });
 
 const itemClassName = "backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2";
 
@@ -60,12 +59,24 @@ function LinkContent({
 
 export function Link({ title, href, icon: Icon, iconImage, rightIcon: RightIcon, rightIconImage }: LinkPropsWithIcon) {
 	const tg = useTelegram();
+	const router = useRouter();
 	const isInternal = href.startsWith("/");
 	const effectiveRightIcon = RightIcon ?? ChevronRight;
 	const effectiveRightIconImage = rightIconImage;
 
 	const handleClick = () => {
 		tg?.HapticFeedback?.impactOccurred("heavy");
+
+		// For internal links, also wire up Telegram's BackButton
+		// so pressing it takes the user back to the previous page.
+		if (isInternal && tg?.BackButton) {
+			tg.BackButton.show();
+			tg.BackButton.onClick(() => {
+				tg.HapticFeedback?.impactOccurred("heavy");
+				router.back();
+				tg.BackButton.hide();
+			});
+		}
 	};
 
 	const content = (
