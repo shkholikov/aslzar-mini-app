@@ -3,9 +3,8 @@
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { FAQ } from "./components/faq";
-import { SuggestionsForm } from "./components/suggestions-form";
-import { Instagram, Gem } from "lucide-react";
 import { Link } from "@/components/common/link";
+import { Gem, Instagram } from "lucide-react";
 
 const faqItems = [
 	{
@@ -35,12 +34,13 @@ export default function OtherPage() {
 	return (
 		<div className="pt-12">
 			<Header title="Boshqa" description="Platformadagi boshqa imkoniyatlar" iconImage="/icons/box.png" />
+			<Link title="Filiallar va manzillar" href="/branches" iconImage="/icons/location.png" />
+			<Link title="Taklif va shikoyatlar" href="/suggestions" iconImage="/icons/discussion.png" />
+			<Link title="ASLZAR Instagram rasmiy sahifasi" href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
+			<Link title="ASLZAR Telegram rasmiy kanali" href="https://t.me/ASLZAR_tilla" icon={Gem} />
 			<SectionCard iconImage="/icons/faq.png" title="Ko'p so'raladigan savollar">
 				<FAQ items={faqItems} />
 			</SectionCard>
-			<Link title="ASLZAR Instagram rasmiy sahifasi." href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
-			<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" icon={Gem} />
-			<SuggestionsForm />
 		</div>
 	);
 }

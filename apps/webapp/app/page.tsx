@@ -31,7 +31,6 @@ export default function HomePage() {
 			<>
 				<Profile />
 				<div>
-					<Link title="ASLZAR Telegram rasmiy kanali." href="https://t.me/ASLZAR_tilla" iconImage="/icons/ring.png" />
 					<PlatformInfo />
 					{loading ? (
 						<Loading />
