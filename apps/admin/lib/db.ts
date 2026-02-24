@@ -6,6 +6,7 @@ const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
 const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
+const productsCollection = process.env.MONGO_DB_COLLECTION_PRODUCTS || "products";
 
 /** Suggestion/complaint from webapp (same collection as webapp) */
 export interface SuggestionDoc {
@@ -16,6 +17,18 @@ export interface SuggestionDoc {
 	lastName?: string;
 	username?: string;
 	createdAt: Date;
+}
+
+/** Product stored in MongoDB (for webapp catalog) */
+export interface ProductDoc extends Document {
+	_id?: string | ObjectId;
+	title: string;
+	description: string;
+	price: number;
+	imageUrl: string;
+	badgeLabel?: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 /** Broadcast audience: all users, or filter by isVerified (verified = true, non_verified = not true) */
@@ -242,6 +255,76 @@ export async function getSuggestions(limit = 200): Promise<SuggestionDoc[]> {
 		const coll = db.collection<SuggestionDoc>(suggestionsCollection);
 		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
 		return list as SuggestionDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Creates a new product document.
+ */
+export async function createProduct(input: {
+	title: string;
+	description: string;
+	price: number;
+	imageUrl: string;
+	badgeLabel?: string;
+}): Promise<ProductDoc> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<ProductDoc>(productsCollection);
+		const now = new Date();
+		const doc: ProductDoc = {
+			title: input.title,
+			description: input.description,
+			price: input.price,
+			imageUrl: input.imageUrl,
+			badgeLabel: input.badgeLabel,
+			createdAt: now,
+			updatedAt: now
+		};
+		const result = await coll.insertOne(doc);
+		return { ...doc, _id: result.insertedId };
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Returns products ordered by newest first.
+ */
+export async function getProducts(limit = 100): Promise<ProductDoc[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<ProductDoc>(productsCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
+		return list as ProductDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Deletes a product by id.
+ */
+export async function deleteProduct(id: string): Promise<boolean> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<ProductDoc>(productsCollection);
+		const result = await coll.deleteOne({ _id: new ObjectId(id) });
+		return result.deletedCount === 1;
 	} finally {
 		if (client) await client.close();
 	}
