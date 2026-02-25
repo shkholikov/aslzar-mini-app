@@ -10,7 +10,7 @@ const demoProducts: ProductCardProps[] = [
 		title: "ASLZAR oltin karta",
 		description: "Har bir xaridda yuqori keshbek va eksklyuziv takliflar.",
 		price: 250000,
-		imageUrl: "/icons/wallet.png",
+		url: "/icons/wallet.png",
 		badgeLabel: "Aksiya"
 	},
 	{
@@ -18,21 +18,21 @@ const demoProducts: ProductCardProps[] = [
 		title: "ASLZAR premium obuna",
 		description: "Qo‘shimcha bonuslar, ustuvor qo‘llab-quvvatlash va ko‘proq imkoniyatlar.",
 		price: 150000,
-		imageUrl: "/icons/crown.png"
+		url: "/icons/crown.png"
 	},
 	{
 		id: "3",
 		title: "To‘lovlar paketi",
 		description: "Kommunal va boshqa to‘lovlar uchun qulay to‘lov paketi.",
 		price: 99000,
-		imageUrl: "/icons/paper.png"
+		url: "/icons/paper.png"
 	},
 	{
 		id: "4",
 		title: "Bonus ballar to‘plami",
 		description: "Ko‘proq xarid qiladiganlar uchun qo‘shimcha bonus ballar.",
 		price: 75000,
-		imageUrl: "/icons/bonus.png",
+		url: "/icons/bonus.png",
 		badgeLabel: "Chegirma"
 	},
 	{
@@ -40,14 +40,15 @@ const demoProducts: ProductCardProps[] = [
 		title: "ASLZAR oilaviy rejasi",
 		description: "Butun oila uchun birgalikdagi sodiqlik va to‘lov tizimi.",
 		price: 180000,
-		imageUrl: "/icons/user-info.png"
+		url: "/icons/user-info.png"
 	},
 	{
 		id: "6",
 		title: "Maxsus takliflar to‘plami",
 		description: "Cheklangan vaqt davomida amal qiladigan maxsus aksiyalar.",
 		price: 210000,
-		imageUrl: "/icons/info.png"
+		mediaType: "video",
+		url: "/IMG_9998.MOV"
 	}
 ];
 
