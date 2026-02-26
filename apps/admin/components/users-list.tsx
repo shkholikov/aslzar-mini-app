@@ -14,7 +14,7 @@ import {
 	type SortingState,
 	type VisibilityState
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -22,9 +22,6 @@ import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -131,6 +128,22 @@ export const columns: ColumnDef<User>[] = [
 		cell: ({ row }) => <div>{row.original.value.user1CData ? "Mavjud" : "Mavjud emas"}</div>
 	},
 	{
+		accessorFn: (row) => row.value.user1CData?.status ?? null,
+		id: "status",
+		header: "Status",
+		cell: ({ row }) => {
+			const user1CData = row.original.value.user1CData;
+			if (!user1CData) return <div>-</div>;
+
+			const status = user1CData.status;
+
+			if (status === true) return <div>Aktiv</div>;
+			if (status === false) return <div>Aktiv emas</div>;
+
+			return <div>-</div>;
+		}
+	},
+	{
 		accessorFn: (row) => {
 			const createdAt = row.value.createdAt;
 			if (!createdAt) return 0;
@@ -205,32 +218,6 @@ export const columns: ColumnDef<User>[] = [
 						minute: "2-digit"
 					}).format(date)}
 				</div>
-			);
-		}
-	},
-	{
-		id: "actions",
-		header: "Amallar",
-		enableHiding: false,
-		cell: ({ row }) => {
-			const user = row.original;
-
-			return (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" className="h-8 w-8 p-0">
-							<span className="sr-only">Menuni ochish</span>
-							<MoreHorizontal />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuLabel>Amallar</DropdownMenuLabel>
-						<DropdownMenuItem onClick={() => navigator.clipboard.writeText(user.key)}>Foydalanuvchi ID ni nusxalash</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>Foydalanuvchi tafsilotlarini ko'rish</DropdownMenuItem>
-						<DropdownMenuItem>1C ma'lumotlarini ko'rish</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
 			);
 		}
 	}

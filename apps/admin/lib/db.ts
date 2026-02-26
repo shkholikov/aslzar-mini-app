@@ -124,6 +124,7 @@ export interface UserDocument extends Document {
 			phone?: string;
 			passport?: string | null;
 			bonusOstatok?: number;
+			status?: boolean;
 			bonusInfo?: {
 				nachislenie: number;
 				spisanie: number;
