@@ -83,40 +83,20 @@ export function News() {
 		<SectionCard iconImage="/icons/news.png" title="Yangiliklar">
 			<div className="m-2 w-[calc(100%-1rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 p-4">
 				<h3 className="font-semibold text-base leading-snug">{latest.title}</h3>
-				{latest.pubDate && (
-					<p className="text-xs text-muted-foreground mt-1">{formatNewsDate(latest.pubDate)}</p>
-				)}
+				{latest.pubDate && <p className="text-xs text-muted-foreground mt-1">{formatNewsDate(latest.pubDate)}</p>}
 				{(latest.imageUrl || latest.videoUrl) && (
-					<div className="mt-3 w-full rounded-2xl overflow-hidden bg-muted/50 aspect-video shrink-0">
+					<div className="mt-3 w-full rounded-2xl overflow-hidden bg-muted/50 aspect-[4/5] shrink-0">
 						{latest.videoUrl ? (
-							<video
-								src={latest.videoUrl}
-								className="w-full h-full object-cover"
-								controls={false}
-								playsInline
-								preload="metadata"
-							/>
+							<video src={latest.videoUrl} className="w-full h-full object-cover" controls={false} playsInline preload="metadata" />
 						) : latest.imageUrl ? (
 							// eslint-disable-next-line @next/next/no-img-element
-							<img
-								src={latest.imageUrl}
-								alt=""
-								className="w-full h-full object-cover"
-							/>
+							<img src={latest.imageUrl} alt="" className="w-full h-full object-cover" />
 						) : null}
 					</div>
 				)}
-				{latest.description && (
-					<p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-normal">
-						{latest.description}
-					</p>
-				)}
+				{latest.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-normal">{latest.description}</p>}
 				{latest.link && (
-					<RippleButton
-						variant="outline"
-						className={`mt-4 w-full gap-2 ${goldButtonClass}`}
-						onClick={() => openPost(latest.link)}
-					>
+					<RippleButton variant="outline" className={`mt-4 w-full gap-2 ${goldButtonClass}`} onClick={() => openPost(latest.link)}>
 						<ExternalLink className="size-4 shrink-0" />
 						Kanalda ochish
 					</RippleButton>
