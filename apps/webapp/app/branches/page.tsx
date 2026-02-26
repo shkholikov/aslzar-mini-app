@@ -2,14 +2,12 @@
 
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { useTelegram } from "@/hooks/useTelegram";
-import { CopyCheck, Phone, Store, Map, Clock, Navigation, ChevronRightIcon } from "lucide-react";
+import { Copy, Map, Phone, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/common/loading";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function BranchesPage() {
 	const tg = useTelegram();
@@ -51,6 +49,72 @@ export default function BranchesPage() {
 		fetchBranchData();
 	}, []);
 
+	function buildBranchShareText(branch: {
+		name: string;
+		address: string;
+		phone1?: string;
+		phone2?: string;
+		worktime?: string;
+		yandexMaps?: string;
+		googleMaps?: string;
+		orientir?: string;
+	}) {
+		const lines = [
+			`ASLZAR filiali: ${branch.name}`,
+			branch.address && `🗺️ Manzil: ${branch.address}`,
+			branch.orientir && `📍 Mo'ljal: ${branch.orientir}`,
+			branch.worktime && `🕒 Ish vaqti: ${branch.worktime.replace("|", " - ")}`,
+			branch.phone1 && `📞 Telefon 1: ${branch.phone1}`,
+			branch.phone2 && `📞 Telefon 2: ${branch.phone2}`,
+			branch.yandexMaps && `🟡 Yandex xarita: ${branch.yandexMaps}`,
+			branch.googleMaps && `🔵 Google xarita: ${branch.googleMaps}`
+		].filter(Boolean) as string[];
+
+		return lines.join("\n");
+	}
+
+	function handleCopyBranchInfo(branch: {
+		name: string;
+		address: string;
+		phone1?: string;
+		phone2?: string;
+		worktime?: string;
+		yandexMaps?: string;
+		googleMaps?: string;
+		orientir?: string;
+	}) {
+		tg?.HapticFeedback?.impactOccurred("heavy");
+
+		const shareText = buildBranchShareText(branch);
+		navigator.clipboard.writeText(shareText);
+		toast.success("Filial maʼlumotlari nusxalandi!");
+	}
+
+	function handleShareBranchInfo(branch: {
+		name: string;
+		address: string;
+		phone1?: string;
+		phone2?: string;
+		worktime?: string;
+		yandexMaps?: string;
+		googleMaps?: string;
+		orientir?: string;
+	}) {
+		const shareText = buildBranchShareText(branch);
+		tg?.HapticFeedback?.impactOccurred("heavy");
+
+		// Prefer native Telegram share via link
+		const shareUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(shareText)}`;
+
+		if (tg?.openTelegramLink) {
+			tg.openTelegramLink(shareUrl);
+		} else {
+			// Fallback: copy to clipboard
+			navigator.clipboard.writeText(shareText);
+			toast.success("Filial maʼlumotlari nusxalandi! Ulashish uchun chatga joylashtiring.");
+		}
+	}
+
 	function handleCopyPhone(phone?: string) {
 		tg?.HapticFeedback?.impactOccurred("heavy");
 		if (phone) {
@@ -65,30 +129,6 @@ export default function BranchesPage() {
 		tg?.openLink(url, { try_instant_view: true });
 	}
 
-	// Convert Yandex Maps URL to embed URL
-	// Format: https://yandex.ru/map-widget/v1/?orgid=235434378453&z=16
-	function getYandexEmbedUrl(url?: string): string | null {
-		if (!url) return null;
-		const orgIdMatch = url.match(/org\/(\d+)/);
-		if (orgIdMatch) {
-			return `https://yandex.ru/map-widget/v1/?orgid=${orgIdMatch[1]}&z=16`;
-		}
-		return null;
-	}
-
-	// Simple Google Maps embed using address (no API key needed)
-	function getGoogleEmbedUrlSimple(address?: string): string | null {
-		if (!address) return null;
-		const encodedAddress = encodeURIComponent(address);
-		return `https://www.google.com/maps?q=${encodedAddress}&output=embed`;
-	}
-
-	function handleAccordionChange(value: string | undefined) {
-		if (value) {
-			tg?.HapticFeedback?.impactOccurred("heavy");
-		}
-	}
-
 	return (
 		<div className="pt-12">
 			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.png" />
@@ -96,201 +136,77 @@ export default function BranchesPage() {
 				<Loading />
 			) : (
 				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar">
-					<Accordion type="single" collapsible onValueChange={handleAccordionChange} className="space-y-2">
+					<div className="flex flex-col gap-3">
 						{branches?.map((branch) => {
+							const primaryPhone = branch.phone1 || branch.phone2;
+							const primaryMap = branch.yandexMaps || branch.googleMaps;
+
 							return (
-								<AccordionItem
-									key={branch.id}
-									value={`branch-${branch.id}`}
-									className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md px-4 mb-2 border-b-2"
-								>
-									<AccordionTrigger className="hover:no-underline py-3 font-semibold">{branch.name}</AccordionTrigger>
-									<AccordionContent>
-										<Item>
-											<ItemMedia>
-												<Store className="size-5 text-[#be9941]" />
-											</ItemMedia>
-											<ItemContent>
-												<ItemTitle>{branch.address || "nomaʼlum"}</ItemTitle>
-											</ItemContent>
-										</Item>
-									</AccordionContent>
-									{(branch.yandexMaps || branch.googleMaps || branch.address) && (
-										<AccordionContent>
-											<div className="w-full rounded-lg overflow-hidden border border-border">
-												{(() => {
-													const hasYandex = branch.yandexMaps && getYandexEmbedUrl(branch.yandexMaps);
-													const hasGoogle = (branch.googleMaps || branch.address) && getGoogleEmbedUrlSimple(branch.address);
-
-													// Show tabs if both maps are available
-													if (hasYandex && hasGoogle) {
-														return (
-															<Tabs defaultValue="yandex" className="w-full">
-																<TabsList className="w-full grid grid-cols-2">
-																	<TabsTrigger value="yandex">Yandex</TabsTrigger>
-																	<TabsTrigger value="google">Google</TabsTrigger>
-																</TabsList>
-																<TabsContent value="yandex" className="mt-0">
-																	<iframe
-																		src={getYandexEmbedUrl(branch.yandexMaps)!}
-																		width="100%"
-																		height="300"
-																		style={{ border: 0 }}
-																		allowFullScreen
-																		loading="lazy"
-																		referrerPolicy="no-referrer-when-downgrade"
-																		className="w-full"
-																	/>
-																</TabsContent>
-																<TabsContent value="google" className="mt-0">
-																	<iframe
-																		src={getGoogleEmbedUrlSimple(branch.address)!}
-																		width="100%"
-																		height="300"
-																		style={{ border: 0 }}
-																		allowFullScreen
-																		loading="lazy"
-																		referrerPolicy="no-referrer-when-downgrade"
-																		className="w-full"
-																	/>
-																</TabsContent>
-															</Tabs>
-														);
-													}
-
-													// Show single Yandex map
-													if (hasYandex) {
-														return (
-															<iframe
-																src={getYandexEmbedUrl(branch.yandexMaps)!}
-																width="100%"
-																height="300"
-																style={{ border: 0 }}
-																allowFullScreen
-																loading="lazy"
-																referrerPolicy="no-referrer-when-downgrade"
-																className="w-full"
-															/>
-														);
-													}
-
-													// Show single Google map
-													if (hasGoogle) {
-														return (
-															<iframe
-																src={getGoogleEmbedUrlSimple(branch.address)!}
-																width="100%"
-																height="300"
-																style={{ border: 0 }}
-																allowFullScreen
-																loading="lazy"
-																referrerPolicy="no-referrer-when-downgrade"
-																className="w-full"
-															/>
-														);
-													}
-
-													return null;
-												})()}
+								<Item key={branch.id} variant="outline" className="border-2 backdrop-blur-[10px] rounded-3xl bg-muted/50 shadow-md px-4 py-3">
+									<ItemContent>
+										<div className="flex items-center justify-between gap-2">
+											<ItemTitle className="font-semibold text-base">{branch.name}</ItemTitle>
+											<div className="flex items-center gap-1.5">
+												<button
+													type="button"
+													onClick={() => handleCopyBranchInfo(branch)}
+													className="inline-flex items-center justify-center rounded-full border border-border bg-background/60 p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground active:bg-[#be9941]/15 active:scale-95 transition-colors transition-transform"
+													aria-label="Filial ma'lumotlarini nusxalash"
+												>
+													<Copy className="size-4" />
+												</button>
+												<button
+													type="button"
+													onClick={() => handleShareBranchInfo(branch)}
+													className="inline-flex items-center justify-center rounded-full border border-border bg-background/60 p-1.5 text-muted-foreground hover:bg-muted/70 hover:text-foreground active:bg-[#be9941]/15 active:scale-95 transition-colors transition-transform"
+													aria-label="Filial ma'lumotlarini yuborish"
+												>
+													<Send className="size-4" />
+												</button>
 											</div>
-										</AccordionContent>
-									)}
-									{branch.orientir && (
-										<AccordionContent>
-											<Item>
-												<ItemMedia>
-													<Navigation className="size-5 text-[#be9941]" />
-												</ItemMedia>
-												<ItemContent>
-													<ItemTitle>{branch.orientir}</ItemTitle>
-												</ItemContent>
-											</Item>
-										</AccordionContent>
-									)}
-									{branch.worktime && (
-										<AccordionContent>
-											<Item>
-												<ItemMedia>
-													<Clock className="size-5 text-[#be9941]" />
-												</ItemMedia>
-												<ItemContent>
-													<ItemTitle>{branch.worktime.replace("|", " - ")}</ItemTitle>
-												</ItemContent>
-											</Item>
-										</AccordionContent>
-									)}
-									{branch.googleMaps && (
-										<AccordionContent>
-											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
-												<a type="button" onClick={() => handleOpenMap(branch.googleMaps)}>
-													<ItemMedia>
-														<Map className="size-5 text-[#be9941]" />
-													</ItemMedia>
-													<ItemContent>
-														<ItemTitle>Google xaritada koʻrish</ItemTitle>
-													</ItemContent>
-													<ItemActions>
-														<ChevronRightIcon className="size-4 text-[#be9941]" />
-													</ItemActions>
-												</a>
-											</Item>
-										</AccordionContent>
-									)}
-									{branch.yandexMaps && (
-										<AccordionContent>
-											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
-												<a type="button" onClick={() => handleOpenMap(branch.yandexMaps)}>
-													<ItemMedia>
-														<Map className="size-5 text-[#be9941]" />
-													</ItemMedia>
-													<ItemContent>
-														<ItemTitle>Yandex xaritada koʻrish</ItemTitle>
-													</ItemContent>
-													<ItemActions>
-														<ChevronRightIcon className="size-4 text-[#be9941]" />
-													</ItemActions>
-												</a>
-											</Item>
-										</AccordionContent>
-									)}
-									{branch.phone1 && (
-										<AccordionContent>
-											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
-												<a href={`tel:${branch.phone1}`} onClick={() => handleCopyPhone(branch.phone1)}>
-													<ItemMedia>
-														<Phone className="size-5 text-[#be9941]" />
-													</ItemMedia>
-													<ItemContent>
-														<ItemTitle>{branch.phone1}</ItemTitle>
-													</ItemContent>
-													<ItemActions>
-														<CopyCheck className="size-4 text-[#be9941]" />
-													</ItemActions>
-												</a>
-											</Item>
-										</AccordionContent>
-									)}
-									{branch.phone2 && (
-										<AccordionContent>
-											<Item asChild variant="outline" className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md m-1">
-												<a href={`tel:${branch.phone2}`} onClick={() => handleCopyPhone(branch.phone2)}>
-													<ItemMedia>
-														<Phone className="size-5 text-[#be9941]" />
-													</ItemMedia>
-													<ItemContent>
-														<ItemTitle>{branch.phone2}</ItemTitle>
-													</ItemContent>
-													<ItemActions>
-														<CopyCheck className="size-4 text-[#be9941]" />
-													</ItemActions>
-												</a>
-											</Item>
-										</AccordionContent>
-									)}
-								</AccordionItem>
+										</div>
+										<p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+											{branch.address ? `🗺️ ${branch.address}` : "Manzil ko'rsatilmagan"}
+										</p>
+
+										{(branch.orientir || branch.worktime) && (
+											<div className="mt-2 space-y-1 text-xs text-muted-foreground">
+												{branch.orientir && <p>📍 {branch.orientir}</p>}
+												{branch.worktime && <p>🕒 {branch.worktime.replace("|", " - ")}</p>}
+											</div>
+										)}
+
+										{primaryMap || primaryPhone ? (
+											<div className="mt-3 flex gap-2">
+												{primaryMap && (
+													<button
+														type="button"
+														onClick={() => handleOpenMap(primaryMap)}
+														className="flex-1 inline-flex items-center justify-center rounded-2xl bg-[#be9941] text-white text-sm py-2 active:scale-[0.97] active:bg-[#a88436] transition-transform transition-colors"
+													>
+														<Map className="size-4 mr-1" />
+														Xarita
+													</button>
+												)}
+												{primaryPhone && (
+													<a
+														href={`tel:${primaryPhone}`}
+														onClick={() => handleCopyPhone(primaryPhone)}
+														className="flex-1 inline-flex items-center justify-center rounded-2xl border border-[#be9941] text-[#be9941] text-sm py-2 active:scale-[0.97] active:bg-[#be9941]/10 transition-transform transition-colors"
+													>
+														<Phone className="size-4 mr-1" />
+														Qoʻngʻiroq
+													</a>
+												)}
+											</div>
+										) : (
+											<p className="mt-3 text-xs text-muted-foreground">Aloqa maʼlumotlari mavjud emas</p>
+										)}
+									</ItemContent>
+								</Item>
 							);
 						})}
-					</Accordion>
+					</div>
 				</SectionCard>
 			)}
 		</div>
