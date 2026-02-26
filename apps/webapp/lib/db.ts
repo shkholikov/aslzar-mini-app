@@ -6,6 +6,7 @@ const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
 const channelPostsCollection = process.env.MONGO_DB_COLLECTION_CHANNEL_POSTS || "channel_posts";
+const productsCollection = process.env.MONGO_DB_COLLECTION_PRODUCTS || "products";
 
 /**
  * Session data structure stored in MongoDB by MongoDBAdapter
@@ -104,6 +105,47 @@ export async function updateUserSession1CData(userId: string, user1CData: Record
 		if (client) {
 			await client.close();
 		}
+	}
+}
+
+/** Product record for catalog (same shape as admin ProductDoc; field is `url`). */
+export interface CatalogProduct {
+	id: string;
+	title: string;
+	description: string;
+	price: number;
+	url: string;
+	badgeLabel?: string;
+}
+
+type ProductRow = { _id?: unknown; title: string; description: string; price: number; url?: string; imageUrl?: string; badgeLabel?: string };
+
+/**
+ * Fetches products for the webapp catalog from MongoDB (same collection as admin).
+ * Reads `url`; falls back to `imageUrl` for documents created before the rename.
+ */
+export async function getCatalogProducts(limit = 100): Promise<CatalogProduct[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) return [];
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<ProductRow>(productsCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
+		return list.map((p) => ({
+			id: String(p._id),
+			title: p.title,
+			description: p.description,
+			price: p.price,
+			url: p.url ?? p.imageUrl ?? "",
+			badgeLabel: p.badgeLabel
+		}));
+	} catch (error) {
+		console.error("Error fetching catalog products:", error);
+		return [];
+	} finally {
+		if (client) await client.close();
 	}
 }
 

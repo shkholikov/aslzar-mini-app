@@ -8,19 +8,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProductDoc } from "@/lib/db";
-import { Loader2, Package } from "lucide-react";
+import { Loader2, Package, Upload } from "lucide-react";
+
+const ACCEPT_MEDIA = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime";
 
 export default function ProductsPage() {
 	const [products, setProducts] = React.useState<ProductDoc[]>([]);
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
 	const [saving, setSaving] = React.useState(false);
+	const [uploading, setUploading] = React.useState(false);
+	const [uploadError, setUploadError] = React.useState<string | null>(null);
 
 	const [title, setTitle] = React.useState("");
 	const [description, setDescription] = React.useState("");
 	const [price, setPrice] = React.useState<string>("");
-	const [imageUrl, setImageUrl] = React.useState("");
+	const [url, setUrl] = React.useState("");
 	const [badgeLabel, setBadgeLabel] = React.useState("");
+	const fileInputRef = React.useRef<HTMLInputElement>(null);
 
 	const fetchProducts = React.useCallback(async () => {
 		try {
@@ -49,10 +54,10 @@ export default function ProductsPage() {
 
 		const trimmedTitle = title.trim();
 		const trimmedDescription = description.trim();
-		const trimmedImageUrl = imageUrl.trim();
+		const trimmedUrl = url.trim();
 		const numericPrice = Number(price);
 
-		if (!trimmedTitle || !trimmedDescription || !trimmedImageUrl || !numericPrice || numericPrice <= 0) {
+		if (!trimmedTitle || !trimmedDescription || !trimmedUrl || !numericPrice || numericPrice <= 0) {
 			setError("Iltimos, barcha majburiy maydonlarni to‘ldiring va narxni to‘g‘ri kiriting.");
 			return;
 		}
@@ -67,7 +72,7 @@ export default function ProductsPage() {
 					title: trimmedTitle,
 					description: trimmedDescription,
 					price: numericPrice,
-					imageUrl: trimmedImageUrl,
+					url: trimmedUrl,
 					badgeLabel: badgeLabel.trim() || undefined
 				})
 			});
@@ -81,12 +86,39 @@ export default function ProductsPage() {
 			setTitle("");
 			setDescription("");
 			setPrice("");
-			setImageUrl("");
+			setUrl("");
 			setBadgeLabel("");
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Noma’lum xatolik");
 		} finally {
 			setSaving(false);
+		}
+	}
+
+	async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setUploadError(null);
+		setUploading(true);
+		try {
+			const formData = new FormData();
+			formData.set("file", file);
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				body: formData
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				throw new Error(data.error || "Yuklash muvaffaqiyatsiz");
+			}
+			if (typeof data.url === "string") {
+				setUrl(data.url);
+			}
+		} catch (e) {
+			setUploadError(e instanceof Error ? e.message : "Yuklash xatosi");
+		} finally {
+			setUploading(false);
+			e.target.value = "";
 		}
 	}
 
@@ -141,9 +173,27 @@ export default function ProductsPage() {
 								<label className="block text-sm font-medium text-gray-700 mb-1">Narxi (so‘m)</label>
 								<Input value={price} onChange={(e) => setPrice(e.target.value)} type="number" min="0" placeholder="Masalan: 250000" />
 							</div>
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">Rasm URL</label>
-								<Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="/images/product.png yoki to‘liq URL" />
+							<div className="md:col-span-2">
+								<label className="block text-sm font-medium text-gray-700 mb-1">Rasm yoki video (URL yoki yuklash)</label>
+								<div className="flex flex-col sm:flex-row gap-2">
+									<div className="flex gap-2 flex-1">
+										<Input
+											value={url}
+											onChange={(e) => {
+												setUrl(e.target.value);
+												setUploadError(null);
+											}}
+											placeholder="Vercel Blob URL yoki boshqa to‘liq URL"
+										/>
+										<input ref={fileInputRef} type="file" accept={ACCEPT_MEDIA} className="hidden" onChange={handleFileChange} />
+										<Button type="button" variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
+											{uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+											{uploading ? "Yuklanmoqda…" : "Yuklash"}
+										</Button>
+									</div>
+								</div>
+								<p className="text-xs text-gray-500 mt-1">Rasm: JPEG, PNG, WebP, GIF. Video: MP4, WebM, MOV. Maks. 100 MB.</p>
+								{uploadError && <p className="text-sm text-red-600 mt-1">{uploadError}</p>}
 							</div>
 							<div>
 								<label className="block text-sm font-medium text-gray-700 mb-1">Aksiya badji (ixtiyoriy)</label>
@@ -181,7 +231,7 @@ export default function ProductsPage() {
 										<TableHead>Nomi</TableHead>
 										<TableHead>Badji</TableHead>
 										<TableHead>Narx (so‘m)</TableHead>
-										<TableHead>Rasm URL</TableHead>
+										<TableHead>URL</TableHead>
 										<TableHead>Yaratilgan</TableHead>
 										<TableHead className="w-[100px] text-right">Amallar</TableHead>
 									</TableRow>
@@ -192,7 +242,7 @@ export default function ProductsPage() {
 											<TableCell className="font-medium">{p.title}</TableCell>
 											<TableCell>{p.badgeLabel ?? "-"}</TableCell>
 											<TableCell>{formatPrice(p.price)}</TableCell>
-											<TableCell className="max-w-xs truncate text-xs text-gray-600">{p.imageUrl}</TableCell>
+											<TableCell className="max-w-xs truncate text-xs text-gray-600">{p.url}</TableCell>
 											<TableCell className="whitespace-nowrap text-xs">{formatDate(p.createdAt)}</TableCell>
 											<TableCell className="text-right">
 												<Button variant="destructive" size="sm" onClick={() => handleDelete(p._id as string)}>

@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/products
- * Body: { title, description, price, imageUrl, badgeLabel? }
+ * Body: { title, description, price, url, badgeLabel? }
  * Creates a new product document.
  */
 export async function POST(request: NextRequest) {
@@ -43,15 +43,15 @@ export async function POST(request: NextRequest) {
 		const title = typeof body?.title === "string" ? body.title.trim() : "";
 		const description = typeof body?.description === "string" ? body.description.trim() : "";
 		const priceRaw = body?.price;
-		const imageUrl = typeof body?.imageUrl === "string" ? body.imageUrl.trim() : "";
+		const url = typeof body?.url === "string" ? body.url.trim() : "";
 		const badgeLabel =
 			typeof body?.badgeLabel === "string" && body.badgeLabel.trim() ? body.badgeLabel.trim() : undefined;
 
-		if (!title || !description || !imageUrl || typeof priceRaw !== "number" || !isFinite(priceRaw) || priceRaw <= 0) {
+		if (!title || !description || !url || typeof priceRaw !== "number" || !isFinite(priceRaw) || priceRaw <= 0) {
 			return NextResponse.json(
 				{
 					error:
-						"title, description, imageUrl must be non-empty strings and price must be a positive number"
+						"title, description, url must be non-empty strings and price must be a positive number"
 				},
 				{ status: 400 }
 			);
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 			title,
 			description,
 			price: priceRaw,
-			imageUrl,
+			url,
 			badgeLabel
 		});
 

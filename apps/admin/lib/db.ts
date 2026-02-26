@@ -19,13 +19,13 @@ export interface SuggestionDoc {
 	createdAt: Date;
 }
 
-/** Product stored in MongoDB (for webapp catalog) */
+/** Product stored in MongoDB (for webapp catalog). Same shape as webapp product model; field is `url`. */
 export interface ProductDoc extends Document {
 	_id?: string | ObjectId;
 	title: string;
 	description: string;
 	price: number;
-	imageUrl: string;
+	url: string;
 	badgeLabel?: string;
 	createdAt: Date;
 	updatedAt: Date;
@@ -267,7 +267,7 @@ export async function createProduct(input: {
 	title: string;
 	description: string;
 	price: number;
-	imageUrl: string;
+	url: string;
 	badgeLabel?: string;
 }): Promise<ProductDoc> {
 	let client: MongoClient | null = null;
@@ -282,7 +282,7 @@ export async function createProduct(input: {
 			title: input.title,
 			description: input.description,
 			price: input.price,
-			imageUrl: input.imageUrl,
+			url: input.url,
 			badgeLabel: input.badgeLabel,
 			createdAt: now,
 			updatedAt: now
@@ -294,8 +294,12 @@ export async function createProduct(input: {
 	}
 }
 
+/** Raw product from DB (may have url or legacy imageUrl) */
+type ProductRow = ProductDoc & { imageUrl?: string };
+
 /**
  * Returns products ordered by newest first.
+ * Normalizes legacy `imageUrl` to `url` so the model is consistent.
  */
 export async function getProducts(limit = 100): Promise<ProductDoc[]> {
 	let client: MongoClient | null = null;
@@ -304,9 +308,34 @@ export async function getProducts(limit = 100): Promise<ProductDoc[]> {
 		client = new MongoClient(dbUri);
 		await client.connect();
 		const db = client.db(dbName);
-		const coll = db.collection<ProductDoc>(productsCollection);
+		const coll = db.collection<ProductRow>(productsCollection);
 		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
-		return list as ProductDoc[];
+		return list.map((p) => ({
+			...p,
+			url: (p as ProductRow).url ?? (p as ProductRow).imageUrl ?? ""
+		})) as ProductDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Returns a single product by id, or null if not found.
+ */
+export async function getProduct(id: string): Promise<ProductDoc | null> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<ProductRow>(productsCollection);
+		const doc = await coll.findOne({ _id: new ObjectId(id) });
+		if (!doc) return null;
+		return {
+			...doc,
+			url: doc.url ?? doc.imageUrl ?? ""
+		} as ProductDoc;
 	} finally {
 		if (client) await client.close();
 	}
