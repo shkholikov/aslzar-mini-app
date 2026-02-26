@@ -144,6 +144,15 @@ export const columns: ColumnDef<User>[] = [
 		}
 	},
 	{
+		accessorFn: (row) => row.value.user1CData?.bonusInfo?.uroven ?? null,
+		id: "uroven",
+		header: "Level",
+		cell: ({ row }) => {
+			const uroven = row.original.value.user1CData?.bonusInfo?.uroven;
+			return <div>{uroven ?? "-"}</div>;
+		}
+	},
+	{
 		accessorFn: (row) => {
 			const createdAt = row.value.createdAt;
 			if (!createdAt) return 0;
