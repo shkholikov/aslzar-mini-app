@@ -3,7 +3,15 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users, channelPosts } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import { checkSubscriptionFlow, handleReferralCode, initializeSession, sendContactRequest, sendSubscribeRequest, sendWebApp } from "./helper";
+import {
+	checkSubscriptionFlow,
+	handleEmployeeReferralCode,
+	handleReferralCode,
+	initializeSession,
+	sendContactRequest,
+	sendSubscribeRequest,
+	sendWebApp
+} from "./helper";
 import { searchUserByPhone } from "./api";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
@@ -36,7 +44,9 @@ async function bootstrap() {
 				createdAt: new Date(),
 				isVerified: undefined,
 				user1CData: undefined,
-				pendingReferralCode: undefined
+				pendingReferralCode: undefined,
+				pendingEmployeeReferralCode: undefined,
+				referredByEmployeeCode: undefined
 			}),
 			getSessionKey: (ctx) => {
 				// Use user ID as session key
@@ -48,16 +58,29 @@ async function bootstrap() {
 
 	// start command
 	bot.command("start", async (ctx) => {
-		// Check if there's a referral code in the start parameter | Format: /start 6764272076
-		const referralCode = ctx.match as string | undefined;
+		// Check if there's a referral code in the start parameter
+		// - Numeric: user referral (/start 6764272076)
+		// - Employee: /start emp5, emp123, ...
+		const rawMatch = ctx.match as string | undefined;
+		const rawCode = rawMatch?.trim();
+		const normalizedEmployeeCode = rawCode?.toLowerCase();
+		const isEmployeeCode = normalizedEmployeeCode ? /^emp\d+$/.test(normalizedEmployeeCode) : false;
 
-		if (referralCode) {
-			// If user already has phone number, process referral immediately
-			if (ctx.session?.phone_number) {
-				await handleReferralCode(ctx, referralCode);
+		if (rawCode) {
+			if (isEmployeeCode && normalizedEmployeeCode) {
+				// Employee referral:
+				// Option A – only new users (no phone yet) can be attached to employees.
+				// Returning users with an existing phone_number are ignored for employee referrals.
+				if (!ctx.session?.phone_number) {
+					// Will be processed after contact is shared
+					ctx.session.pendingEmployeeReferralCode = normalizedEmployeeCode;
+				}
+			} else if (ctx.session?.phone_number) {
+				// User referral – process immediately if already has phone
+				await handleReferralCode(ctx, rawCode);
 			} else {
-				// Store referral code in session - will be processed after phone verification
-				ctx.session.pendingReferralCode = referralCode;
+				// User referral – store until phone verification
+				ctx.session.pendingReferralCode = rawCode;
 			}
 		}
 
@@ -97,11 +120,17 @@ async function bootstrap() {
 			ctx.session.isVerified = true;
 		}
 
-		// Process pending referral code if exists (after phone verification)
+		// Process pending user referral (numeric code) if exists (after phone verification)
 		if (ctx.session.pendingReferralCode) {
 			await handleReferralCode(ctx, ctx.session.pendingReferralCode);
 			// Clear the pending referral code after processing
 			ctx.session.pendingReferralCode = undefined;
+		}
+
+		// Process pending employee referral (empN code) if exists (after phone verification)
+		if (ctx.session.pendingEmployeeReferralCode) {
+			await handleEmployeeReferralCode(ctx, ctx.session.pendingEmployeeReferralCode);
+			ctx.session.pendingEmployeeReferralCode = undefined;
 		}
 
 		// Remove the contact request button
@@ -126,17 +155,12 @@ async function bootstrap() {
 		if (!GROUP_ID || !channelPosts) return;
 		const chat = ctx.chat;
 		const envGroupId = GROUP_ID.trim();
-		const isMatch = envGroupId.startsWith("@")
-			? "username" in chat && chat.username === envGroupId.slice(1)
-			: String(chat.id) === envGroupId;
+		const isMatch = envGroupId.startsWith("@") ? "username" in chat && chat.username === envGroupId.slice(1) : String(chat.id) === envGroupId;
 		if (!isMatch) return;
 
 		const msg = ctx.message;
 		const text = msg.text ?? msg.caption ?? "";
-		const groupLabel =
-			("username" in chat && chat.username ? `@${chat.username}` : null) ??
-			("title" in chat ? chat.title : null) ??
-			"group";
+		const groupLabel = ("username" in chat && chat.username ? `@${chat.username}` : null) ?? ("title" in chat ? chat.title : null) ?? "group";
 
 		const doc: import("./types").ChannelPostDocument = {
 			messageId: msg.message_id,

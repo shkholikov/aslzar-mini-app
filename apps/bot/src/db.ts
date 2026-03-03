@@ -10,14 +10,26 @@ const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const reminderLogsCollection = process.env.MONGO_DB_COLLECTION_REMINDER_LOGS || "reminder_logs";
 const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
 const channelPostsCollection = process.env.MONGO_DB_COLLECTION_CHANNEL_POSTS || "channel_posts";
+const employeesCollection = process.env.MONGO_DB_COLLECTION_EMPLOYEES || "employees";
 
 if (!dbUri) throw new Error("The Mongodb connection string is empty!");
+
+/** Employee document mirrored from admin side; used only to validate referral codes (emp1, emp2, ...) */
+export interface EmployeeDoc {
+	_id?: unknown;
+	name: string;
+	surname: string;
+	filial: string;
+	referralCode: string;
+	createdAt: Date;
+}
 
 let client: MongoClient;
 export let users: Collection<ISession>;
 export let reminderLogs: Collection<ReminderLogEntry>;
 export let broadcastJobs: Collection<BroadcastJob>;
 export let channelPosts: Collection<ChannelPostDocument>;
+export let employees: Collection<EmployeeDoc>;
 
 export const connectToDb = async () => {
 	try {
@@ -31,6 +43,7 @@ export const connectToDb = async () => {
 		reminderLogs = db.collection<ReminderLogEntry>(reminderLogsCollection);
 		broadcastJobs = db.collection<BroadcastJob>(broadcastJobsCollection);
 		channelPosts = db.collection<ChannelPostDocument>(channelPostsCollection);
+		employees = db.collection<EmployeeDoc>(employeesCollection);
 
 		return client;
 	} catch (error) {

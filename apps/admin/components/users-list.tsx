@@ -31,7 +31,14 @@ import { Loading } from "./common/loading";
 
 export type User = UserDocument;
 
-export const columns: ColumnDef<User>[] = [
+type EmployeeSummary = {
+	referralCode: string;
+	name: string;
+	surname: string;
+};
+
+function createColumns(employeesByCode: Record<string, EmployeeSummary>): ColumnDef<User>[] {
+	return [
 	{
 		id: "select",
 		header: ({ table }) => (
@@ -126,6 +133,18 @@ export const columns: ColumnDef<User>[] = [
 		id: "user1CData",
 		header: "1C Ma'lumotlari",
 		cell: ({ row }) => <div>{row.original.value.user1CData ? "Mavjud" : "Mavjud emas"}</div>
+	},
+	{
+		accessorFn: (row) => row.value.referredByEmployeeCode ?? null,
+		id: "referredByEmployeeCode",
+		header: "Xodim(referral)",
+		cell: ({ row }) => {
+			const code = row.original.value.referredByEmployeeCode;
+			if (!code) return <div>-</div>;
+			const emp = employeesByCode[code];
+			if (!emp) return <div>{code}</div>;
+			return <div>{`${emp.name} ${emp.surname}`}</div>;
+		}
 	},
 	{
 		accessorFn: (row) => row.value.user1CData?.status ?? null,
@@ -231,6 +250,7 @@ export const columns: ColumnDef<User>[] = [
 		}
 	}
 ];
+}
 
 export function UsersList() {
 	const [sorting, setSorting] = React.useState<SortingState>([
@@ -246,6 +266,7 @@ export function UsersList() {
 	const [users, setUsers] = React.useState<User[]>([]);
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
+	const [employeesByCode, setEmployeesByCode] = React.useState<Record<string, EmployeeSummary>>({});
 
 	React.useEffect(() => {
 		async function fetchUsers() {
@@ -272,6 +293,45 @@ export function UsersList() {
 		}
 		fetchUsers();
 	}, [router]);
+
+	React.useEffect(() => {
+		let cancelled = false;
+		async function fetchEmployees() {
+			try {
+				const res = await fetch("/api/employees");
+				if (res.status === 401) {
+					router.replace("/login");
+					return;
+				}
+				if (!res.ok) {
+					// Don't block users table if employees request fails
+					return;
+				}
+				const data = await res.json();
+				const map: Record<string, EmployeeSummary> = {};
+				for (const emp of data.employees || []) {
+					if (emp?.referralCode) {
+						map[emp.referralCode] = {
+							referralCode: emp.referralCode,
+							name: emp.name ?? "",
+							surname: emp.surname ?? ""
+						};
+					}
+				}
+				if (!cancelled) {
+					setEmployeesByCode(map);
+				}
+			} catch {
+				// ignore, we just won't resolve employee names
+			}
+		}
+		fetchEmployees();
+		return () => {
+			cancelled = true;
+		};
+	}, [router]);
+
+	const columns = React.useMemo(() => createColumns(employeesByCode), [employeesByCode]);
 
 	const table = useReactTable({
 		data: users,

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, Megaphone, MessageSquare, Package } from "lucide-react";
+import { Shield, Megaphone, MessageSquare, Package, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
 	{ href: "/", label: "Foydalanuvchilar", icon: Shield },
+	{ href: "/employees", label: "Xodimlar", icon: Users },
 	{ href: "/broadcast", label: "Broadcast", icon: Megaphone },
 	{ href: "/suggestions", label: "Takliflar", icon: MessageSquare },
 	{ href: "/products", label: "Mahsulotlar", icon: Package }

@@ -1,0 +1,71 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { countUsersByEmployeeCode, createEmployee, getEmployees } from "@/lib/db";
+import { isAuthenticatedRequest } from "@/lib/auth";
+
+/**
+ * GET /api/employees
+ * Returns list of employees with referred client count for each.
+ */
+export async function GET(request: NextRequest) {
+	try {
+		const ok = await isAuthenticatedRequest(request);
+		if (!ok) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const employees = await getEmployees();
+		const withCounts = await Promise.all(
+			employees.map(async (emp) => ({
+				...emp,
+				referredCount: await countUsersByEmployeeCode(emp.referralCode)
+			}))
+		);
+
+		return NextResponse.json({ employees: withCounts }, { status: 200 });
+	} catch (error) {
+		console.error("Error fetching employees:", error);
+		return NextResponse.json(
+			{
+				error: "Internal server error",
+				details: error instanceof Error ? error.message : "Unknown error"
+			},
+			{ status: 500 }
+		);
+	}
+}
+
+/**
+ * POST /api/employees
+ * Body: { name, surname, filial }
+ * Creates a new employee with auto-generated referralCode (emp1, emp2, ...).
+ */
+export async function POST(request: NextRequest) {
+	try {
+		const ok = await isAuthenticatedRequest(request);
+		if (!ok) {
+			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+
+		const body = await request.json();
+		const name = typeof body?.name === "string" ? body.name.trim() : "";
+		const surname = typeof body?.surname === "string" ? body.surname.trim() : "";
+		const filial = typeof body?.filial === "string" ? body.filial.trim() : "";
+
+		if (!name || !surname || !filial) {
+			return NextResponse.json({ error: "name, surname va filial majburiy" }, { status: 400 });
+		}
+
+		const employee = await createEmployee({ name, surname, filial });
+
+		return NextResponse.json({ employee }, { status: 201 });
+	} catch (error) {
+		console.error("Error creating employee:", error);
+		return NextResponse.json(
+			{
+				error: "Internal server error",
+				details: error instanceof Error ? error.message : "Unknown error"
+			},
+			{ status: 500 }
+		);
+	}
+}

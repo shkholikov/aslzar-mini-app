@@ -7,6 +7,25 @@ const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
 const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
 const productsCollection = process.env.MONGO_DB_COLLECTION_PRODUCTS || "products";
+const employeesCollection = process.env.MONGO_DB_COLLECTION_EMPLOYEES || "employees";
+const countersCollection = process.env.MONGO_DB_COLLECTION_COUNTERS || "counters";
+
+/** Employee (xodim) – used for referral links and QR codes in admin */
+export interface EmployeeDoc extends Document {
+	_id?: string | ObjectId;
+	name: string;
+	surname: string;
+	filial: string;
+	/** Unique, never-reused referral code like "emp1", "emp2" */
+	referralCode: string;
+	createdAt: Date;
+}
+
+/** Simple counter document for sequences (e.g. employee_referral) */
+interface CounterDoc extends Document {
+	_id: string;
+	seq: number;
+}
 
 /** Suggestion/complaint from webapp (same collection as webapp) */
 export interface SuggestionDoc {
@@ -137,6 +156,8 @@ export interface UserDocument extends Document {
 			referalCount?: number;
 			referalLimit?: number;
 		} | null;
+		/** Set when user joined via employee referral link (?start=emp123) */
+		referredByEmployeeCode?: string | null;
 	};
 }
 
@@ -355,6 +376,97 @@ export async function deleteProduct(id: string): Promise<boolean> {
 		const coll = db.collection<ProductDoc>(productsCollection);
 		const result = await coll.deleteOne({ _id: new ObjectId(id) });
 		return result.deletedCount === 1;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Returns the next unique referral code (emp1, emp2, ...) for a new employee.
+ * Uses a separate counters collection so codes are never reused even if employees are deleted.
+ */
+async function getNextEmployeeReferralCode(): Promise<string> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const counters = db.collection<CounterDoc>(countersCollection);
+		const result = await counters.findOneAndUpdate(
+			{ _id: "employee_referral" },
+			{ $inc: { seq: 1 } },
+			{ upsert: true, returnDocument: "after" }
+		);
+		const seq = result?.value?.seq ?? 1;
+		return `emp${seq}`;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Creates a new employee with auto-generated unique referralCode (emp1, emp2, ...).
+ */
+export async function createEmployee(input: {
+	name: string;
+	surname: string;
+	filial: string;
+}): Promise<EmployeeDoc> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<EmployeeDoc>(employeesCollection);
+		const referralCode = await getNextEmployeeReferralCode();
+		const now = new Date();
+		const doc: EmployeeDoc = {
+			name: input.name.trim(),
+			surname: input.surname.trim(),
+			filial: input.filial.trim(),
+			referralCode,
+			createdAt: now
+		};
+		const result = await coll.insertOne(doc);
+		return { ...doc, _id: result.insertedId };
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Gets all employees, sorted by createdAt desc.
+ */
+export async function getEmployees(): Promise<EmployeeDoc[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<EmployeeDoc>(employeesCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).toArray();
+		return list as EmployeeDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Counts users who were referred by the given employee code.
+ */
+export async function countUsersByEmployeeCode(referralCode: string): Promise<number> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName || !usersCollection) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<UserDocument>(usersCollection);
+		const count = await coll.countDocuments({ "value.referredByEmployeeCode": referralCode });
+		return count;
 	} finally {
 		if (client) await client.close();
 	}

@@ -1,7 +1,7 @@
 import { InlineKeyboard, Keyboard } from "grammy";
 import { infoText, subscribeRequestText } from "./messages";
 import { ISessionData, MyContext } from "./types";
-import { users } from "./db";
+import { users, employees } from "./db";
 import { addReferral } from "./api";
 
 const WEBAPP_URL = process.env.WEBAPP_URL || "https://aslzar.uz";
@@ -181,5 +181,54 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 		}
 	} catch (error) {
 		console.error("Error handling referral code:", error);
+	}
+}
+
+/**
+ * Handles employee referral code (empN) when a user joins via employee's link/QR.
+ * Validates that the employee exists, then stores referredByEmployeeCode on the user document once.
+ */
+export async function handleEmployeeReferralCode(ctx: MyContext, employeeCode: string) {
+	const currentUserId = ctx.from?.id;
+	if (!currentUserId) return;
+
+	const normalizedCode = employeeCode.toLowerCase();
+
+	// Require phone number so we only attribute real clients
+	if (!ctx.session?.phone_number) {
+		console.log(`User ${currentUserId} hasn't provided phone number yet (employee referral)`);
+		return;
+	}
+
+	try {
+		const employee = await employees.findOne({ referralCode: normalizedCode });
+		if (!employee) {
+			console.log(`Employee not found for code: ${normalizedCode}`);
+			return;
+		}
+
+		const key = currentUserId.toString();
+
+		// Only set referral if user does not already have an employee assigned
+		const result = await users.updateOne(
+			{
+				key,
+				$or: [
+					{ "value.referredByEmployeeCode": { $exists: false } },
+					{ "value.referredByEmployeeCode": null }
+				]
+			},
+			{ $set: { "value.referredByEmployeeCode": normalizedCode } }
+		);
+
+		if (result.matchedCount === 0) {
+			console.log(`User ${key} already has an employee referral, skipping (${normalizedCode})`);
+			return;
+		}
+
+		ctx.session.referredByEmployeeCode = normalizedCode;
+		console.log(`Employee referral registered: User ${key} was referred by employee ${normalizedCode}`);
+	} catch (error) {
+		console.error("Error handling employee referral code:", error);
 	}
 }
