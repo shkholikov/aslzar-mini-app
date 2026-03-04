@@ -1,8 +1,8 @@
 /**
  * Broadcast job processor
  * - Picks up jobs with status "pending" from broadcast_jobs collection
- * - Filters users by audience (isVerified: verified = true, non_verified = not true), sends via Telegram API
- * - Updates job status and counts
+ * - Filters users by audienceFilters (verified, nonVerified, aktiv, aktivEmas); when none set, all users. Selected filters are ANDed.
+ * - Sends via Telegram API and updates job status and counts
  */
 import cron from "node-cron";
 import type { Filter } from "mongodb";
@@ -15,10 +15,7 @@ import type { BroadcastJob } from "./types";
  * so only one worker can ever process a given job — no duplicate sends.
  */
 async function claimJob(id: unknown): Promise<boolean> {
-	const result = await broadcastJobs.updateOne(
-		{ _id: id, status: "pending" } as Filter<BroadcastJob>,
-		{ $set: { status: "processing" } }
-	);
+	const result = await broadcastJobs.updateOne({ _id: id, status: "pending" } as Filter<BroadcastJob>, { $set: { status: "processing" } });
 	return result.matchedCount === 1 && result.modifiedCount === 1;
 }
 
@@ -31,14 +28,31 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 		return;
 	}
 
-	const audience = job.audience ?? "all";
-	// Filter by isVerified only; Telegram user ID (key) is enough to send, phone not required
-	const userFilter: Record<string, unknown> =
-		audience === "verified"
-			? { "value.isVerified": true }
-			: audience === "non_verified"
-				? { "value.isVerified": { $ne: true } }
-				: {};
+	const filters = job.audienceFilters;
+	const legacyAudience = job.audience ?? "all";
+	const conditions: Record<string, unknown>[] = [];
+	if (filters) {
+		if (filters.verified === true) conditions.push({ "value.isVerified": true });
+		if (filters.nonVerified === true) conditions.push({ "value.isVerified": { $ne: true } });
+		if (filters.aktiv === true) conditions.push({ "value.user1CData.status": true });
+		if (filters.aktivEmas === true) conditions.push({ "value.user1CData.status": false });
+		// Level filters (Silver/Gold/Diamond): OR selected levels, then AND with rest
+		const levelUroven: string[] = [];
+		if (filters.silver === true) levelUroven.push("Silver");
+		if (filters.gold === true) levelUroven.push("Gold");
+		if (filters.diamond === true) levelUroven.push("Diamond");
+		if (levelUroven.length > 0) {
+			conditions.push({
+				$or: levelUroven.map((uroven) => ({ "value.user1CData.bonusInfo.uroven": uroven }))
+			});
+		}
+	} else if (legacyAudience === "verified") {
+		conditions.push({ "value.isVerified": true });
+	} else if (legacyAudience === "non_verified") {
+		conditions.push({ "value.isVerified": { $ne: true } });
+	}
+	// When no filter selected, send to all; otherwise AND all selected conditions
+	const userFilter: Record<string, unknown> = conditions.length === 0 ? {} : { $and: conditions };
 	const cursor = users.find(userFilter as Parameters<typeof users.find>[0]);
 	const docs = await cursor.toArray();
 	const keys = docs.map((d) => (d as { key?: string }).key).filter((k): k is string => !!k);
@@ -49,10 +63,9 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 
 	const freshBefore = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
 	if (freshBefore?.status === "cancelled") {
-		await broadcastJobs.updateOne(
-			{ _id: id } as Filter<BroadcastJob>,
-			{ $set: { totalUsers: keys.length, sentCount: 0, failedCount: 0, completedAt: new Date() } }
-		);
+		await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
+			$set: { totalUsers: keys.length, sentCount: 0, failedCount: 0, completedAt: new Date() }
+		});
 		console.log(`[Broadcast] job ${id} was cancelled before sending`);
 		return;
 	}
@@ -62,17 +75,14 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 		if (i > 0 && i % CHECK_CANCEL_EVERY === 0) {
 			const updated = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
 			if (updated?.status === "cancelled") {
-				await broadcastJobs.updateOne(
-					{ _id: id } as Filter<BroadcastJob>,
-					{
-						$set: {
-							totalUsers: keys.length,
-							sentCount,
-							failedCount,
-							completedAt: new Date()
-						}
+				await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
+					$set: {
+						totalUsers: keys.length,
+						sentCount,
+						failedCount,
+						completedAt: new Date()
 					}
-				);
+				});
 				console.log(`[Broadcast] job ${id} cancelled: ${sentCount} sent, ${failedCount} failed`);
 				return;
 			}
@@ -87,18 +97,15 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 		}
 	}
 
-	await broadcastJobs.updateOne(
-		{ _id: id } as Filter<BroadcastJob>,
-		{
-			$set: {
-				status: "completed",
-				completedAt: new Date(),
-				totalUsers: keys.length,
-				sentCount,
-				failedCount
-			}
+	await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
+		$set: {
+			status: "completed",
+			completedAt: new Date(),
+			totalUsers: keys.length,
+			sentCount,
+			failedCount
 		}
-	);
+	});
 	console.log(`[Broadcast] job ${id} completed: ${sentCount} sent, ${failedCount} failed`);
 }
 
@@ -111,10 +118,9 @@ async function runBroadcastCycle(api: Api): Promise<void> {
 			const id = (job as { _id?: unknown })._id;
 			const errorMessage = err instanceof Error ? err.message : String(err);
 			console.error(`[Broadcast] job ${id} failed:`, err);
-			await broadcastJobs.updateOne(
-				{ _id: id } as Filter<BroadcastJob>,
-				{ $set: { status: "failed", completedAt: new Date(), error: errorMessage } }
-			);
+			await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
+				$set: { status: "failed", completedAt: new Date(), error: errorMessage }
+			});
 		}
 	}
 }

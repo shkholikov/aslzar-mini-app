@@ -3,20 +3,28 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Megaphone, Loader2 } from "lucide-react";
-import type { BroadcastJobDoc, BroadcastAudience } from "@/lib/db";
+import type { BroadcastJobDoc, BroadcastAudienceFilters } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
 
-const AUDIENCE_OPTIONS: { value: BroadcastAudience; label: string }[] = [
-	{ value: "all", label: "Barcha foydalanuvchilar" },
-	{ value: "verified", label: "Tasdiqlangan" },
-	{ value: "non_verified", label: "Tasdiqlanmagan" }
+const FILTER_ROW_1: { key: keyof BroadcastAudienceFilters; label: string }[] = [
+	{ key: "verified", label: "Tasdiqlangan" },
+	{ key: "nonVerified", label: "Tasdiqlanmagan" },
+	{ key: "aktiv", label: "Aktiv" },
+	{ key: "aktivEmas", label: "Aktiv emas" }
+];
+
+const FILTER_ROW_2_LEVELS: { key: keyof BroadcastAudienceFilters; label: string }[] = [
+	{ key: "silver", label: "Silver" },
+	{ key: "gold", label: "Gold" },
+	{ key: "diamond", label: "Diamond" }
 ];
 
 export default function BroadcastPage() {
 	const [message, setMessage] = useState("");
-	const [audience, setAudience] = useState<BroadcastAudience>("all");
+	const [filters, setFilters] = useState<BroadcastAudienceFilters>({});
 	const [sending, setSending] = useState(false);
 	const [jobs, setJobs] = useState<BroadcastJobDoc[]>([]);
 	const [loadingJobs, setLoadingJobs] = useState(true);
@@ -51,7 +59,7 @@ export default function BroadcastPage() {
 			const res = await fetch("/api/broadcast", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ message: text, audience })
+				body: JSON.stringify({ message: text, audienceFilters: filters })
 			});
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.error || "Failed to create broadcast");
@@ -111,18 +119,37 @@ export default function BroadcastPage() {
 					<form onSubmit={handleSubmit} className="space-y-4 mb-8">
 						<div>
 							<label className="block text-sm font-medium text-gray-700 mb-2">Qaysi foydalanuvchilarga</label>
-							<select
-								value={audience}
-								onChange={(e) => setAudience(e.target.value as BroadcastAudience)}
-								disabled={sending}
-								className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:opacity-50"
-							>
-								{AUDIENCE_OPTIONS.map((opt) => (
-									<option key={opt.value} value={opt.value}>
-										{opt.label}
-									</option>
-								))}
-							</select>
+							<p className="text-sm text-muted-foreground mb-3">
+								Agar hech qanday filterni tanlamasangiz, xabar barcha bot foydalanuvchilariga yuboriladi. Bir yoki bir nechta filterni tanlasangiz,
+								faqat barcha shartlarga mos keladigan foydalanuvchilarga yuboriladi (masalan: Tasdiqlangan va Aktiv — tasdiqlangan va aktiv
+								foydalanuvchilar).
+							</p>
+							<div className="space-y-3">
+								<div className="flex flex-wrap gap-4">
+									{FILTER_ROW_1.map(({ key, label }) => (
+										<label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
+											<Checkbox
+												checked={filters[key] === true}
+												onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, [key]: checked === true }))}
+												disabled={sending}
+											/>
+											{label}
+										</label>
+									))}
+								</div>
+								<div className="flex flex-wrap gap-4">
+									{FILTER_ROW_2_LEVELS.map(({ key, label }) => (
+										<label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
+											<Checkbox
+												checked={filters[key] === true}
+												onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, [key]: checked === true }))}
+												disabled={sending}
+											/>
+											{label}
+										</label>
+									))}
+								</div>
+							</div>
 						</div>
 						<label className="block text-sm font-medium text-gray-700" htmlFor="message">
 							Xabar matni
@@ -176,9 +203,20 @@ export default function BroadcastPage() {
 												>
 													{statusLabel(job.status)}
 												</span>
-												{job.audience && job.audience !== "all" && (
+												{(job.audienceFilters
+													? Object.entries(job.audienceFilters).some(([, v]) => v === true)
+													: job.audience && job.audience !== "all") && (
 													<span className="text-xs text-muted-foreground">
-														{AUDIENCE_OPTIONS.find((o) => o.value === job.audience)?.label ?? job.audience}
+														{job.audienceFilters
+															? [...FILTER_ROW_1, ...FILTER_ROW_2_LEVELS]
+																	.filter((f) => job.audienceFilters?.[f.key])
+																	.map((f) => f.label)
+																	.join(", ")
+															: job.audience === "verified"
+																? "Tasdiqlangan"
+																: job.audience === "non_verified"
+																	? "Tasdiqlanmagan"
+																	: job.audience}
 													</span>
 												)}
 											</div>

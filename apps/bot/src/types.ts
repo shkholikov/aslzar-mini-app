@@ -75,6 +75,8 @@ export interface I1CUserData {
 	contractFirst: boolean;
 	referalCount: number;
 	referalLimit: number;
+	/** 1C activity status: true = Aktiv, false = Aktiv emas */
+	status?: boolean;
 	// Allow additional fields that might be added in the future
 	[key: string]: unknown;
 }
@@ -98,14 +100,26 @@ export interface ISessionData {
 
 export type MyContext = Context & SessionFlavor<Partial<ISessionData>>;
 
-/** Broadcast audience: all, or by isVerified (verified = true, non_verified = not true) */
+/** Broadcast audience: legacy single-select (old jobs) */
 export type BroadcastAudience = "all" | "verified" | "non_verified";
+
+/** Broadcast filters: when none set, all users; when any set, AND them. Level filters (Silver/Gold/Diamond) are ORed. */
+export interface BroadcastAudienceFilters {
+	verified?: boolean;
+	nonVerified?: boolean;
+	aktiv?: boolean;
+	aktivEmas?: boolean;
+	silver?: boolean;
+	gold?: boolean;
+	diamond?: boolean;
+}
 
 /** Broadcast job created by admin; processed by bot */
 export interface BroadcastJob {
 	_id?: unknown;
 	message: string;
 	audience?: BroadcastAudience;
+	audienceFilters?: BroadcastAudienceFilters;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
 	completedAt?: Date;

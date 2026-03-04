@@ -50,14 +50,26 @@ export interface ProductDoc extends Document {
 	updatedAt: Date;
 }
 
-/** Broadcast audience: all users, or filter by isVerified (verified = true, non_verified = not true) */
+/** Broadcast audience: legacy single-select (kept for old jobs display) */
 export type BroadcastAudience = "all" | "verified" | "non_verified";
+
+/** Broadcast filters: when none set, send to all users; when any set, AND them (e.g. verified + aktiv). Level filters (Silver/Gold/Diamond) are ORed. */
+export interface BroadcastAudienceFilters {
+	verified?: boolean; // Tasdiqlangan — isVerified === true
+	nonVerified?: boolean; // Tasdiqlanmagan — isVerified !== true
+	aktiv?: boolean; // Aktiv — user1CData.status === true
+	aktivEmas?: boolean; // Aktiv emas — user1CData.status === false
+	silver?: boolean; // bonusInfo.uroven === "Silver"
+	gold?: boolean; // bonusInfo.uroven === "Gold"
+	diamond?: boolean; // bonusInfo.uroven === "Diamond"
+}
 
 /** Broadcast job (same shape as bot's BroadcastJob) */
 export interface BroadcastJobDoc {
 	_id?: string | ObjectId;
 	message: string;
 	audience?: BroadcastAudience;
+	audienceFilters?: BroadcastAudienceFilters;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
 	createdAt: Date;
 	completedAt?: Date;
@@ -196,12 +208,9 @@ export async function getAllUsers(): Promise<UserDocument[]> {
 }
 
 /**
- * Creates a new broadcast job (status: pending). Bot sends by audience (isVerified: verified = true, non_verified = not true).
+ * Creates a new broadcast job (status: pending). Bot sends by audienceFilters: when none set, all users; when set, AND conditions.
  */
-export async function createBroadcastJob(
-	message: string,
-	audience: BroadcastAudience = "all"
-): Promise<BroadcastJobDoc> {
+export async function createBroadcastJob(message: string, audienceFilters?: BroadcastAudienceFilters): Promise<BroadcastJobDoc> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
@@ -211,7 +220,7 @@ export async function createBroadcastJob(
 		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
 		const doc: BroadcastJobDoc = {
 			message,
-			audience,
+			audienceFilters: audienceFilters ?? undefined,
 			status: "pending",
 			createdAt: new Date()
 		};
@@ -393,11 +402,7 @@ async function getNextEmployeeReferralCode(): Promise<string> {
 		await client.connect();
 		const db = client.db(dbName);
 		const counters = db.collection<CounterDoc>(countersCollection);
-		const result = await counters.findOneAndUpdate(
-			{ _id: "employee_referral" },
-			{ $inc: { seq: 1 } },
-			{ upsert: true, returnDocument: "after" }
-		);
+		const result = await counters.findOneAndUpdate({ _id: "employee_referral" }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: "after" });
 		const seq = result?.value?.seq ?? 1;
 		return `emp${seq}`;
 	} finally {
@@ -408,11 +413,7 @@ async function getNextEmployeeReferralCode(): Promise<string> {
 /**
  * Creates a new employee with auto-generated unique referralCode (emp1, emp2, ...).
  */
-export async function createEmployee(input: {
-	name: string;
-	surname: string;
-	filial: string;
-}): Promise<EmployeeDoc> {
+export async function createEmployee(input: { name: string; surname: string; filial: string }): Promise<EmployeeDoc> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
