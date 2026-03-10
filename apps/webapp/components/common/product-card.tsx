@@ -13,7 +13,7 @@ export interface ProductCardProps {
 	id: string;
 	title: string;
 	description: string;
-	price: number;
+	price?: number;
 	/** URL for image or video (use mediaType to choose how to render) */
 	url: string;
 	badgeLabel?: string;
@@ -24,7 +24,8 @@ export interface ProductCardProps {
 export function ProductCard({ title, description, price, url, badgeLabel, mediaType = "image" }: ProductCardProps) {
 	const tg = useTelegram();
 
-	const formattedPrice = new Intl.NumberFormat("uz-UZ").format(price);
+	const hasPrice = typeof price === "number" && isFinite(price) && price > 0;
+	const formattedPrice = hasPrice ? new Intl.NumberFormat("uz-UZ").format(price) : null;
 
 	const TELEGRAM_CHANNEL_LINK = "https://t.me/ASLZAR_tilla";
 
@@ -60,10 +61,12 @@ export function ProductCard({ title, description, price, url, badgeLabel, mediaT
 					<h3 className="font-semibold text-base leading-snug line-clamp-2">{title}</h3>
 					<p className="mt-1 text-sm text-muted-foreground line-clamp-3">{description}</p>
 				</div>
-				<div className="mt-2 flex items-center justify-between gap-3">
-					<div className="text-sm font-semibold">
-						<span>{formattedPrice}</span> <span className="text-xs text-muted-foreground">so&apos;m</span>
-					</div>
+				<div className={`mt-2 flex items-center gap-3 ${hasPrice ? "justify-between" : "justify-end"}`}>
+					{hasPrice && (
+						<div className="text-sm font-semibold">
+							<span>{formattedPrice}</span> <span className="text-xs text-muted-foreground">so&apos;m</span>
+						</div>
+					)}
 					<RippleButton type="button" variant="outline" className={goldButtonClass} onClick={handleBuy}>
 						<ShoppingCart className="size-4" />
 						Sotib olish

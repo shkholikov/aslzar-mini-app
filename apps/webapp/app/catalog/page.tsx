@@ -15,7 +15,7 @@ function productToCardProps(p: CatalogProduct): ProductCardProps {
 		id: p.id,
 		title: p.title,
 		description: p.description,
-		price: p.price,
+		price: typeof p.price === "number" && isFinite(p.price) && p.price > 0 ? p.price : undefined,
 		url: p.url,
 		badgeLabel: p.badgeLabel,
 		mediaType

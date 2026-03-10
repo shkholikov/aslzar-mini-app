@@ -47,20 +47,32 @@ export async function POST(request: NextRequest) {
 		const badgeLabel =
 			typeof body?.badgeLabel === "string" && body.badgeLabel.trim() ? body.badgeLabel.trim() : undefined;
 
-		if (!title || !description || !url || typeof priceRaw !== "number" || !isFinite(priceRaw) || priceRaw <= 0) {
+		if (!title || !description || !url) {
 			return NextResponse.json(
 				{
-					error:
-						"title, description, url must be non-empty strings and price must be a positive number"
+					error: "title, description, url must be non-empty strings"
 				},
 				{ status: 400 }
 			);
 		}
 
+		let price: number | undefined;
+		if (priceRaw !== undefined && priceRaw !== null) {
+			if (typeof priceRaw !== "number" || !isFinite(priceRaw) || priceRaw <= 0) {
+				return NextResponse.json(
+					{
+						error: "If provided, price must be a positive number"
+					},
+					{ status: 400 }
+				);
+			}
+			price = priceRaw;
+		}
+
 		const product = await createProduct({
 			title,
 			description,
-			price: priceRaw,
+			price,
 			url,
 			badgeLabel
 		});

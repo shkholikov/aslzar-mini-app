@@ -43,7 +43,7 @@ export interface ProductDoc extends Document {
 	_id?: string | ObjectId;
 	title: string;
 	description: string;
-	price: number;
+	price?: number;
 	url: string;
 	badgeLabel?: string;
 	createdAt: Date;
@@ -297,7 +297,7 @@ export async function getSuggestions(limit = 200): Promise<SuggestionDoc[]> {
 export async function createProduct(input: {
 	title: string;
 	description: string;
-	price: number;
+	price?: number;
 	url: string;
 	badgeLabel?: string;
 }): Promise<ProductDoc> {
@@ -312,12 +312,14 @@ export async function createProduct(input: {
 		const doc: ProductDoc = {
 			title: input.title,
 			description: input.description,
-			price: input.price,
 			url: input.url,
 			badgeLabel: input.badgeLabel,
 			createdAt: now,
 			updatedAt: now
 		};
+		if (typeof input.price === "number" && isFinite(input.price) && input.price > 0) {
+			doc.price = input.price;
+		}
 		const result = await coll.insertOne(doc);
 		return { ...doc, _id: result.insertedId };
 	} finally {

@@ -113,12 +113,12 @@ export interface CatalogProduct {
 	id: string;
 	title: string;
 	description: string;
-	price: number;
+	price?: number;
 	url: string;
 	badgeLabel?: string;
 }
 
-type ProductRow = { _id?: unknown; title: string; description: string; price: number; url?: string; imageUrl?: string; badgeLabel?: string };
+type ProductRow = { _id?: unknown; title: string; description: string; price?: number; url?: string; imageUrl?: string; badgeLabel?: string };
 
 /**
  * Fetches products for the webapp catalog from MongoDB (same collection as admin).
@@ -137,7 +137,7 @@ export async function getCatalogProducts(limit = 100): Promise<CatalogProduct[]>
 			id: String(p._id),
 			title: p.title,
 			description: p.description,
-			price: p.price,
+			price: typeof p.price === "number" && isFinite(p.price) && p.price > 0 ? p.price : undefined,
 			url: p.url ?? p.imageUrl ?? "",
 			badgeLabel: p.badgeLabel
 		}));

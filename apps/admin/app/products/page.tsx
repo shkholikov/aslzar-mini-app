@@ -55,10 +55,16 @@ export default function ProductsPage() {
 		const trimmedTitle = title.trim();
 		const trimmedDescription = description.trim();
 		const trimmedUrl = url.trim();
-		const numericPrice = Number(price);
+		const hasPriceInput = price.trim() !== "";
+		const numericPrice = hasPriceInput ? Number(price) : undefined;
 
-		if (!trimmedTitle || !trimmedDescription || !trimmedUrl || !numericPrice || numericPrice <= 0) {
-			setError("Iltimos, barcha majburiy maydonlarni to‘ldiring va narxni to‘g‘ri kiriting.");
+		if (!trimmedTitle || !trimmedDescription || !trimmedUrl) {
+			setError("Iltimos, majburiy maydonlarni to‘ldiring (nomi, tavsif, URL).");
+			return;
+		}
+
+		if (hasPriceInput && (!numericPrice || !isFinite(numericPrice) || numericPrice <= 0)) {
+			setError("Agar narx kiritilgan bo‘lsa, u musbat son bo‘lishi kerak.");
 			return;
 		}
 
@@ -71,7 +77,7 @@ export default function ProductsPage() {
 				body: JSON.stringify({
 					title: trimmedTitle,
 					description: trimmedDescription,
-					price: numericPrice,
+					price: hasPriceInput ? numericPrice : undefined,
 					url: trimmedUrl,
 					badgeLabel: badgeLabel.trim() || undefined
 				})
@@ -137,7 +143,8 @@ export default function ProductsPage() {
 		}
 	}
 
-	function formatPrice(value: number) {
+	function formatPrice(value?: number) {
+		if (typeof value !== "number" || !isFinite(value) || value <= 0) return "-";
 		return new Intl.NumberFormat("uz-UZ").format(value);
 	}
 
@@ -170,7 +177,7 @@ export default function ProductsPage() {
 								<Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Mahsulot nomi" />
 							</div>
 							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">Narxi (so‘m)</label>
+								<label className="block text-sm font-medium text-gray-700 mb-1">Narxi (so‘m | ixtiyoriy)</label>
 								<Input value={price} onChange={(e) => setPrice(e.target.value)} type="number" min="0" placeholder="Masalan: 250000" />
 							</div>
 							<div className="md:col-span-2">
