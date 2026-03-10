@@ -403,7 +403,7 @@ async function getNextEmployeeReferralCode(): Promise<string> {
 		const db = client.db(dbName);
 		const counters = db.collection<CounterDoc>(countersCollection);
 		const result = await counters.findOneAndUpdate({ _id: "employee_referral" }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: "after" });
-		const seq = result?.value?.seq ?? 1;
+		const seq = result?.seq ?? 1;
 		return `emp${seq}`;
 	} finally {
 		if (client) await client.close();
