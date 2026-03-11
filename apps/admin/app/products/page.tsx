@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { upload } from "@vercel/blob/client";
 import { AdminGuard } from "@/components/common/admin-guard";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
@@ -107,18 +108,32 @@ export default function ProductsPage() {
 		setUploadError(null);
 		setUploading(true);
 		try {
-			const formData = new FormData();
-			formData.set("file", file);
-			const res = await fetch("/api/upload", {
-				method: "POST",
-				body: formData
-			});
-			const data = await res.json().catch(() => ({}));
-			if (!res.ok) {
-				throw new Error(data.error || "Yuklash muvaffaqiyatsiz");
+			// Basic client-side validations to match backend rules.
+			if (file.size > 100 * 1024 * 1024) {
+				throw new Error("Fayl hajmi juda katta. Maksimal 100 MB.");
 			}
-			if (typeof data.url === "string") {
-				setUrl(data.url);
+
+			const type = (file.type || "").toLowerCase();
+			const allowedTypes = [
+				"image/jpeg",
+				"image/png",
+				"image/webp",
+				"image/gif",
+				"video/mp4",
+				"video/webm",
+				"video/quicktime"
+			];
+			if (!allowedTypes.includes(type)) {
+				throw new Error("Noto‘g‘ri fayl turi. Ruxsat etilgan: JPEG, PNG, WebP, GIF, MP4, WebM, MOV.");
+			}
+
+			const blob = await upload(file.name, file, {
+				access: "public",
+				handleUploadUrl: "/api/upload"
+			});
+
+			if (typeof blob.url === "string") {
+				setUrl(blob.url);
 			}
 		} catch (e) {
 			setUploadError(e instanceof Error ? e.message : "Yuklash xatosi");

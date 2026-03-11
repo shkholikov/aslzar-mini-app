@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { put } from "@vercel/blob";
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { isAuthenticatedRequest } from "@/lib/auth";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for videos
@@ -15,8 +15,9 @@ const ALLOWED_TYPES = [
 
 /**
  * POST /api/upload
- * Accepts multipart/form-data with field "file" (image or video).
- * Uploads to Vercel Blob (public store) and returns { url }.
+ * Acts as a lightweight "token exchange" endpoint for client-side uploads.
+ * The actual file bytes are uploaded directly from the browser to Vercel Blob,
+ * so we avoid the Vercel Function 4.5 MB body size limit.
  * Requires BLOB_READ_WRITE_TOKEN in env (set by Vercel when store is linked).
  */
 export async function POST(request: NextRequest) {
@@ -26,46 +27,25 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const formData = await request.formData();
-		const file = formData.get("file");
+		const body = (await request.json()) as HandleUploadBody;
 
-		if (!file || !(file instanceof File)) {
-			return NextResponse.json(
-				{ error: "Missing or invalid file. Send a single file in the 'file' field." },
-				{ status: 400 }
-			);
-		}
-
-		if (file.size > MAX_FILE_SIZE) {
-			return NextResponse.json(
-				{ error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024} MB.` },
-				{ status: 400 }
-			);
-		}
-
-		const type = (file.type || "").toLowerCase();
-		const allowed =
-			ALLOWED_TYPES.includes(type) ||
-			ALLOWED_TYPES.some((t) => type.startsWith(t.split("/")[0] + "/"));
-		if (!allowed) {
-			return NextResponse.json(
-				{ error: `Invalid file type. Allowed: ${ALLOWED_TYPES.join(", ")}` },
-				{ status: 400 }
-			);
-		}
-
-		const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-		const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80) || "file";
-		const pathname = `products/${Date.now()}-${safeName}`;
-
-		const blob = await put(pathname, file, {
-			access: "public",
-			addRandomSuffix: true,
-			contentType: file.type || undefined,
-			multipart: file.size > 5 * 1024 * 1024, // 5 MB+: use multipart for large files
+		const jsonResponse = await handleUpload({
+			request,
+			body,
+			onBeforeGenerateToken: async (pathname) => {
+				// Enforce file type restrictions at the token level.
+				// Max size is additionally checked on the client before upload.
+				return {
+					allowedContentTypes: ALLOWED_TYPES,
+					addRandomSuffix: true,
+				};
+			},
+			onUploadCompleted: async ({ blob }) => {
+				console.log("Upload completed:", blob.url);
+			},
 		});
 
-		return NextResponse.json({ url: blob.url }, { status: 200 });
+		return NextResponse.json(jsonResponse);
 	} catch (error) {
 		console.error("Upload error:", error);
 		return NextResponse.json(
