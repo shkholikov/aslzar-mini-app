@@ -127,7 +127,10 @@ export default function ProductsPage() {
 				throw new Error("Noto‘g‘ri fayl turi. Ruxsat etilgan: JPEG, PNG, WebP, GIF, MP4, WebM, MOV.");
 			}
 
-			const blob = await upload(file.name, file, {
+			const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80) || "file";
+			const pathname = `products/${Date.now()}-${safeName}`;
+
+			const blob = await upload(pathname, file, {
 				access: "public",
 				handleUploadUrl: "/api/upload"
 			});
