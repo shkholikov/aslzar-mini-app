@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { isAuthenticatedRequest } from "@/lib/auth";
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for videos
+// const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for videos
 const ALLOWED_TYPES = [
 	"image/jpeg",
 	"image/png",
@@ -10,7 +10,7 @@ const ALLOWED_TYPES = [
 	"image/gif",
 	"video/mp4",
 	"video/webm",
-	"video/quicktime", // .mov
+	"video/quicktime" // .mov
 ];
 
 /**
@@ -37,12 +37,12 @@ export async function POST(request: NextRequest) {
 				// Max size is additionally checked on the client before upload.
 				return {
 					allowedContentTypes: ALLOWED_TYPES,
-					addRandomSuffix: true,
+					addRandomSuffix: true
 				};
 			},
 			onUploadCompleted: async ({ blob }) => {
 				console.log("Upload completed:", blob.url);
-			},
+			}
 		});
 
 		return NextResponse.json(jsonResponse);
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error: "Upload failed",
-				details: error instanceof Error ? error.message : "Unknown error",
+				details: error instanceof Error ? error.message : "Unknown error"
 			},
 			{ status: 500 }
 		);

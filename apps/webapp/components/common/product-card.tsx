@@ -1,11 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { Badge } from "@/components/ui/badge";
 import { useTelegram } from "@/hooks/useTelegram";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { ShoppingCart } from "lucide-react";
+import {
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogAction
+} from "@/components/ui/alert-dialog";
 
 export type ProductMediaType = "image" | "video";
 
@@ -21,20 +31,46 @@ export interface ProductCardProps {
 	mediaType?: ProductMediaType;
 }
 
-export function ProductCard({ title, description, price, url, badgeLabel, mediaType = "image" }: ProductCardProps) {
+const SUCCESS_MESSAGE = "Qiziqish bildirganingiz uchun rahmat, biz siz bilan tez orada bog'lanamiz.";
+
+export function ProductCard({ id, title, description, price, url, badgeLabel, mediaType = "image" }: ProductCardProps) {
 	const tg = useTelegram();
+	const [interestDialogOpen, setInterestDialogOpen] = useState(false);
+	const [sending, setSending] = useState(false);
 
 	const hasPrice = typeof price === "number" && isFinite(price) && price > 0;
 	const formattedPrice = hasPrice ? new Intl.NumberFormat("uz-UZ").format(price) : null;
 
-	const TELEGRAM_CHANNEL_LINK = "https://t.me/ASLZAR_tilla";
-
-	const handleBuy = () => {
-		tg?.HapticFeedback?.impactOccurred("heavy");
-		if (tg?.openTelegramLink) {
-			tg.openTelegramLink(TELEGRAM_CHANNEL_LINK);
-		} else {
-			window.open(TELEGRAM_CHANNEL_LINK, "_blank");
+	const handleBuy = async () => {
+		setSending(true);
+		try {
+			const userId = tg?.initDataUnsafe?.user?.id?.toString();
+			if (!userId) {
+				tg?.HapticFeedback?.notificationOccurred("error");
+				return;
+			}
+			tg?.HapticFeedback?.impactOccurred("medium");
+			const res = await fetch("/api/product-interest", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					userId,
+					productId: id,
+					productTitle: title,
+					productDescription: description,
+					productPrice: hasPrice ? price : undefined,
+					productUrl: url
+				})
+			});
+			if (!res.ok) {
+				const err = await res.json().catch(() => ({}));
+				tg?.HapticFeedback?.notificationOccurred("error");
+				return;
+			}
+			setInterestDialogOpen(true);
+			tg?.HapticFeedback?.notificationOccurred("success");
+		} finally {
+			setSending(false);
 		}
 	};
 
@@ -67,12 +103,23 @@ export function ProductCard({ title, description, price, url, badgeLabel, mediaT
 							<span>{formattedPrice}</span> <span className="text-xs text-muted-foreground">so&apos;m</span>
 						</div>
 					)}
-					<RippleButton type="button" variant="outline" className={goldButtonClass} onClick={handleBuy}>
+					<RippleButton type="button" variant="outline" className={goldButtonClass} onClick={handleBuy} disabled={sending}>
 						<ShoppingCart className="size-4" />
-						Sotib olish
+						{sending ? "..." : "Sotib olish"}
 					</RippleButton>
 				</div>
 			</div>
+			<AlertDialog open={interestDialogOpen} onOpenChange={setInterestDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Rahmat</AlertDialogTitle>
+						<AlertDialogDescription>{SUCCESS_MESSAGE}</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogAction>OK</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
