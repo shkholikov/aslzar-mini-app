@@ -207,6 +207,53 @@ export async function getAllUsers(): Promise<UserDocument[]> {
 	}
 }
 
+export interface AdminStats {
+	totalUsers: number;
+	verified: number;
+	nonVerified: number;
+	/** Users created in the current calendar month */
+	currentMonthUsers: number;
+}
+
+/**
+ * Gets user counts for admin dashboard (total, verified, non-verified, current month).
+ */
+export async function getAdminStats(): Promise<AdminStats> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const users = db.collection<UserDocument>(usersCollection);
+
+		const now = new Date();
+		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+		const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+		const [totalUsers, verified, currentMonthUsers] = await Promise.all([
+			users.countDocuments({}),
+			users.countDocuments({ "value.isVerified": true }),
+			users.countDocuments({
+				"value.createdAt": { $gte: startOfMonth, $lte: endOfMonth }
+			})
+		]);
+		return {
+			totalUsers,
+			verified,
+			nonVerified: totalUsers - verified,
+			currentMonthUsers
+		};
+	} catch (error) {
+		console.error("Error fetching admin stats:", error);
+		throw error;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
 /**
  * Creates a new broadcast job (status: pending). Bot sends by audienceFilters: when none set, all users; when set, AND conditions.
  */

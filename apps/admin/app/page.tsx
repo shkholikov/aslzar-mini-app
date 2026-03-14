@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator";
 import { UsersList } from "@/components/users-list";
+import { StatsCards } from "@/components/stats-cards";
 import { Shield } from "lucide-react";
 import { AdminGuard } from "@/components/common/admin-guard";
 
@@ -17,6 +18,8 @@ export default function Home() {
 							<p className="text-center mt-2">Aslzar Telegram boti foydalanuvchilarini boshqarish</p>
 						</span>
 						<Separator className="mt-2" />
+						<h2 className="text-lg font-semibold text-gray-800 mt-6 mb-2">Foydalanuvchilar</h2>
+						<StatsCards />
 						<UsersList />
 					</div>
 				</div>
