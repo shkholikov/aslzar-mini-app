@@ -26,6 +26,7 @@ export interface MongoDBUserDocument extends Document {
 		first_name?: string;
 		last_name?: string;
 		phone_number?: string;
+		isChannelMember?: boolean;
 		createdAt?:
 			| {
 					$date: string;
@@ -100,6 +101,41 @@ export async function updateUserSession1CData(userId: string, user1CData: Record
 		return result.matchedCount > 0 && result.modifiedCount > 0;
 	} catch (error) {
 		console.error("Error updating user session 1C data:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
+}
+
+/**
+ * Updates the user's session in MongoDB with channel membership flag.
+ * Used when the webapp checks subscription so the admin panel shows "Kanal a'zosi" (Ha/Yo'q) correctly.
+ *
+ * @param userId - Telegram user ID (session key)
+ * @param isChannelMember - Whether the user is a member of the channel
+ * @returns true if a document was matched and updated
+ */
+export async function updateUserChannelMember(userId: string, isChannelMember: boolean): Promise<boolean> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
+
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const db = client.db(dbName);
+		const users = db.collection<MongoDBUserDocument>(usersCollection);
+
+		const result = await users.updateOne({ key: userId }, { $set: { "value.isChannelMember": isChannelMember } });
+
+		return result.matchedCount > 0;
+	} catch (error) {
+		console.error("Error updating user channel member:", error);
 		throw error;
 	} finally {
 		if (client) {

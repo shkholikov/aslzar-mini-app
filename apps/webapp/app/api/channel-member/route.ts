@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { updateUserChannelMember } from "@/lib/db";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID || "@ASLZAR_tilla";
@@ -23,6 +24,12 @@ export async function GET(request: NextRequest) {
 
 		const status = data.result.status;
 		const isMember = ["creator", "administrator", "member"].includes(status ?? "");
+
+		// Persist so admin panel "Kanal a'zosi" column stays in sync
+		await updateUserChannelMember(userId, isMember).catch((err) => {
+			console.error("Failed to persist isChannelMember:", err);
+		});
+
 		return NextResponse.json({ isMember }, { status: 200 });
 	} catch (error) {
 		console.error("Error checking channel membership:", error);

@@ -9,7 +9,7 @@ import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
-// import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card";
+import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card";
 import { Loading } from "@/components/common/loading";
 
 export default function HomePage() {
@@ -40,7 +40,7 @@ export default function HomePage() {
 					) : (
 						<RegisterPromptCard />
 					)}
-					{/* <ChannelSubscribeCard /> */}
+					<ChannelSubscribeCard />
 					<PlatformInfo />
 					<News />
 				</div>
