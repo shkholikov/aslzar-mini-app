@@ -3,15 +3,7 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { connectToDb, users, channelPosts } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import {
-	checkSubscriptionFlow,
-	handleEmployeeReferralCode,
-	handleReferralCode,
-	initializeSession,
-	sendContactRequest,
-	sendSubscribeRequest,
-	sendWebApp
-} from "./helper";
+import { handleEmployeeReferralCode, handleReferralCode, initializeSession, sendWebApp } from "./helper";
 import { searchUserByPhone } from "./api";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
@@ -85,23 +77,15 @@ async function bootstrap() {
 		}
 
 		if (!ctx.session?.phone_number) {
-			// user doesn't exist in a database
 			initializeSession(ctx);
-			// Request a contact
-			await sendContactRequest(ctx);
-			// User exists - send webapp URL directly
+			await sendWebApp(ctx, rawCode ?? undefined);
 		} else {
-			// Refresh cached 1C data for returning users so reminders/referrals use fresh data
 			const fresh1C = await searchUserByPhone(ctx.session.phone_number);
 			if (fresh1C) {
 				ctx.session.user1CData = fresh1C;
 				ctx.session.isVerified = true;
 			}
-			if (!ctx.session.isChannelMember) {
-				await sendSubscribeRequest(ctx);
-			} else {
-				await sendWebApp(ctx);
-			}
+			await sendWebApp(ctx, rawCode ?? undefined);
 		}
 	});
 
@@ -133,18 +117,7 @@ async function bootstrap() {
 			ctx.session.pendingEmployeeReferralCode = undefined;
 		}
 
-		// Remove the contact request button
-		await ctx.reply("✅ Telefon raqamingiz qabul qilindi!", {
-			reply_markup: { remove_keyboard: true }
-		});
-
-		// send subscribe request
-		await sendSubscribeRequest(ctx);
-	});
-
-	// on check_subscription callback
-	bot.callbackQuery("check_subscription", async (ctx) => {
-		await checkSubscriptionFlow(ctx);
+		// No reply: contact was shared from webapp; user continues in webapp
 	});
 
 	// Store group messages for the webapp "Yangiliklar" section.

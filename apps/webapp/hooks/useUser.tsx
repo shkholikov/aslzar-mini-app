@@ -42,6 +42,11 @@ export function UserProvider({ children }: UserProviderProps) {
 
 			const response = await fetch(`/api/users?userId=${userId}`);
 			if (!response.ok) {
+				// 404 = user not registered yet (no phone in session) — treat as no data, not an error
+				if (response.status === 404) {
+					setData(null);
+					return;
+				}
 				throw new Error(`Failed to fetch user data: ${response.status}`);
 			}
 

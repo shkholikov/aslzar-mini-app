@@ -1,12 +1,11 @@
-import { InlineKeyboard, Keyboard } from "grammy";
-import { infoText, subscribeRequestText } from "./messages";
+import { InlineKeyboard } from "grammy";
+import { infoText } from "./messages";
 import { ISessionData, MyContext } from "./types";
 import { users, employees } from "./db";
 import { addReferral } from "./api";
 
 const WEBAPP_URL = process.env.WEBAPP_URL || "https://aslzar.uz";
 const BOT_TELEGRAM_LINK = process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
-const CHANNEL_ID = process.env.CHANNEL_ID || "@ASLZAR_tilla";
 
 export function initializeSession(ctx: MyContext): void {
 	if (!ctx.from) return;
@@ -17,62 +16,12 @@ export function initializeSession(ctx: MyContext): void {
 	ctx.session.last_name = ctx.from.last_name;
 }
 
-export async function sendContactRequest(ctx: MyContext) {
-	const name = ctx.from?.first_name || "Hurmatli mijoz";
-	const greetingText = `*Assalomu alaykum, ${name}\\! 👋*\n\n*ASLZAR💎* Telegram botiga xush kelibsiz\\.\n\nIltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring\\.\n\nTelefon raqamingizni yuborish uchun pastdagi tugmani bosing\\.`;
-
-	// User doesn't exist - ask for contact
-	await ctx.reply(greetingText, {
-		reply_markup: new Keyboard().requestContact("📱 Telefon raqamni ulashish").oneTime().resized(),
-		parse_mode: "MarkdownV2"
-	});
-}
-
-export async function sendSubscribeRequest(ctx: MyContext) {
-	await ctx.reply(subscribeRequestText, {
-		reply_markup: new InlineKeyboard()
-			.url("ASLZAR💎 kanaliga a'zo bo'lish", "https://t.me/ASLZAR_tilla")
-			.row()
-			.text("🔎 A’zolikni tekshirish", "check_subscription"),
-		parse_mode: "MarkdownV2"
-	});
-}
-
-export async function sendWebApp(ctx: MyContext) {
+export async function sendWebApp(ctx: MyContext, ref?: string) {
+	const url = ref ? `${WEBAPP_URL}${WEBAPP_URL.includes("?") ? "&" : "?"}ref=${encodeURIComponent(ref)}` : WEBAPP_URL;
 	await ctx.reply(infoText, {
-		reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", WEBAPP_URL),
+		reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", url),
 		parse_mode: "MarkdownV2"
 	});
-}
-
-export async function checkSubscriptionFlow(ctx: MyContext) {
-	const userId = ctx.from?.id;
-	if (!userId) return;
-
-	try {
-		const member = await ctx.api.getChatMember(CHANNEL_ID, userId);
-		const isSubscribed = ["member", "administrator", "creator"].includes(member.status);
-
-		if (isSubscribed) {
-			ctx.session.isChannelMember = true;
-			await ctx.answerCallbackQuery({ show_alert: true, text: "✅ A'zolik tasdiqlandi!" });
-
-			const chatId = ctx.callbackQuery!.message?.chat.id;
-			const msgId = ctx.callbackQuery!.message?.message_id;
-
-			if (chatId && msgId) {
-				await ctx.api.editMessageText(chatId, msgId, infoText, {
-					reply_markup: new InlineKeyboard().webApp("ASLZAR💎 ilovasini ochish", WEBAPP_URL),
-					parse_mode: "MarkdownV2"
-				});
-			}
-		} else {
-			ctx.session.isChannelMember = false;
-			await ctx.answerCallbackQuery({ show_alert: true, text: "❌ Siz hali a'zo emassiz!" });
-		}
-	} catch (e) {
-		console.error("Error checking subscription:", e);
-	}
 }
 
 export async function prepareReferralMessage(ctx: MyContext) {
@@ -168,12 +117,7 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 		const referredUserLastName = ctx.from?.last_name || ctx.session.last_name || "";
 
 		// Add referral to 1C
-		const success = await addReferral(
-			referrer1CData.clientId,
-			referredUserPhone,
-			referredUserFirstName,
-			referredUserLastName
-		);
+		const success = await addReferral(referrer1CData.clientId, referredUserPhone, referredUserFirstName, referredUserLastName);
 		if (success) {
 			console.log(`Referral registered: User ${referredUserPhone} was referred by ${referrerId}`);
 		} else {
@@ -213,10 +157,7 @@ export async function handleEmployeeReferralCode(ctx: MyContext, employeeCode: s
 		const result = await users.updateOne(
 			{
 				key,
-				$or: [
-					{ "value.referredByEmployeeCode": { $exists: false } },
-					{ "value.referredByEmployeeCode": null }
-				]
+				$or: [{ "value.referredByEmployeeCode": { $exists: false } }, { "value.referredByEmployeeCode": null }]
 			},
 			{ $set: { "value.referredByEmployeeCode": normalizedCode } }
 		);

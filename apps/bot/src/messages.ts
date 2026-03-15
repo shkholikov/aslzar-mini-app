@@ -1,13 +1,3 @@
-export const greetingText = `
-*Assalomu alaykum, \${name}\\! 👋*
-
-*ASLZAR💎* Telegram botiga xush kelibsiz\\.
-
-Iltimos, o'zingizni tasdiqlash uchun telefon raqamingizni yuboring\\.
-
-Telefon raqamingizni yuborish uchun pastdagi tugmani bosing\\.
-`;
-
 export const infoText = `
 *ASLZAR💎* — Sizning sodiqlik va zamonaviy to'lovlar markazingiz\\.
 
