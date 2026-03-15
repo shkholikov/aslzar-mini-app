@@ -5,7 +5,7 @@ import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
 import { UpcomingPayments } from "./components/upcoming-payments";
 import { useUser } from "@/hooks/useUser";
-import { CallToActionItem } from "@/components/common/call-to-action-item";
+import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useRouter } from "next/navigation";
 import { Loading } from "@/components/common/loading";
@@ -28,16 +28,7 @@ export default function FinancePage() {
 						<Contracts contracts={data?.contract?.ids || []} loading={loading} />
 					</>
 				) : (
-					<CallToActionItem
-						title="Siz hali ASLZAR mijozi emassiz."
-						description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
-						iconImage="/icons/user.png"
-						buttonText="Kirish"
-						onButtonClick={() => {
-							router.push("/register");
-							tg?.HapticFeedback?.impactOccurred("heavy");
-						}}
-					/>
+					<RegisterPromptCard />
 				)}
 			</div>
 		</div>

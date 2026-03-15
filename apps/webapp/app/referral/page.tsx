@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components/common/header";
-import { CallToActionItem } from "@/components/common/call-to-action-item";
+import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { ReferralQRCode } from "./components/referral-qr-code";
 import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -117,16 +117,7 @@ export default function ReferralPage() {
 					/>
 				</>
 			) : (
-				<CallToActionItem
-					iconImage="/icons/user.png"
-					title="Siz hali ASLZAR mijozi emassiz."
-					description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
-					buttonText="Kirish"
-					onButtonClick={() => {
-						router.push("/register");
-						tg?.HapticFeedback?.impactOccurred("heavy");
-					}}
-				/>
+				<RegisterPromptCard />
 			)}
 		</div>
 	);

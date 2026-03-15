@@ -5,11 +5,10 @@ import { Profile } from "@/components/common/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
-import { Link } from "@/components/common/link";
 import { PlatformInfo } from "@/components/platform-info";
 import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
-import { CallToActionItem } from "@/components/common/call-to-action-item";
+import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { Loading } from "@/components/common/loading";
 
 export default function HomePage() {
@@ -31,7 +30,6 @@ export default function HomePage() {
 			<>
 				<Profile />
 				<div>
-					<PlatformInfo />
 					{loading ? (
 						<Loading />
 					) : data && data.code === 0 ? (
@@ -39,17 +37,9 @@ export default function HomePage() {
 							<UserInfo />
 						</>
 					) : (
-						<CallToActionItem
-							iconImage="/icons/user.png"
-							title="Siz hali ASLZAR mijozi emassiz."
-							description="Ro'yxatdan o'ting va Aslzar mijoziga aylaning!"
-							buttonText="Kirish"
-							onButtonClick={() => {
-								router.push("/register");
-								tg?.HapticFeedback?.impactOccurred("heavy");
-							}}
-						/>
+						<RegisterPromptCard />
 					)}
+					<PlatformInfo />
 					<News />
 				</div>
 			</>
