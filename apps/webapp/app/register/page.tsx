@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
-import { FileCheck, Home, Phone } from "lucide-react";
+import { FileCheck, Home, Loader2, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,6 +39,7 @@ export default function RegisterPage() {
 
 	const [step, setStep] = useState<Step>("share_phone");
 	const [contactLoading, setContactLoading] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const pollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const contactHandledRef = useRef(false);
 	const contactRequestedOffRef = useRef<(() => void) | null>(null);
@@ -158,6 +159,7 @@ export default function RegisterPage() {
 	}, [step]);
 
 	const onSubmit = async (formData: RegisterSchema) => {
+		setIsSubmitting(true);
 		try {
 			const response = await fetch("/api/users", {
 				method: "POST",
@@ -176,6 +178,8 @@ export default function RegisterPage() {
 		} catch (error) {
 			console.error("Registration error:", error);
 			toast.error("Ro'yxatdan o'tishda xatolik yuz berdi");
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -253,9 +257,24 @@ export default function RegisterPage() {
 								</FieldGroup>
 							</FieldSet>
 							<Field orientation="vertical" className="mt-4">
-								<RippleButton type="submit" variant="outline" className={goldButtonClass} onClick={() => tg?.HapticFeedback?.impactOccurred("heavy")}>
-									<FileCheck className="size-4" />
-									Tasdiqlash
+								<RippleButton
+									type="submit"
+									variant="outline"
+									className={goldButtonClass}
+									disabled={isSubmitting}
+									onClick={() => tg?.HapticFeedback?.impactOccurred("heavy")}
+								>
+									{isSubmitting ? (
+										<>
+											<Loader2 className="size-4 shrink-0 animate-spin" />
+											Yuklanmoqda...
+										</>
+									) : (
+										<>
+											<FileCheck className="size-4" />
+											Tasdiqlash
+										</>
+									)}
 								</RippleButton>
 							</Field>
 						</FieldGroup>
