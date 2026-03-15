@@ -6,7 +6,6 @@ import { ReferralQRCode } from "./components/referral-qr-code";
 import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Loading } from "@/components/common/loading";
@@ -25,7 +24,6 @@ interface IReferral {
 
 export default function ReferralPage() {
 	const tg = useTelegram();
-	const router = useRouter();
 	const { data, loading } = useUser();
 	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
 	const [referrals, setReferrals] = useState<IReferral[]>([]);

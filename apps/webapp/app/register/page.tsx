@@ -210,7 +210,7 @@ export default function RegisterPage() {
 						</div>
 					) : (
 						<>
-							<p className="text-muted-foreground mb-4">Ro'yxatdan o'tish uchun avval telefon raqamingizni ulashing.</p>
+							<p className="text-muted-foreground mb-4">Ro&apos;yxatdan o&apos;tish uchun avval telefon raqamingizni ulashing.</p>
 							<RippleButton
 								variant="outline"
 								size="default"
@@ -271,7 +271,7 @@ export default function RegisterPage() {
 						<div className="flex justify-center">
 							<RippleButton variant="outline" className={goldButtonClass} onClick={goHome}>
 								<Home className="size-4" />
-								Bosh sahifaga o'tish
+								Bosh sahifaga o&apos;tish
 							</RippleButton>
 						</div>
 					</div>
@@ -287,7 +287,7 @@ export default function RegisterPage() {
 						<div className="flex justify-center">
 							<RippleButton variant="outline" className={goldButtonClass} onClick={goHome}>
 								<Home className="size-4" />
-								Bosh sahifaga o'tish
+								Bosh sahifaga o&apos;tish
 							</RippleButton>
 						</div>
 					</div>

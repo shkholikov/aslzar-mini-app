@@ -63,7 +63,7 @@ export function ProductCard({ id, title, description, price, url, badgeLabel, me
 				})
 			});
 			if (!res.ok) {
-				const err = await res.json().catch(() => ({}));
+				await res.json().catch(() => ({}));
 				tg?.HapticFeedback?.notificationOccurred("error");
 				return;
 			}

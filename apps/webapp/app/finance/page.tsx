@@ -6,14 +6,10 @@ import { Contracts } from "./components/contracts";
 import { UpcomingPayments } from "./components/upcoming-payments";
 import { useUser } from "@/hooks/useUser";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
-import { useTelegram } from "@/hooks/useTelegram";
-import { useRouter } from "next/navigation";
 import { Loading } from "@/components/common/loading";
 
 export default function FinancePage() {
 	const { data, loading } = useUser();
-	const tg = useTelegram();
-	const router = useRouter();
 
 	return (
 		<div className="pt-12">
