@@ -158,7 +158,6 @@ export default function RegisterPage() {
 	}, [step]);
 
 	const onSubmit = async (formData: RegisterSchema) => {
-		tg?.HapticFeedback?.impactOccurred("heavy");
 		try {
 			const response = await fetch("/api/users", {
 				method: "POST",
@@ -254,7 +253,7 @@ export default function RegisterPage() {
 								</FieldGroup>
 							</FieldSet>
 							<Field orientation="vertical" className="mt-4">
-								<RippleButton type="submit" variant="outline" className={goldButtonClass}>
+								<RippleButton type="submit" variant="outline" className={goldButtonClass} onClick={() => tg?.HapticFeedback?.impactOccurred("heavy")}>
 									<FileCheck className="size-4" />
 									Tasdiqlash
 								</RippleButton>
