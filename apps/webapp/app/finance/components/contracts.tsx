@@ -24,10 +24,10 @@ interface ContractsProps {
 	loading: boolean;
 }
 
-function calculateRemaining(contract: Contract): number {
-	const totalPaid = contract.pays?.reduce((acc, pay) => acc + pay.sum, 0) || 0;
-	return contract.sum - contract.skidka - contract.vznos - totalPaid;
-}
+// function calculateRemaining(contract: Contract): number {
+// 	const totalPaid = contract.pays?.reduce((acc, pay) => acc + pay.sum, 0) || 0;
+// 	return contract.sum - contract.skidka - contract.vznos - totalPaid;
+// }
 
 export function Contracts({ contracts, loading }: ContractsProps) {
 	if (loading) return <Loading />;
@@ -43,18 +43,18 @@ export function Contracts({ contracts, loading }: ContractsProps) {
 
 							<TableHead>Muddati</TableHead>
 							<TableHead>Sana</TableHead>
-							<TableHead>Qoldiq</TableHead>
+							{/* <TableHead>Qoldiq</TableHead> */}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{contracts.map((contract, idx) => {
-							const remaining = calculateRemaining(contract);
+							// const remaining = calculateRemaining(contract);
 							return (
 								<TableRow key={idx}>
 									<TableCell className="font-medium">{contract.sum.toLocaleString("uz-UZ")} so&apos;m</TableCell>
 									<TableCell>{contract.months} oy</TableCell>
 									<TableCell>{format1CDate(contract.date)}</TableCell>
-									<TableCell>{remaining.toLocaleString("uz-UZ")} so&apos;m</TableCell>
+									{/* <TableCell>{remaining.toLocaleString("uz-UZ")} so&apos;m</TableCell> */}
 								</TableRow>
 							);
 						})}
