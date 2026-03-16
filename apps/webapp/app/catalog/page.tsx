@@ -50,8 +50,8 @@ export default function CatalogPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/book.png" />
-			<SectionCard iconImage="/icons/ring.png" title="Mahsulotlar">
+			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.png" />
+			<SectionCard iconImage="/icons/book.png" title="Mahsulotlar">
 				<div className="grid grid-cols-1 gap-3 mt-2">
 					{loading && <Loading />}
 					{!loading && error && <p className="text-sm text-red-600 py-4">{error}</p>}
