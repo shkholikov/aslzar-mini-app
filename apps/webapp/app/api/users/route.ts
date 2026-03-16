@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
 			"Authorization": `Basic ${auth}`
 		};
 
-		// Step 3: Format phone number with + prefix and call 1C API
+		// Step 3: Format phone number with + prefix (avoid double ++)
 		const phone = tgSessionData.phone_number;
-		const formattedPhone = `+${phone}`;
+		const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
 		const response = await fetch(endpoint, {
 			method: "POST",
 			headers,
