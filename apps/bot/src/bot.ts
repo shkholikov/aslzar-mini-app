@@ -94,11 +94,13 @@ async function bootstrap() {
 		const contact = ctx.message?.contact;
 		if (!contact) return;
 
-		// Save contact to session
-		ctx.session.phone_number = contact.phone_number;
+		// Save normalized phone (digits only, without +) to session
+		const rawPhone = contact.phone_number ?? "";
+		const normalizedPhone = rawPhone.replace(/\D/g, "");
+		ctx.session.phone_number = normalizedPhone;
 
 		// Load 1C user data once when phone is received
-		const user1CData = await searchUserByPhone(contact.phone_number);
+		const user1CData = await searchUserByPhone(normalizedPhone);
 		if (user1CData) {
 			ctx.session.user1CData = user1CData;
 			ctx.session.isVerified = true;
