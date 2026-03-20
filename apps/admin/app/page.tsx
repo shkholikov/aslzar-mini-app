@@ -7,7 +7,7 @@ import { AdminGuard } from "@/components/common/admin-guard";
 export default function Home() {
 	return (
 		<AdminGuard>
-			<main className="flex min-h-screen w-full container flex-col py-8 px-4">
+			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
 				<div>
 					<div className="flex flex-items justify-center pb-4">
 						<Shield className="w-12 h-12 text-gray-800" />

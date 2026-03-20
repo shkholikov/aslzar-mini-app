@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Megaphone, Loader2 } from "lucide-react";
 import type { BroadcastJobDoc, BroadcastAudienceFilters } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
@@ -22,6 +23,8 @@ const FILTER_ROW_2_LEVELS: { key: keyof BroadcastAudienceFilters; label: string 
 	{ key: "diamond", label: "Diamond" }
 ];
 
+const PAGE_SIZE = 10;
+
 export default function BroadcastPage() {
 	const [message, setMessage] = useState("");
 	const [filters, setFilters] = useState<BroadcastAudienceFilters>({});
@@ -29,6 +32,7 @@ export default function BroadcastPage() {
 	const [jobs, setJobs] = useState<BroadcastJobDoc[]>([]);
 	const [loadingJobs, setLoadingJobs] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
 
 	const fetchJobs = useCallback(async () => {
 		try {
@@ -48,6 +52,13 @@ export default function BroadcastPage() {
 		const interval = setInterval(fetchJobs, 10000); // refresh every 10s
 		return () => clearInterval(interval);
 	}, [fetchJobs]);
+
+	useEffect(() => {
+		const totalPages = Math.max(1, Math.ceil(jobs.length / PAGE_SIZE));
+		if (page > totalPages) {
+			setPage(totalPages);
+		}
+	}, [jobs.length, page]);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -103,10 +114,13 @@ export default function BroadcastPage() {
 		}
 	}
 
+	const totalPages = Math.max(1, Math.ceil(jobs.length / PAGE_SIZE));
+	const paginatedJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
 	return (
 		<AdminGuard>
-			<main className="flex min-h-screen w-full container flex-col py-8 px-4">
-				<div className="w-full max-w-2xl mx-auto">
+			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
+				<div className="w-full">
 					<div className="flex items-center gap-2 pb-4">
 						<Megaphone className="w-10 h-10 text-gray-800" />
 						<div>
@@ -183,69 +197,98 @@ export default function BroadcastPage() {
 						) : jobs.length === 0 ? (
 							<p className="text-sm text-muted-foreground">Hali broadcastlar yo'q.</p>
 						) : (
-							<ul className="space-y-3">
-								{jobs.map((job) => (
-									<li key={String(job._id)} className="rounded-lg border border-border bg-card p-4 text-card-foreground">
-										<div className="flex justify-between items-start gap-2 mb-2 flex-wrap">
-											<div className="flex items-center gap-2 flex-wrap">
-												<span
-													className={`text-xs font-medium px-2 py-0.5 rounded ${
-														job.status === "completed"
-															? "bg-green-100 text-green-800"
-															: job.status === "failed"
-																? "bg-red-100 text-red-800"
-																: job.status === "cancelled"
-																	? "bg-amber-100 text-amber-800"
-																	: job.status === "processing"
-																		? "bg-blue-100 text-blue-800"
-																		: "bg-gray-100 text-gray-800"
-													}`}
-												>
-													{statusLabel(job.status)}
-												</span>
-												{(job.audienceFilters
-													? Object.entries(job.audienceFilters).some(([, v]) => v === true)
-													: job.audience && job.audience !== "all") && (
-													<span className="text-xs text-muted-foreground">
-														{job.audienceFilters
-															? [...FILTER_ROW_1, ...FILTER_ROW_2_LEVELS]
-																	.filter((f) => job.audienceFilters?.[f.key])
-																	.map((f) => f.label)
-																	.join(", ")
-															: job.audience === "verified"
-																? "Tasdiqlangan"
-																: job.audience === "non_verified"
-																	? "Tasdiqlanmagan"
-																	: job.audience}
-													</span>
-												)}
-											</div>
-											<span className="text-xs text-muted-foreground">{formatDate(job.createdAt)}</span>
-										</div>
-										<p className="text-sm whitespace-pre-wrap break-words">{job.message}</p>
-										{(job.status === "pending" || job.status === "processing") && (
-											<div className="mt-2">
-												<Button
-													type="button"
-													variant="outline"
-													size="sm"
-													onClick={() => handleCancel(job)}
-													className="text-destructive border-destructive/50 hover:bg-destructive/10"
-												>
-													Bekor qilish
-												</Button>
-											</div>
-										)}
-										{(job.sentCount !== undefined || job.failedCount !== undefined) && (
-											<p className="text-xs text-muted-foreground mt-2">
-												Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}
-												{job.totalUsers != null && ` (jami: ${job.totalUsers})`}
-											</p>
-										)}
-										{job.error && <p className="text-xs text-destructive mt-1">{job.error}</p>}
-									</li>
-								))}
-							</ul>
+							<div className="space-y-4">
+								<div className="overflow-x-auto rounded-md border">
+									<Table className="min-w-[1100px]">
+										<TableHeader>
+											<TableRow>
+												<TableHead>Sana</TableHead>
+												<TableHead>Status</TableHead>
+												<TableHead>Auditoriya</TableHead>
+												<TableHead>Xabar</TableHead>
+												<TableHead>Statistika</TableHead>
+												<TableHead>Xatolik</TableHead>
+												<TableHead className="text-right">Amal</TableHead>
+											</TableRow>
+										</TableHeader>
+										<TableBody>
+											{paginatedJobs.map((job) => {
+												const audienceText = job.audienceFilters
+													? [...FILTER_ROW_1, ...FILTER_ROW_2_LEVELS]
+															.filter((f) => job.audienceFilters?.[f.key])
+															.map((f) => f.label)
+															.join(", ")
+													: job.audience === "verified"
+														? "Tasdiqlangan"
+														: job.audience === "non_verified"
+															? "Tasdiqlanmagan"
+															: job.audience;
+
+												return (
+													<TableRow key={String(job._id)}>
+														<TableCell className="whitespace-nowrap text-xs">{formatDate(job.createdAt)}</TableCell>
+														<TableCell>
+															<span
+																className={`text-xs font-medium px-2 py-0.5 rounded ${
+																	job.status === "completed"
+																		? "bg-green-100 text-green-800"
+																		: job.status === "failed"
+																			? "bg-red-100 text-red-800"
+																			: job.status === "cancelled"
+																				? "bg-amber-100 text-amber-800"
+																				: job.status === "processing"
+																					? "bg-blue-100 text-blue-800"
+																					: "bg-gray-100 text-gray-800"
+																}`}
+															>
+																{statusLabel(job.status)}
+															</span>
+														</TableCell>
+														<TableCell className="max-w-[260px] text-xs text-muted-foreground">
+															<div className="whitespace-pre-wrap break-words">{audienceText || "Barcha foydalanuvchilar"}</div>
+														</TableCell>
+														<TableCell className="max-w-[420px]">
+															<div className="text-sm whitespace-pre-wrap break-words">{job.message}</div>
+														</TableCell>
+														<TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+															Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}
+															{job.totalUsers != null && ` (jami: ${job.totalUsers})`}
+														</TableCell>
+														<TableCell className="max-w-[240px]">
+															<div className="text-xs text-destructive whitespace-pre-wrap break-words">{job.error ?? "-"}</div>
+														</TableCell>
+														<TableCell className="text-right">
+															{(job.status === "pending" || job.status === "processing") && (
+																<Button
+																	type="button"
+																	variant="outline"
+																	size="sm"
+																	onClick={() => handleCancel(job)}
+																	className="text-destructive border-destructive/50 hover:bg-destructive/10"
+																>
+																	Bekor qilish
+																</Button>
+															)}
+														</TableCell>
+													</TableRow>
+												);
+											})}
+										</TableBody>
+									</Table>
+								</div>
+								<div className="flex items-center justify-end space-x-2 py-2">
+									<span className="text-muted-foreground text-sm">{jobs.length} ta yozuv</span>
+									<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+										Oldingi
+									</Button>
+									<span className="text-sm text-muted-foreground">
+										{page}/{totalPages}
+									</span>
+									<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+										Keyingi
+									</Button>
+								</div>
+							</div>
 						)}
 					</div>
 				</div>

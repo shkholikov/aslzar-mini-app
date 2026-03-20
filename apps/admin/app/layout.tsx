@@ -35,7 +35,7 @@ export default function RootLayout({
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 				<div className="flex min-h-screen flex-col">
 					<AdminNav />
-					<div className="flex flex-1 justify-center">
+					<div className="flex flex-1 w-full">
 						<TooltipProvider>{children}</TooltipProvider>
 					</div>
 				</div>

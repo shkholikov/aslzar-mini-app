@@ -43,16 +43,14 @@ export default function AdminLoginPage() {
 	}
 
 	return (
-		<main className="flex min-h-screen w-full container flex-col py-8 px-4">
+		<main className="flex min-h-screen w-full items-center justify-center px-4 py-8">
 			<div className="mx-auto w-full max-w-md">
 				<div className="flex flex-items justify-center pb-4">
 					<Shield className="w-12 h-12 text-gray-800" />
 				</div>
 				<div>
 					<h1 className="text-2xl text-center text-gray-800 font-semibold">Admin paneliga kirish</h1>
-					<p className="text-center mt-2 text-gray-600">
-						Aslzar admin boshqaruv paneliga kirish uchun login va parolni kiriting.
-					</p>
+					<p className="text-center mt-2 text-gray-600">Aslzar admin boshqaruv paneliga kirish uchun login va parolni kiriting.</p>
 					<Separator className="mt-2" />
 				</div>
 
@@ -88,11 +86,7 @@ export default function AdminLoginPage() {
 
 						{error && <p className="text-sm text-destructive">{error}</p>}
 
-						<Button
-							type="submit"
-							disabled={loading || !username.trim() || !password}
-							className="w-full"
-						>
+						<Button type="submit" disabled={loading || !username.trim() || !password} className="w-full">
 							{loading ? "Kirilmoqda..." : "Kirish"}
 						</Button>
 					</form>
@@ -101,4 +95,3 @@ export default function AdminLoginPage() {
 		</main>
 	);
 }
-

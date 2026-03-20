@@ -157,8 +157,8 @@ export default function SuggestionsPage() {
 
 	return (
 		<AdminGuard>
-			<main className="flex min-h-screen w-full container flex-col py-8 px-4">
-				<div className="w-full max-w-6xl mx-auto">
+			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
+				<div className="w-full">
 					<div className="flex flex-wrap items-center justify-between gap-4 pb-4">
 						<div className="flex items-center gap-2">
 							<MessageSquare className="w-10 h-10 text-gray-800" />
@@ -190,8 +190,8 @@ export default function SuggestionsPage() {
 									className="max-w-sm"
 								/>
 							</div>
-							<div className="overflow-hidden rounded-md border">
-								<Table>
+							<div className="overflow-x-auto rounded-md border">
+								<Table className="min-w-[900px]">
 									<TableHeader>
 										{table.getHeaderGroups().map((headerGroup) => (
 											<TableRow key={headerGroup.id}>

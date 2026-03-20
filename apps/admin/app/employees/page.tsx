@@ -191,8 +191,8 @@ export default function EmployeesPage() {
 
 	return (
 		<AdminGuard>
-			<main className="flex min-h-screen w-full container flex-col py-8 px-4">
-				<div className="w-full max-w-4xl mx-auto">
+			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
+				<div className="w-full">
 					<div className="flex items-center gap-2 pb-4">
 						<Users className="w-10 h-10 text-gray-800" />
 						<div>
@@ -231,8 +231,8 @@ export default function EmployeesPage() {
 								</Button>
 							</form>
 
-							<div className="rounded-md border">
-								<Table>
+							<div className="overflow-x-auto rounded-md border">
+								<Table className="min-w-[900px]">
 									<TableHeader>
 										<TableRow>
 											<TableHead>Ism</TableHead>

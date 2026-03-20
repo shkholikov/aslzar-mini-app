@@ -114,15 +114,7 @@ export default function ProductsPage() {
 			}
 
 			const type = (file.type || "").toLowerCase();
-			const allowedTypes = [
-				"image/jpeg",
-				"image/png",
-				"image/webp",
-				"image/gif",
-				"video/mp4",
-				"video/webm",
-				"video/quicktime"
-			];
+			const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"];
 			if (!allowedTypes.includes(type)) {
 				throw new Error("Noto‘g‘ri fayl turi. Ruxsat etilgan: JPEG, PNG, WebP, GIF, MP4, WebM, MOV.");
 			}
@@ -177,8 +169,8 @@ export default function ProductsPage() {
 
 	return (
 		<AdminGuard>
-			<main className="flex min-h-screen w-full container flex-col py-8 px-4">
-				<div className="w-full max-w-3xl mx-auto">
+			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
+				<div className="w-full">
 					<div className="flex items-center gap-2 pb-4">
 						<Package className="w-10 h-10 text-gray-800" />
 						<div>
@@ -250,7 +242,7 @@ export default function ProductsPage() {
 						<p className="text-sm text-gray-600">Hozircha mahsulotlar yo‘q.</p>
 					) : (
 						<div className="overflow-x-auto border rounded-md">
-							<Table>
+							<Table className="min-w-[760px]">
 								<TableHeader>
 									<TableRow>
 										<TableHead>Nomi</TableHead>
