@@ -116,6 +116,8 @@ export default function BroadcastPage() {
 
 	const totalPages = Math.max(1, Math.ceil(jobs.length / PAGE_SIZE));
 	const paginatedJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+	const startItem = jobs.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+	const endItem = Math.min(page * PAGE_SIZE, jobs.length);
 
 	return (
 		<AdminGuard>
@@ -277,13 +279,12 @@ export default function BroadcastPage() {
 									</Table>
 								</div>
 								<div className="flex items-center justify-end space-x-2 py-2">
-									<span className="text-muted-foreground text-sm">{jobs.length} ta yozuv</span>
+									<span className="text-muted-foreground text-sm">
+										{startItem}-{endItem} / {jobs.length}
+									</span>
 									<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
 										Oldingi
 									</Button>
-									<span className="text-sm text-muted-foreground">
-										{page}/{totalPages}
-									</span>
 									<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
 										Keyingi
 									</Button>

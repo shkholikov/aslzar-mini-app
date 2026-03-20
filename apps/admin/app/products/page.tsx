@@ -12,6 +12,7 @@ import type { ProductDoc } from "@/lib/db";
 import { Loader2, Package, Upload } from "lucide-react";
 
 const ACCEPT_MEDIA = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime";
+const PAGE_SIZE = 10;
 
 export default function ProductsPage() {
 	const [products, setProducts] = React.useState<ProductDoc[]>([]);
@@ -20,6 +21,7 @@ export default function ProductsPage() {
 	const [saving, setSaving] = React.useState(false);
 	const [uploading, setUploading] = React.useState(false);
 	const [uploadError, setUploadError] = React.useState<string | null>(null);
+	const [page, setPage] = React.useState(1);
 
 	const [title, setTitle] = React.useState("");
 	const [description, setDescription] = React.useState("");
@@ -48,6 +50,13 @@ export default function ProductsPage() {
 	React.useEffect(() => {
 		fetchProducts();
 	}, [fetchProducts]);
+
+	React.useEffect(() => {
+		const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+		if (page > totalPages) {
+			setPage(totalPages);
+		}
+	}, [products.length, page]);
 
 	async function handleCreate(e: React.FormEvent) {
 		e.preventDefault();
@@ -167,6 +176,11 @@ export default function ProductsPage() {
 		}).format(date);
 	}
 
+	const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+	const paginatedProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+	const startItem = products.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+	const endItem = Math.min(page * PAGE_SIZE, products.length);
+
 	return (
 		<AdminGuard>
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
@@ -241,36 +255,49 @@ export default function ProductsPage() {
 					) : products.length === 0 ? (
 						<p className="text-sm text-gray-600">Hozircha mahsulotlar yo‘q.</p>
 					) : (
-						<div className="overflow-x-auto border rounded-md">
-							<Table className="min-w-[760px]">
-								<TableHeader>
-									<TableRow>
-										<TableHead>Nomi</TableHead>
-										<TableHead>Badji</TableHead>
-										<TableHead>Narx (so‘m)</TableHead>
-										<TableHead>URL</TableHead>
-										<TableHead>Yaratilgan</TableHead>
-										<TableHead className="w-[100px] text-right">Amallar</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{products.map((p) => (
-										<TableRow key={String(p._id)}>
-											<TableCell className="font-medium">{p.title}</TableCell>
-											<TableCell>{p.badgeLabel ?? "-"}</TableCell>
-											<TableCell>{formatPrice(p.price)}</TableCell>
-											<TableCell className="max-w-xs truncate text-xs text-gray-600">{p.url}</TableCell>
-											<TableCell className="whitespace-nowrap text-xs">{formatDate(p.createdAt)}</TableCell>
-											<TableCell className="text-right">
-												<Button variant="destructive" size="sm" onClick={() => handleDelete(p._id as string)}>
-													O‘chirish
-												</Button>
-											</TableCell>
+						<>
+							<div className="overflow-x-auto border rounded-md">
+								<Table className="min-w-[760px]">
+									<TableHeader>
+										<TableRow>
+											<TableHead>Nomi</TableHead>
+											<TableHead>Badji</TableHead>
+											<TableHead>Narx (so‘m)</TableHead>
+											<TableHead>URL</TableHead>
+											<TableHead>Yaratilgan</TableHead>
+											<TableHead className="w-[100px] text-right">Amallar</TableHead>
 										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</div>
+									</TableHeader>
+									<TableBody>
+										{paginatedProducts.map((p) => (
+											<TableRow key={String(p._id)}>
+												<TableCell className="font-medium">{p.title}</TableCell>
+												<TableCell>{p.badgeLabel ?? "-"}</TableCell>
+												<TableCell>{formatPrice(p.price)}</TableCell>
+												<TableCell className="max-w-xs truncate text-xs text-gray-600">{p.url}</TableCell>
+												<TableCell className="whitespace-nowrap text-xs">{formatDate(p.createdAt)}</TableCell>
+												<TableCell className="text-right">
+													<Button variant="destructive" size="sm" onClick={() => handleDelete(p._id as string)}>
+														O‘chirish
+													</Button>
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							</div>
+							<div className="flex items-center justify-end space-x-2 py-2">
+								<span className="text-muted-foreground text-sm">
+									{startItem}-{endItem} / {products.length}
+								</span>
+								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+									Oldingi
+								</Button>
+								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+									Keyingi
+								</Button>
+							</div>
+						</>
 					)}
 				</div>
 			</main>

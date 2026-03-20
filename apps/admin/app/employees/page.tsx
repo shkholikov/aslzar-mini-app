@@ -14,6 +14,7 @@ import QRCode from "qrcode";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const BOT_LINK = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzaruzbot";
+const PAGE_SIZE = 10;
 
 type EmployeeWithCount = Omit<EmployeeDoc, "_id"> & { _id?: string; referredCount?: number };
 
@@ -100,6 +101,7 @@ export default function EmployeesPage() {
 	const [surname, setSurname] = React.useState("");
 	const [filial, setFilial] = React.useState("");
 	const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
+	const [page, setPage] = React.useState(1);
 
 	const fetchEmployees = React.useCallback(async () => {
 		try {
@@ -125,6 +127,13 @@ export default function EmployeesPage() {
 	React.useEffect(() => {
 		fetchEmployees();
 	}, [fetchEmployees]);
+
+	React.useEffect(() => {
+		const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
+		if (page > totalPages) {
+			setPage(totalPages);
+		}
+	}, [employees.length, page]);
 
 	async function handleCreate(e: React.FormEvent) {
 		e.preventDefault();
@@ -189,6 +198,11 @@ export default function EmployeesPage() {
 		}
 	}
 
+	const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
+	const paginatedEmployees = employees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+	const startItem = employees.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+	const endItem = Math.min(page * PAGE_SIZE, employees.length);
+
 	return (
 		<AdminGuard>
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
@@ -252,7 +266,7 @@ export default function EmployeesPage() {
 												</TableCell>
 											</TableRow>
 										) : (
-											employees.map((emp) => {
+											paginatedEmployees.map((emp) => {
 												const link = buildReferralLink(emp.referralCode);
 												return (
 													<TableRow key={String(emp._id ?? emp.referralCode)}>
@@ -297,6 +311,17 @@ export default function EmployeesPage() {
 										)}
 									</TableBody>
 								</Table>
+							</div>
+							<div className="flex items-center justify-end space-x-2 py-2">
+								<span className="text-muted-foreground text-sm">
+									{startItem}-{endItem} / {employees.length}
+								</span>
+								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+									Oldingi
+								</Button>
+								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+									Keyingi
+								</Button>
 							</div>
 						</>
 					)}
