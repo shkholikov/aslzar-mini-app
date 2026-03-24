@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { upload } from "@vercel/blob/client";
 import { AdminGuard } from "@/components/common/admin-guard";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
@@ -128,16 +127,20 @@ export default function ProductsPage() {
 				throw new Error("Noto‘g‘ri fayl turi. Ruxsat etilgan: JPEG, PNG, WebP, GIF, MP4, WebM, MOV.");
 			}
 
-			const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80) || "file";
-			const pathname = `products/${Date.now()}-${safeName}`;
+			const formData = new FormData();
+			formData.append("file", file);
 
-			const blob = await upload(pathname, file, {
-				access: "public",
-				handleUploadUrl: "/api/upload"
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				body: formData
 			});
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Yuklash xatosi");
+			}
 
-			if (typeof blob.url === "string") {
-				setUrl(blob.url);
+			if (typeof data.url === "string") {
+				setUrl(data.url);
 			}
 		} catch (e) {
 			setUploadError(e instanceof Error ? e.message : "Yuklash xatosi");
@@ -214,7 +217,7 @@ export default function ProductsPage() {
 												setUrl(e.target.value);
 												setUploadError(null);
 											}}
-											placeholder="Vercel Blob URL yoki boshqa to‘liq URL"
+											placeholder="R2 URL yoki boshqa to’liq URL"
 										/>
 										<input ref={fileInputRef} type="file" accept={ACCEPT_MEDIA} className="hidden" onChange={handleFileChange} />
 										<Button type="button" variant="outline" disabled={uploading} onClick={() => fileInputRef.current?.click()}>

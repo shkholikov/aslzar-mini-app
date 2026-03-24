@@ -1,25 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { isAuthenticatedRequest } from "@/lib/auth";
 
-// const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB for videos
-const ALLOWED_TYPES = [
-	"image/jpeg",
-	"image/png",
-	"image/webp",
-	"image/gif",
-	"video/mp4",
-	"video/webm",
-	"video/quicktime" // .mov
-];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"];
 
-/**
- * POST /api/upload
- * Acts as a lightweight "token exchange" endpoint for client-side uploads.
- * The actual file bytes are uploaded directly from the browser to Vercel Blob,
- * so we avoid the Vercel Function 4.5 MB body size limit.
- * Requires BLOB_READ_WRITE_TOKEN in env (set by Vercel when store is linked).
- */
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+
+const r2 = new S3Client({
+	region: "auto",
+	endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+	credentials: {
+		accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+		secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!
+	}
+});
+
 export async function POST(request: NextRequest) {
 	try {
 		const ok = await isAuthenticatedRequest(request);
@@ -27,25 +22,43 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const body = (await request.json()) as HandleUploadBody;
+		const formData = await request.formData();
+		const file = formData.get("file") as File | null;
 
-		const jsonResponse = await handleUpload({
-			request,
-			body,
-			onBeforeGenerateToken: async (pathname) => {
-				// Enforce file type restrictions at the token level.
-				// Max size is additionally checked on the client before upload.
-				return {
-					allowedContentTypes: ALLOWED_TYPES,
-					addRandomSuffix: true
-				};
-			},
-			onUploadCompleted: async ({ blob }) => {
-				console.log("Upload completed:", blob.url);
-			}
-		});
+		if (!file) {
+			return NextResponse.json({ error: "No file provided" }, { status: 400 });
+		}
 
-		return NextResponse.json(jsonResponse);
+		if (file.size > MAX_FILE_SIZE) {
+			return NextResponse.json({ error: "Fayl hajmi juda katta. Maksimal 100 MB." }, { status: 400 });
+		}
+
+		if (!ALLOWED_TYPES.includes(file.type)) {
+			return NextResponse.json(
+				{
+					error: "Noto'g'ri fayl turi. Ruxsat etilgan: JPEG, PNG, WebP, GIF, MP4, WebM, MOV."
+				},
+				{ status: 400 }
+			);
+		}
+
+		const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80) || "file";
+		const key = `products/${Date.now()}-${safeName}`;
+
+		const buffer = Buffer.from(await file.arrayBuffer());
+
+		await r2.send(
+			new PutObjectCommand({
+				Bucket: process.env.R2_BUCKET_NAME!,
+				Key: key,
+				Body: buffer,
+				ContentType: file.type
+			})
+		);
+
+		const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+
+		return NextResponse.json({ url });
 	} catch (error) {
 		console.error("Upload error:", error);
 		return NextResponse.json(
