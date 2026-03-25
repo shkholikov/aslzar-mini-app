@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { isAuthenticatedRequest } from "@/lib/auth";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"];
@@ -15,6 +16,11 @@ const r2 = new S3Client({
 	}
 });
 
+/**
+ * POST /api/upload
+ * Accepts { filename, contentType, size } and returns a presigned R2 upload URL.
+ * The client uploads the file directly to R2 — file bytes never pass through Vercel.
+ */
 export async function POST(request: NextRequest) {
 	try {
 		const ok = await isAuthenticatedRequest(request);
@@ -22,18 +28,13 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const formData = await request.formData();
-		const file = formData.get("file") as File | null;
+		const { filename, contentType, size } = await request.json();
 
-		if (!file) {
-			return NextResponse.json({ error: "No file provided" }, { status: 400 });
+		if (!filename || !contentType) {
+			return NextResponse.json({ error: "filename and contentType are required" }, { status: 400 });
 		}
 
-		if (file.size > MAX_FILE_SIZE) {
-			return NextResponse.json({ error: "Fayl hajmi juda katta. Maksimal 100 MB." }, { status: 400 });
-		}
-
-		if (!ALLOWED_TYPES.includes(file.type)) {
+		if (!ALLOWED_TYPES.includes(contentType)) {
 			return NextResponse.json(
 				{
 					error: "Noto'g'ri fayl turi. Ruxsat etilgan: JPEG, PNG, WebP, GIF, MP4, WebM, MOV."
@@ -42,23 +43,29 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").slice(0, 80) || "file";
+		if (size && size > MAX_FILE_SIZE) {
+			return NextResponse.json({ error: "Fayl hajmi juda katta. Maksimal 100 MB." }, { status: 400 });
+		}
+
+		const safeName =
+			String(filename)
+				.replace(/[^a-zA-Z0-9.-]/g, "_")
+				.slice(0, 80) || "file";
 		const key = `products/${Date.now()}-${safeName}`;
 
-		const buffer = Buffer.from(await file.arrayBuffer());
-
-		await r2.send(
+		const uploadUrl = await getSignedUrl(
+			r2,
 			new PutObjectCommand({
 				Bucket: process.env.R2_BUCKET_NAME!,
 				Key: key,
-				Body: buffer,
-				ContentType: file.type
-			})
+				ContentType: contentType
+			}),
+			{ expiresIn: 300 } // 5 minutes
 		);
 
-		const url = `${process.env.R2_PUBLIC_URL}/${key}`;
+		const publicUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
 
-		return NextResponse.json({ url });
+		return NextResponse.json({ uploadUrl, publicUrl });
 	} catch (error) {
 		console.error("Upload error:", error);
 		return NextResponse.json(
