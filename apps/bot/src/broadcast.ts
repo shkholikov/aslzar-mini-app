@@ -43,7 +43,9 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 		if (filters.diamond === true) levelUroven.push("Diamond");
 		if (levelUroven.length > 0) {
 			conditions.push({
-				$or: levelUroven.map((uroven) => ({ "value.user1CData.bonusInfo.uroven": uroven }))
+				$or: levelUroven.map((uroven) => ({
+					"value.user1CData.bonusInfo.uroven": uroven
+				}))
 			});
 		}
 	} else if (legacyAudience === "verified") {
@@ -61,19 +63,31 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 	let failedCount = 0;
 	const CHECK_CANCEL_EVERY = 5;
 
-	const freshBefore = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
+	const freshBefore = await broadcastJobs.findOne({
+		_id: id
+	} as Filter<BroadcastJob>);
 	if (freshBefore?.status === "cancelled") {
 		await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
-			$set: { totalUsers: keys.length, sentCount: 0, failedCount: 0, completedAt: new Date() }
+			$set: {
+				totalUsers: keys.length,
+				sentCount: 0,
+				failedCount: 0,
+				completedAt: new Date()
+			}
 		});
 		console.log(`[Broadcast] job ${id} was cancelled before sending`);
 		return;
 	}
 
+	const reply_markup = job.buttonText && job.buttonUrl ? { inline_keyboard: [[{ text: job.buttonText, url: job.buttonUrl }]] } : undefined;
+	const caption = job.message || undefined;
+
 	for (let i = 0; i < keys.length; i++) {
 		const telegramUserId = keys[i];
 		if (i > 0 && i % CHECK_CANCEL_EVERY === 0) {
-			const updated = await broadcastJobs.findOne({ _id: id } as Filter<BroadcastJob>);
+			const updated = await broadcastJobs.findOne({
+				_id: id
+			} as Filter<BroadcastJob>);
 			if (updated?.status === "cancelled") {
 				await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
 					$set: {
@@ -88,7 +102,22 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 			}
 		}
 		try {
-			await api.sendMessage(telegramUserId, job.message);
+			if (job.mediaUrl && job.mediaType === "photo") {
+				await api.sendPhoto(telegramUserId, job.mediaUrl, {
+					caption,
+					reply_markup
+				});
+			} else if (job.mediaUrl && job.mediaType === "video") {
+				await api.sendVideo(telegramUserId, job.mediaUrl, {
+					caption,
+					supports_streaming: true,
+					reply_markup
+				});
+			} else {
+				await api.sendMessage(telegramUserId, job.message, {
+					reply_markup
+				});
+			}
 			sentCount++;
 		} catch (err) {
 			failedCount++;
@@ -119,7 +148,11 @@ async function runBroadcastCycle(api: Api): Promise<void> {
 			const errorMessage = err instanceof Error ? err.message : String(err);
 			console.error(`[Broadcast] job ${id} failed:`, err);
 			await broadcastJobs.updateOne({ _id: id } as Filter<BroadcastJob>, {
-				$set: { status: "failed", completedAt: new Date(), error: errorMessage }
+				$set: {
+					status: "failed",
+					completedAt: new Date(),
+					error: errorMessage
+				}
 			});
 		}
 	}

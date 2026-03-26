@@ -29,8 +29,6 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/broadcast
- * Body: { message: string, audienceFilters?: { verified?, nonVerified?, aktiv?, aktivEmas? } }
- * When no filter is selected, sends to all bot users. When any filter is selected, ANDs them.
  * Creates a new broadcast job (pending). Bot processes it within ~1 minute.
  */
 export async function POST(request: NextRequest) {
@@ -68,7 +66,21 @@ export async function POST(request: NextRequest) {
 						...(raw.diamond === true && { diamond: true })
 					}
 				: undefined;
-		const job = await createBroadcastJob(message, audienceFilters);
+		const mediaUrl = typeof body?.mediaUrl === "string" ? body.mediaUrl.trim() : undefined;
+		const mediaType = body?.mediaType === "photo" || body?.mediaType === "video" ? body.mediaType : undefined;
+		if ((mediaUrl && !mediaType) || (!mediaUrl && mediaType)) {
+			return NextResponse.json({ error: "mediaUrl and mediaType must both be provided" }, { status: 400 });
+		}
+		const media = mediaUrl && mediaType ? { mediaUrl, mediaType } : undefined;
+
+		const buttonText = typeof body?.buttonText === "string" ? body.buttonText.trim() : undefined;
+		const buttonUrl = typeof body?.buttonUrl === "string" ? body.buttonUrl.trim() : undefined;
+		if ((buttonText && !buttonUrl) || (!buttonText && buttonUrl)) {
+			return NextResponse.json({ error: "buttonText and buttonUrl must both be provided" }, { status: 400 });
+		}
+		const button = buttonText && buttonUrl ? { buttonText, buttonUrl } : undefined;
+
+		const job = await createBroadcastJob(message, audienceFilters, media, button);
 		return NextResponse.json({ job }, { status: 201 });
 	} catch (error) {
 		console.error("Error creating broadcast job:", error);

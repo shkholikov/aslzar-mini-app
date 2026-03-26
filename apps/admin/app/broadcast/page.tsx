@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Megaphone, Loader2 } from "lucide-react";
+import { Megaphone, Loader2, ImageIcon, VideoIcon, X, Upload } from "lucide-react";
 import type { BroadcastJobDoc, BroadcastAudienceFilters } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
@@ -17,13 +18,17 @@ const FILTER_ROW_1: { key: keyof BroadcastAudienceFilters; label: string }[] = [
 	{ key: "aktivEmas", label: "Aktiv emas" }
 ];
 
-const FILTER_ROW_2_LEVELS: { key: keyof BroadcastAudienceFilters; label: string }[] = [
+const FILTER_ROW_2_LEVELS: {
+	key: keyof BroadcastAudienceFilters;
+	label: string;
+}[] = [
 	{ key: "silver", label: "Silver" },
 	{ key: "gold", label: "Gold" },
 	{ key: "diamond", label: "Diamond" }
 ];
 
 const PAGE_SIZE = 10;
+const CAPTION_LIMIT = 1024;
 
 export default function BroadcastPage() {
 	const [message, setMessage] = useState("");
@@ -33,6 +38,76 @@ export default function BroadcastPage() {
 	const [loadingJobs, setLoadingJobs] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
+
+	const [buttonText, setButtonText] = useState("");
+	const [buttonUrl, setButtonUrl] = useState("");
+
+	const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
+	const [uploadedMediaUrl, setUploadedMediaUrl] = useState<string | null>(null);
+	const [uploadedMediaType, setUploadedMediaType] = useState<"photo" | "video" | null>(null);
+	const [uploading, setUploading] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const hasMedia = !!uploadedMediaUrl;
+	const captionWarning = hasMedia && message.length > CAPTION_LIMIT;
+
+	async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		const isImage = file.type.startsWith("image/");
+		const isVideo = file.type === "video/mp4";
+		if (!isImage && !isVideo) {
+			setError("Faqat rasm yoki MP4 video yuklash mumkin. Telegram faqat MP4 formatni qo'llab-quvvatlaydi.");
+			return;
+		}
+
+		if (isVideo && file.size > 20 * 1024 * 1024) {
+			setError("Telegram orqali video URL yuborish uchun maksimal hajm 20 MB.");
+			return;
+		}
+
+		setError(null);
+		setUploading(true);
+		try {
+			const res = await fetch("/api/upload", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					filename: file.name,
+					contentType: file.type,
+					size: file.size,
+					prefix: "broadcasts"
+				})
+			});
+			const data = await res.json();
+			if (!res.ok) throw new Error(data.error || "Upload xatoligi");
+
+			await fetch(data.uploadUrl, {
+				method: "PUT",
+				headers: { "Content-Type": file.type },
+				body: file
+			});
+
+			setUploadedMediaUrl(data.publicUrl);
+			setUploadedMediaType(isImage ? "photo" : "video");
+			if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+			setMediaPreviewUrl(URL.createObjectURL(file));
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "Upload xatoligi");
+		} finally {
+			setUploading(false);
+			if (fileInputRef.current) fileInputRef.current.value = "";
+		}
+	}
+
+	function clearMedia() {
+		if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+		setMediaPreviewUrl(null);
+		setUploadedMediaUrl(null);
+		setUploadedMediaType(null);
+		if (fileInputRef.current) fileInputRef.current.value = "";
+	}
 
 	const fetchJobs = useCallback(async () => {
 		try {
@@ -60,21 +135,52 @@ export default function BroadcastPage() {
 		}
 	}, [jobs.length, page]);
 
+	useEffect(() => {
+		return () => {
+			if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+		};
+	}, [mediaPreviewUrl]);
+
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		const text = message.trim();
-		if (!text || sending) return;
+		if (!text || sending || uploading) return;
+		const btnText = buttonText.trim();
+		let btnUrl = buttonUrl.trim();
+		if (btnUrl.startsWith("@")) {
+			btnUrl = `https://t.me/${btnUrl.slice(1)}`;
+		}
+		if ((btnText && !btnUrl) || (!btnText && btnUrl)) {
+			setError("Tugma matni va havolasi ikkalasi ham kiritilishi kerak.");
+			return;
+		}
 		setSending(true);
 		setError(null);
 		try {
 			const res = await fetch("/api/broadcast", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ message: text, audienceFilters: filters })
+				body: JSON.stringify({
+					message: text,
+					audienceFilters: filters,
+					...(uploadedMediaUrl &&
+						uploadedMediaType && {
+							mediaUrl: uploadedMediaUrl,
+							mediaType: uploadedMediaType
+						}),
+					...(btnText &&
+						btnUrl && {
+							buttonText: btnText,
+							buttonUrl: btnUrl
+						})
+				})
 			});
 			const data = await res.json();
 			if (!res.ok) throw new Error(data.error || "Failed to create broadcast");
 			setMessage("");
+			setButtonText("");
+			setButtonUrl("");
+			clearMedia();
 			setJobs((prev) => [data.job, ...prev]);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Unknown error");
@@ -106,7 +212,9 @@ export default function BroadcastPage() {
 		const id = job._id;
 		if (!id || (job.status !== "pending" && job.status !== "processing")) return;
 		try {
-			const res = await fetch(`/api/broadcast/${id}/cancel`, { method: "PATCH" });
+			const res = await fetch(`/api/broadcast/${id}/cancel`, {
+				method: "PATCH"
+			});
 			if (!res.ok) throw new Error("Bekor qilib bo‘lmadi");
 			setJobs((prev) => prev.map((j) => (String(j._id) === String(id) ? { ...j, status: "cancelled" as const } : j)));
 		} catch (e) {
@@ -146,7 +254,12 @@ export default function BroadcastPage() {
 										<label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
 											<Checkbox
 												checked={filters[key] === true}
-												onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, [key]: checked === true }))}
+												onCheckedChange={(checked) =>
+													setFilters((prev) => ({
+														...prev,
+														[key]: checked === true
+													}))
+												}
 												disabled={sending}
 											/>
 											{label}
@@ -158,7 +271,12 @@ export default function BroadcastPage() {
 										<label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
 											<Checkbox
 												checked={filters[key] === true}
-												onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, [key]: checked === true }))}
+												onCheckedChange={(checked) =>
+													setFilters((prev) => ({
+														...prev,
+														[key]: checked === true
+													}))
+												}
 												disabled={sending}
 											/>
 											{label}
@@ -179,8 +297,89 @@ export default function BroadcastPage() {
 							className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] placeholder:text-muted-foreground disabled:opacity-50"
 							disabled={sending}
 						/>
+						{captionWarning && (
+							<p className="text-sm text-amber-600">
+								Telegram caption limiti 1024 belgi. Hozirgi uzunlik: {message.length}. Media bilan yuborilganda xabar qisqartirilishi mumkin.
+							</p>
+						)}
+
+						<div>
+							<label className="block text-sm font-medium text-gray-700 mb-2">Media (ixtiyoriy)</label>
+							{!uploadedMediaUrl ? (
+								<div className="flex items-center gap-3">
+									<input
+										ref={fileInputRef}
+										type="file"
+										accept="image/*,video/mp4"
+										onChange={handleFileSelect}
+										disabled={sending || uploading}
+										className="hidden"
+									/>
+									<Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={sending || uploading}>
+										{uploading ? (
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												Yuklanmoqda...
+											</>
+										) : (
+											<>
+												<Upload className="mr-2 h-4 w-4" />
+												Rasm yoki video yuklash
+											</>
+										)}
+									</Button>
+									<span className="text-xs text-muted-foreground">Video: faqat MP4, maks. 20 MB</span>
+								</div>
+							) : (
+								<div className="flex items-start gap-3">
+									{uploadedMediaType === "photo" && mediaPreviewUrl ? (
+										<img src={mediaPreviewUrl} alt="Preview" className="h-24 w-24 rounded-md object-cover border" />
+									) : uploadedMediaType === "video" && mediaPreviewUrl ? (
+										<video src={mediaPreviewUrl} className="h-24 w-40 rounded-md object-cover border" muted />
+									) : null}
+									<div className="flex flex-col gap-1">
+										<span className="text-sm text-muted-foreground flex items-center gap-1">
+											{uploadedMediaType === "photo" ? <ImageIcon className="h-4 w-4" /> : <VideoIcon className="h-4 w-4" />}
+											{uploadedMediaType === "photo" ? "Rasm" : "Video"} yuklandi
+										</span>
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onClick={clearMedia}
+											className="w-fit text-destructive border-destructive/50 hover:bg-destructive/10"
+										>
+											<X className="mr-1 h-3 w-3" />
+											Olib tashlash
+										</Button>
+									</div>
+								</div>
+							)}
+						</div>
+
+						<div>
+							<label className="block text-sm font-medium text-gray-700 mb-2">Tugma (ixtiyoriy)</label>
+							<div className="flex flex-col sm:flex-row gap-3">
+								<Input
+									value={buttonText}
+									onChange={(e) => setButtonText(e.target.value)}
+									placeholder="Tugma matni"
+									className="flex-1"
+									disabled={sending}
+								/>
+								<Input
+									value={buttonUrl}
+									onChange={(e) => setButtonUrl(e.target.value)}
+									placeholder="https://example.com yoki t.me/channel"
+									className="flex-1"
+									disabled={sending}
+								/>
+							</div>
+							<p className="text-xs text-muted-foreground mt-1">Xabar ostida havola tugmasi ko'rinadi. Ikkalasi ham to'ldirilishi kerak.</p>
+						</div>
+
 						{error && <p className="text-sm text-destructive">{error}</p>}
-						<Button type="submit" disabled={sending || !message.trim()}>
+						<Button type="submit" disabled={sending || uploading || !message.trim()}>
 							{sending ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -250,7 +449,14 @@ export default function BroadcastPage() {
 															<div className="whitespace-pre-wrap break-words">{audienceText || "Barcha foydalanuvchilar"}</div>
 														</TableCell>
 														<TableCell className="max-w-[420px]">
-															<div className="text-sm whitespace-pre-wrap break-words">{job.message}</div>
+															<div className="text-sm whitespace-pre-wrap break-words">
+																{job.mediaUrl && (
+																	<span className="inline-flex items-center gap-1 text-xs text-muted-foreground mr-1">
+																		{job.mediaType === "photo" ? <ImageIcon className="h-3 w-3" /> : <VideoIcon className="h-3 w-3" />}
+																	</span>
+																)}
+																{job.message}
+															</div>
 														</TableCell>
 														<TableCell className="text-xs text-muted-foreground whitespace-nowrap">
 															Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}

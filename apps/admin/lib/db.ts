@@ -68,6 +68,10 @@ export interface BroadcastAudienceFilters {
 export interface BroadcastJobDoc {
 	_id?: string | ObjectId;
 	message: string;
+	mediaUrl?: string;
+	mediaType?: "photo" | "video";
+	buttonText?: string;
+	buttonUrl?: string;
 	audience?: BroadcastAudience;
 	audienceFilters?: BroadcastAudienceFilters;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";
@@ -257,7 +261,12 @@ export async function getAdminStats(): Promise<AdminStats> {
 /**
  * Creates a new broadcast job (status: pending). Bot sends by audienceFilters: when none set, all users; when set, AND conditions.
  */
-export async function createBroadcastJob(message: string, audienceFilters?: BroadcastAudienceFilters): Promise<BroadcastJobDoc> {
+export async function createBroadcastJob(
+	message: string,
+	audienceFilters?: BroadcastAudienceFilters,
+	media?: { mediaUrl: string; mediaType: "photo" | "video" },
+	button?: { buttonText: string; buttonUrl: string }
+): Promise<BroadcastJobDoc> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
@@ -267,6 +276,11 @@ export async function createBroadcastJob(message: string, audienceFilters?: Broa
 		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
 		const doc: BroadcastJobDoc = {
 			message,
+			...(media && { mediaUrl: media.mediaUrl, mediaType: media.mediaType }),
+			...(button && {
+				buttonText: button.buttonText,
+				buttonUrl: button.buttonUrl
+			}),
 			audienceFilters: audienceFilters ?? undefined,
 			status: "pending",
 			createdAt: new Date()
@@ -515,7 +529,9 @@ export async function countUsersByEmployeeCode(referralCode: string): Promise<nu
 		await client.connect();
 		const db = client.db(dbName);
 		const coll = db.collection<UserDocument>(usersCollection);
-		const count = await coll.countDocuments({ "value.referredByEmployeeCode": referralCode });
+		const count = await coll.countDocuments({
+			"value.referredByEmployeeCode": referralCode
+		});
 		return count;
 	} finally {
 		if (client) await client.close();

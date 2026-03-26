@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
 
-		const { filename, contentType, size } = await request.json();
+		const { filename, contentType, size, prefix } = await request.json();
 
 		if (!filename || !contentType) {
 			return NextResponse.json({ error: "filename and contentType are required" }, { status: 400 });
@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
 			String(filename)
 				.replace(/[^a-zA-Z0-9.-]/g, "_")
 				.slice(0, 80) || "file";
-		const key = `products/${Date.now()}-${safeName}`;
+		const folder = prefix === "broadcasts" ? "broadcasts" : "products";
+		const key = `${folder}/${Date.now()}-${safeName}`;
 
 		const uploadUrl = await getSignedUrl(
 			r2,

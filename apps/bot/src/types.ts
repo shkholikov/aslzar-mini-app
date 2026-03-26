@@ -118,6 +118,10 @@ export interface BroadcastAudienceFilters {
 export interface BroadcastJob {
 	_id?: unknown;
 	message: string;
+	mediaUrl?: string;
+	mediaType?: "photo" | "video";
+	buttonText?: string;
+	buttonUrl?: string;
 	audience?: BroadcastAudience;
 	audienceFilters?: BroadcastAudienceFilters;
 	status: "pending" | "processing" | "completed" | "failed" | "cancelled";

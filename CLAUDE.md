@@ -79,11 +79,13 @@ Each app has `.env.development.local` and `.env.production.local`. Key variables
 - `MONGO_DB_COLLECTION_*` for collection names
 - `BOT_TOKEN`, `CHANNEL_ID` (bot)
 - `ADMIN_SESSION_SECRET` (admin)
+  ``- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` (admin, Cloudflare R2)
+- `AMOCRM_BASE_URL`, `AMOCRM_API_TOKEN`, `AMOCRM_PIPELINE_ID` (webapp, AmoCRM integration)
 
 ## Tech Stack Notes
 
 - **Webapp**: Uses `@twa-dev/sdk` for Telegram WebApp integration, Radix UI components, TanStack Table, Sonner toasts
-- **Admin**: Uses Vercel Blob for image uploads, bcryptjs for password hashing, xlsx for exports
+- **Admin**: Uses Cloudflare R2 (via AWS S3 SDK) with presigned URLs for file uploads, bcryptjs for password hashing, xlsx for exports
 - **Bot**: Grammy with MongoDB session adapter, node-cron for scheduled tasks (payment reminders, broadcasts)
 
 ## Referral System
@@ -103,6 +105,10 @@ External ERP API used for customer verification. Key conventions:
 - Basic Auth via `API_USERNAME`/`API_PASSWORD` env vars (`apps/bot/src/api.ts`)
 - Phone numbers always prefixed with `+` before sending
 - After webapp registers a user, it updates the MongoDB session so the bot sees `isVerified: true` without a re-fetch
+
+## AmoCRM Integration
+
+Webapp creates leads in AmoCRM when users express interest in a product (`/api/product-interest`). Uses the `leads/complex` endpoint to create a lead with an embedded contact (phone, Telegram username, Telegram ID). A note with product details is attached to the lead. Requires `AMOCRM_BASE_URL`, `AMOCRM_API_TOKEN`, and `AMOCRM_PIPELINE_ID` env vars. Field IDs are hardcoded for the aslzar AmoCRM account.
 
 ## Bot Scheduler & Broadcast
 
