@@ -215,7 +215,7 @@ export default function BroadcastPage() {
 			const res = await fetch(`/api/broadcast/${id}/cancel`, {
 				method: "PATCH"
 			});
-			if (!res.ok) throw new Error("Bekor qilib bo‘lmadi");
+			if (!res.ok) throw new Error("Bekor qilib bo'lmadi");
 			setJobs((prev) => prev.map((j) => (String(j._id) === String(id) ? { ...j, status: "cancelled" as const } : j)));
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Xatolik");
@@ -375,7 +375,7 @@ export default function BroadcastPage() {
 									disabled={sending}
 								/>
 							</div>
-							<p className="text-xs text-muted-foreground mt-1">Xabar ostida havola tugmasi ko'rinadi. Ikkalasi ham to'ldirilishi kerak.</p>
+							<p className="text-xs text-muted-foreground mt-1">Xabar ostida havola tugmasi ko&apos;rinadi. Ikkalasi ham to&apos;ldirilishi kerak.</p>
 						</div>
 
 						{error && <p className="text-sm text-destructive">{error}</p>}
@@ -392,21 +392,22 @@ export default function BroadcastPage() {
 					</form>
 
 					<div>
-						<h2 className="text-lg font-medium text-gray-800 mb-3">So'nggi broadcastlar</h2>
+						<h2 className="text-lg font-medium text-gray-800 mb-3">So&apos;nggi broadcastlar</h2>
 						{loadingJobs ? (
 							<Loading />
 						) : jobs.length === 0 ? (
-							<p className="text-sm text-muted-foreground">Hali broadcastlar yo'q.</p>
+							<p className="text-sm text-muted-foreground">Hali broadcastlar yo&apos;q.</p>
 						) : (
 							<div className="space-y-4">
 								<div className="overflow-x-auto rounded-md border">
-									<Table className="min-w-[1100px]">
+									<Table className="min-w-[1200px]">
 										<TableHeader>
 											<TableRow>
 												<TableHead>Sana</TableHead>
 												<TableHead>Status</TableHead>
 												<TableHead>Auditoriya</TableHead>
 												<TableHead>Xabar</TableHead>
+												<TableHead>Media</TableHead>
 												<TableHead>Statistika</TableHead>
 												<TableHead>Xatolik</TableHead>
 												<TableHead className="text-right">Amal</TableHead>
@@ -449,14 +450,17 @@ export default function BroadcastPage() {
 															<div className="whitespace-pre-wrap break-words">{audienceText || "Barcha foydalanuvchilar"}</div>
 														</TableCell>
 														<TableCell className="max-w-[420px]">
-															<div className="text-sm whitespace-pre-wrap break-words">
-																{job.mediaUrl && (
-																	<span className="inline-flex items-center gap-1 text-xs text-muted-foreground mr-1">
-																		{job.mediaType === "photo" ? <ImageIcon className="h-3 w-3" /> : <VideoIcon className="h-3 w-3" />}
-																	</span>
-																)}
-																{job.message}
-															</div>
+															<div className="text-sm whitespace-pre-wrap break-words">{job.message}</div>
+														</TableCell>
+														<TableCell>
+															{job.mediaUrl ? (
+																<span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+																	{job.mediaType === "photo" ? <ImageIcon className="h-3.5 w-3.5" /> : <VideoIcon className="h-3.5 w-3.5" />}
+																	{job.mediaType === "photo" ? "Rasm" : "Video"}
+																</span>
+															) : (
+																<span className="text-xs text-muted-foreground">—</span>
+															)}
 														</TableCell>
 														<TableCell className="text-xs text-muted-foreground whitespace-nowrap">
 															Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}
