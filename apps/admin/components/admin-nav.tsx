@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, Megaphone, MessageSquare, Package, Users } from "lucide-react";
+import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const tabs = [
 	{ href: "/", label: "Foydalanuvchilar", icon: Shield },
 	{ href: "/employees", label: "Xodimlar", icon: Users },
 	{ href: "/broadcast", label: "Broadcast", icon: Megaphone },
+	{ href: "/news", label: "Yangiliklar", icon: Newspaper },
 	{ href: "/suggestions", label: "Takliflar", icon: MessageSquare },
 	{ href: "/products", label: "Mahsulotlar", icon: Package }
 ];
@@ -28,9 +29,7 @@ export function AdminNav() {
 								href={href}
 								className={cn(
 									"flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-									active
-										? "bg-primary text-primary-foreground"
-										: "text-muted-foreground hover:bg-muted hover:text-foreground"
+									active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
 								)}
 							>
 								<Icon className="h-4 w-4" />

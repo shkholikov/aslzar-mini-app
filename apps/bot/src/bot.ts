@@ -1,6 +1,6 @@
 import "./config";
 import { Bot, GrammyError, HttpError, session } from "grammy";
-import { connectToDb, users, channelPosts } from "./db";
+import { connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { handleEmployeeReferralCode, handleReferralCode, initializeSession, sendWebApp } from "./helper";
@@ -120,70 +120,6 @@ async function bootstrap() {
 		}
 
 		// No reply: contact was shared from webapp; user continues in webapp
-	});
-
-	// Store group messages for the webapp "Yangiliklar" section.
-	// grammY: chatType() filters by chat type so only group/supergroup messages reach this handler.
-	// @see https://grammy.dev/ref/core/composer#method_chattype
-	const GROUP_ID = process.env.CHANNEL_ID; // group id (e.g. -1001234567890) or @username
-	bot.chatType(["group", "supergroup"]).on("message", async (ctx) => {
-		if (!GROUP_ID || !channelPosts) return;
-		const chat = ctx.chat;
-		const envGroupId = GROUP_ID.trim();
-		const isMatch = envGroupId.startsWith("@") ? "username" in chat && chat.username === envGroupId.slice(1) : String(chat.id) === envGroupId;
-		if (!isMatch) return;
-
-		const msg = ctx.message;
-		const text = msg.text ?? msg.caption ?? "";
-		const groupLabel = ("username" in chat && chat.username ? `@${chat.username}` : null) ?? ("title" in chat ? chat.title : null) ?? "group";
-
-		const doc: import("./types").ChannelPostDocument = {
-			messageId: msg.message_id,
-			chatId: chat.id,
-			channelUsername: groupLabel,
-			date: new Date(msg.date * 1000),
-			text,
-			createdAt: new Date()
-		};
-
-		// Try to resolve file paths for media, but don't fail the whole insert if this breaks
-		try {
-			if (msg.photo && msg.photo.length > 0) {
-				const largest = msg.photo[msg.photo.length - 1];
-				doc.photoFileId = largest.file_id;
-				try {
-					const file = await ctx.api.getFile(largest.file_id);
-					if (file.file_path) doc.photoFilePath = file.file_path;
-				} catch (mediaErr) {
-					// E.g. Bad Request: file is too big — we still keep file_id and store the post
-					console.error("[group message] Failed to get photo file path:", mediaErr);
-				}
-			}
-			if (msg.video) {
-				doc.videoFileId = msg.video.file_id;
-				// Only use the video thumbnail as preview image (small, safe to fetch).
-				// We do NOT fetch or store the actual video file.
-				const thumb = (msg.video as any).thumbnail ?? (msg.video as any).thumb;
-				if (thumb && !doc.photoFileId) {
-					doc.photoFileId = thumb.file_id;
-					try {
-						const thumbFile = await ctx.api.getFile(thumb.file_id);
-						if (thumbFile.file_path) doc.photoFilePath = thumbFile.file_path;
-					} catch (thumbErr) {
-						console.error("[group message] Failed to get video thumbnail file path:", thumbErr);
-					}
-				}
-			}
-		} catch (err) {
-			// Should be very rare; log but continue to insert the post
-			console.error("[group message] Unexpected error while resolving media paths:", err);
-		}
-
-		try {
-			await channelPosts.insertOne(doc);
-		} catch (err) {
-			console.error("[group message] Failed to insert post into DB:", err);
-		}
 	});
 
 	// Error Handler

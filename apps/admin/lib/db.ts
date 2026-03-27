@@ -9,6 +9,7 @@ const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "su
 const productsCollection = process.env.MONGO_DB_COLLECTION_PRODUCTS || "products";
 const employeesCollection = process.env.MONGO_DB_COLLECTION_EMPLOYEES || "employees";
 const countersCollection = process.env.MONGO_DB_COLLECTION_COUNTERS || "counters";
+const newsItemsCollection = process.env.MONGO_DB_COLLECTION_NEWS || "news_items";
 
 /** Employee (xodim) – used for referral links and QR codes in admin */
 export interface EmployeeDoc extends Document {
@@ -533,6 +534,100 @@ export async function countUsersByEmployeeCode(referralCode: string): Promise<nu
 			"value.referredByEmployeeCode": referralCode
 		});
 		return count;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/** Admin-managed news item displayed in webapp "Yangiliklar" section */
+export interface NewsItemDoc extends Document {
+	_id?: string | ObjectId;
+	title: string;
+	description: string;
+	mediaUrl?: string;
+	mediaType?: "photo" | "video";
+	buttonText?: string;
+	buttonUrl?: string;
+	isActive: boolean;
+	createdAt: Date;
+}
+
+export async function createNewsItem(input: {
+	title: string;
+	description: string;
+	media?: { mediaUrl: string; mediaType: "photo" | "video" };
+	button?: { buttonText: string; buttonUrl: string };
+}): Promise<NewsItemDoc> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<NewsItemDoc>(newsItemsCollection);
+		const doc: NewsItemDoc = {
+			title: input.title,
+			description: input.description,
+			...(input.media && {
+				mediaUrl: input.media.mediaUrl,
+				mediaType: input.media.mediaType
+			}),
+			...(input.button && {
+				buttonText: input.button.buttonText,
+				buttonUrl: input.button.buttonUrl
+			}),
+			isActive: true,
+			createdAt: new Date()
+		};
+		const result = await coll.insertOne(doc);
+		return { ...doc, _id: result.insertedId };
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+export async function getNewsItems(limit = 50): Promise<NewsItemDoc[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<NewsItemDoc>(newsItemsCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
+		return list as NewsItemDoc[];
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+export async function deleteNewsItem(id: string): Promise<boolean> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		if (!ObjectId.isValid(id)) return false;
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<NewsItemDoc>(newsItemsCollection);
+		const result = await coll.deleteOne({ _id: new ObjectId(id) });
+		return result.deletedCount === 1;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+export async function toggleNewsItem(id: string, isActive: boolean): Promise<boolean> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		if (!ObjectId.isValid(id)) return false;
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<NewsItemDoc>(newsItemsCollection);
+		const result = await coll.updateOne({ _id: new ObjectId(id) }, { $set: { isActive } });
+		return result.matchedCount === 1;
 	} finally {
 		if (client) await client.close();
 	}

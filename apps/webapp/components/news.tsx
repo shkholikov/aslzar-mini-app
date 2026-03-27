@@ -9,12 +9,14 @@ import { ExternalLink } from "lucide-react";
 import { goldButtonClass } from "@/components/common/button-variants";
 
 interface NewsItem {
+	id: string;
 	title: string;
 	link: string;
 	pubDate: string;
 	description: string;
 	imageUrl: string | null;
 	videoUrl: string | null;
+	buttonText?: string | null;
 }
 
 function formatNewsDate(dateStr: string): string {
@@ -22,7 +24,11 @@ function formatNewsDate(dateStr: string): string {
 	try {
 		const d = new Date(dateStr);
 		if (isNaN(d.getTime())) return dateStr;
-		return d.toLocaleDateString("uz-UZ", { year: "numeric", month: "short", day: "numeric" });
+		return d.toLocaleDateString("uz-UZ", {
+			year: "numeric",
+			month: "short",
+			day: "numeric"
+		});
 	} catch {
 		return dateStr;
 	}
@@ -30,7 +36,7 @@ function formatNewsDate(dateStr: string): string {
 
 export function News() {
 	const tg = useTelegram();
-	const [latest, setLatest] = useState<NewsItem | null>(null);
+	const [items, setItems] = useState<NewsItem[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -39,11 +45,10 @@ export function News() {
 			.then((res) => res.json())
 			.then((data) => {
 				if (cancelled) return;
-				const items = Array.isArray(data.items) ? data.items : [];
-				if (items.length > 0) setLatest(items[0]);
+				setItems(Array.isArray(data.items) ? data.items : []);
 			})
 			.catch(() => {
-				if (!cancelled) setLatest(null);
+				if (!cancelled) setItems([]);
 			})
 			.finally(() => {
 				if (!cancelled) setLoading(false);
@@ -55,53 +60,55 @@ export function News() {
 
 	const openPost = (url: string) => {
 		tg?.HapticFeedback?.impactOccurred("light");
-		// Open inside Telegram (channel/post) instead of external browser
-		if (tg?.openTelegramLink) {
+		if (url.includes("t.me/") && tg?.openTelegramLink) {
 			tg.openTelegramLink(url);
+		} else if (tg?.openLink) {
+			tg.openLink(url);
 		} else {
 			window.open(url, "_blank");
 		}
 	};
 
-	if (loading) {
-		return (
-			<SectionCard iconImage="/icons/news.png" title="Yangiliklar">
-				<Loading />
-			</SectionCard>
-		);
-	}
-
-	if (!latest) {
-		return (
-			<SectionCard iconImage="/icons/news.png" title="Yangiliklar">
-				<p className="text-sm text-muted-foreground">Yangiliklar yo‘q.</p>
-			</SectionCard>
-		);
-	}
-
 	return (
 		<SectionCard iconImage="/icons/news.png" title="Yangiliklar">
-			<div className="m-2 w-[calc(100%-1rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 p-4">
-				<h3 className="font-semibold text-base leading-snug">{latest.title}</h3>
-				{latest.pubDate && <p className="text-xs text-muted-foreground mt-1">{formatNewsDate(latest.pubDate)}</p>}
-				{(latest.imageUrl || latest.videoUrl) && (
-					<div className="mt-3 w-full rounded-2xl overflow-hidden bg-muted/50 aspect-[4/5] shrink-0">
-						{latest.videoUrl ? (
-							<video src={latest.videoUrl} className="w-full h-full object-cover" controls={false} playsInline preload="metadata" />
-						) : latest.imageUrl ? (
-							// eslint-disable-next-line @next/next/no-img-element
-							<img src={latest.imageUrl} alt="" className="w-full h-full object-cover" />
-						) : null}
-					</div>
-				)}
-				{latest.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-normal">{latest.description}</p>}
-				{latest.link && (
-					<RippleButton variant="outline" className={`mt-4 w-full gap-2 ${goldButtonClass}`} onClick={() => openPost(latest.link)}>
-						<ExternalLink className="size-4 shrink-0" />
-						Kanalda ochish
-					</RippleButton>
-				)}
-			</div>
+			{loading ? (
+				<Loading />
+			) : items.length === 0 ? (
+				<p className="text-sm text-muted-foreground">Yangiliklar yo'q.</p>
+			) : (
+				<div className="flex flex-col gap-4">
+					{items.map((item) => (
+						<div key={item.id} className="m-2 w-[calc(100%-1rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 p-4">
+							<h3 className="font-semibold text-base leading-snug">{item.title}</h3>
+							{item.pubDate && <p className="text-xs text-muted-foreground mt-1">{formatNewsDate(item.pubDate)}</p>}
+							{(item.imageUrl || item.videoUrl) && (
+								<div className="mt-3 w-full rounded-2xl overflow-hidden bg-muted/50 aspect-[4/5] shrink-0">
+									{item.videoUrl ? (
+										<video
+											src={item.videoUrl}
+											poster={item.videoUrl}
+											className="w-full h-full object-cover"
+											controls
+											playsInline
+											preload="metadata"
+										/>
+									) : item.imageUrl ? (
+										// eslint-disable-next-line @next/next/no-img-element
+										<img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+									) : null}
+								</div>
+							)}
+							{item.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-normal">{item.description}</p>}
+							{item.link && (
+								<RippleButton variant="outline" className={`mt-4 w-full gap-2 ${goldButtonClass}`} onClick={() => openPost(item.link)}>
+									<ExternalLink className="size-4 shrink-0" />
+									{item.buttonText || "Batafsil"}
+								</RippleButton>
+							)}
+						</div>
+					))}
+				</div>
+			)}
 		</SectionCard>
 	);
 }

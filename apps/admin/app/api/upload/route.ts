@@ -51,7 +51,12 @@ export async function POST(request: NextRequest) {
 			String(filename)
 				.replace(/[^a-zA-Z0-9.-]/g, "_")
 				.slice(0, 80) || "file";
-		const folder = prefix === "broadcasts" ? "broadcasts" : "products";
+		const FOLDERS: Record<string, string> = {
+			broadcasts: "broadcasts",
+			news: "news",
+			products: "products"
+		};
+		const folder = FOLDERS[prefix] ?? "products";
 		const key = `${folder}/${Date.now()}-${safeName}`;
 
 		const uploadUrl = await getSignedUrl(
