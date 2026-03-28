@@ -104,7 +104,7 @@ export default function ReferralPage() {
 				<>
 					<SectionCard iconImage="/icons/crown.png" title="Bonus ma'lumotlari">
 						<div className="flex flex-wrap gap-2">
-							{[0, 1, 2].map((i) => (
+							{[0, 1].map((i) => (
 								<div key={i} className="flex-1 min-w-[calc(50%-0.5rem)] rounded-4xl border-2 px-4 py-3 flex flex-col items-center gap-2">
 									<Skeleton className="w-12 h-12 rounded-md" />
 									<Skeleton className="h-3 w-full" />
