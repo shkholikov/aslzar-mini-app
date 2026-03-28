@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { SectionCard } from "@/components/common/section-card";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTelegram } from "@/hooks/useTelegram";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { ExternalLink } from "lucide-react";
@@ -72,7 +72,18 @@ export function News() {
 	return (
 		<SectionCard iconImage="/icons/news.png" title="Yangiliklar">
 			{loading ? (
-				<Loading />
+				<div className="flex flex-col gap-4">
+					{[0, 1, 2].map((i) => (
+						<div key={i} className="m-2 w-[calc(100%-1rem)] rounded-4xl border-2 p-4 flex flex-col gap-2">
+							<Skeleton className="h-4 w-3/4" />
+							<Skeleton className="h-3 w-1/4" />
+							<Skeleton className="w-full aspect-[4/5] rounded-2xl" />
+							<Skeleton className="h-3 w-full" />
+							<Skeleton className="h-3 w-5/6" />
+							<Skeleton className="h-9 w-full rounded-md mt-2" />
+						</div>
+					))}
+				</div>
 			) : items.length === 0 ? (
 				<p className="text-sm text-muted-foreground">Yangiliklar yo&apos;q.</p>
 			) : (

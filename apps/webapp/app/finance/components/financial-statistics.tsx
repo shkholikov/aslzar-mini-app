@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { SectionCard } from "@/components/common/section-card";
-import { Loading } from "@/components/common/loading";
 import Image from "next/image";
 
 interface FinancialStatisticsProps {
@@ -15,12 +14,9 @@ interface FinancialStatisticsProps {
 		latePayment?: number;
 		bonusOstatok?: number;
 	};
-	loading: boolean;
 }
 
-export function FinancialStatistics({ data, loading }: FinancialStatisticsProps) {
-	if (loading) return <Loading />;
-
+export function FinancialStatistics({ data }: FinancialStatisticsProps) {
 	return (
 		<SectionCard iconImage="/icons/statistics.png" title="Moliyaviy Statistika">
 			<div className="flex flex-wrap gap-2">

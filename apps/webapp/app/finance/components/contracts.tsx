@@ -1,6 +1,5 @@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SectionCard } from "@/components/common/section-card";
-import { Loading } from "@/components/common/loading";
 import { format1CDate } from "@/lib/format1cDate";
 
 interface Pay {
@@ -21,7 +20,6 @@ interface Contract {
 
 interface ContractsProps {
 	contracts: Contract[];
-	loading: boolean;
 }
 
 // function calculateRemaining(contract: Contract): number {
@@ -29,9 +27,7 @@ interface ContractsProps {
 // 	return contract.sum - contract.skidka - contract.vznos - totalPaid;
 // }
 
-export function Contracts({ contracts, loading }: ContractsProps) {
-	if (loading) return <Loading />;
-
+export function Contracts({ contracts }: ContractsProps) {
 	return (
 		<SectionCard iconImage="/icons/contract.png" title="Shartnomalar">
 			<div className="mt-2">

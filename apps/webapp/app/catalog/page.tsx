@@ -4,7 +4,7 @@ import * as React from "react";
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCard, type ProductCardProps } from "@/components/common/product-card";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { CatalogProduct } from "@/lib/db";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
@@ -72,7 +72,20 @@ export default function CatalogPage() {
 			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.png" />
 			<SectionCard iconImage="/icons/book.png" title="Mahsulotlar">
 				<div className="grid grid-cols-1 gap-3 mt-2">
-					{loading && <Loading />}
+					{loading &&
+						[0, 1, 2, 3].map((i) => (
+							<div key={i} className="border-2 rounded-4xl overflow-hidden flex flex-col">
+								<Skeleton className="w-full aspect-[4/5]" />
+								<div className="p-4 flex flex-col gap-2">
+									<Skeleton className="h-4 w-3/4" />
+									<Skeleton className="h-3 w-full" />
+									<Skeleton className="h-3 w-5/6" />
+									<div className="mt-2 flex justify-end">
+										<Skeleton className="h-9 w-28 rounded-md" />
+									</div>
+								</div>
+							</div>
+						))}
 					{!loading && error && <p className="text-sm text-red-600 py-4">{error}</p>}
 					{!loading && !error && products.length === 0 && <p className="text-sm text-gray-500 py-4">Hozircha mahsulotlar yo&apos;q.</p>}
 					{!loading && !error && paginated.map((product) => <ProductCard key={product.id} {...product} />)}

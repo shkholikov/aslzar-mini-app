@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import confetti from "canvas-confetti";
 
 const registerSchema = z.object({
@@ -56,7 +56,10 @@ export default function RegisterPage() {
 
 	const userId = tg?.initDataUnsafe?.user?.id?.toString();
 
-	const fetchUserAfterContact = useCallback(async (): Promise<{ code?: number; tgData?: { phone_number?: string } } | null> => {
+	const fetchUserAfterContact = useCallback(async (): Promise<{
+		code?: number;
+		tgData?: { phone_number?: string };
+	} | null> => {
 		if (!userId) return null;
 		try {
 			const response = await fetch(`/api/users?userId=${userId}`);
@@ -193,9 +196,11 @@ export default function RegisterPage() {
 		return (
 			<div className="pt-12">
 				<Header title="Ro'yxatdan o'tish" description="ASLZAR platformasida ro'yxatdan o'ting" iconImage="/icons/paper.png" />
-				<div className="flex flex-col items-center mt-4">
-					<Loading />
-				</div>
+				<SectionCard iconImage="/icons/user.png" title="Ro'yxatdan o'tish">
+					<Skeleton className="h-3 w-full mb-1" />
+					<Skeleton className="h-3 w-3/4 mb-4" />
+					<Skeleton className="h-10 w-full rounded-md" />
+				</SectionCard>
 			</div>
 		);
 	}
@@ -207,9 +212,9 @@ export default function RegisterPage() {
 			{step === "share_phone" && (
 				<SectionCard iconImage="/icons/user.png" title="Ro'yxatdan o'tish">
 					{contactLoading ? (
-						<div className="flex flex-col items-center py-6">
-							<Loading />
-							<p className="text-muted-foreground text-sm mt-2">Telefon raqamingiz qabul qilinmoqda...</p>
+						<div className="flex flex-col items-center py-6 gap-3">
+							<Loader2 className="size-8 animate-spin text-muted-foreground" />
+							<p className="text-muted-foreground text-sm">Telefon raqamingiz qabul qilinmoqda...</p>
 						</div>
 					) : (
 						<>

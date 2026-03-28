@@ -8,8 +8,9 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BonusInfo } from "./components/bonus-info";
+import { SectionCard } from "@/components/common/section-card";
 
 interface IReferral {
 	id: string;
@@ -100,7 +101,24 @@ export default function ReferralPage() {
 			<Header title="Referral" description="Sizning referal ma'lumotlaringiz" iconImage="/icons/user.png" />
 
 			{loading ? (
-				<Loading />
+				<>
+					<SectionCard iconImage="/icons/crown.png" title="Bonus ma'lumotlari">
+						<div className="flex flex-wrap gap-2">
+							{[0, 1, 2].map((i) => (
+								<div key={i} className="flex-1 min-w-[calc(50%-0.5rem)] rounded-4xl border-2 px-4 py-3 flex flex-col items-center gap-2">
+									<Skeleton className="w-12 h-12 rounded-md" />
+									<Skeleton className="h-3 w-full" />
+									<Skeleton className="h-5 w-16 rounded-full" />
+								</div>
+							))}
+						</div>
+					</SectionCard>
+					<SectionCard iconImage="/icons/user.png" title="Referral havolangiz">
+						<Skeleton className="w-full aspect-square rounded-2xl mb-3" />
+						<Skeleton className="h-9 w-full rounded-md mb-2" />
+						<Skeleton className="h-9 w-full rounded-md" />
+					</SectionCard>
+				</>
 			) : data && data.code === 0 ? (
 				<>
 					<BonusInfo data={data} />

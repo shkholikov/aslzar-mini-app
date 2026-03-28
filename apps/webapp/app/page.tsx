@@ -10,7 +10,8 @@ import { UserInfo } from "@/components/user-info";
 import { News } from "@/components/news";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SectionCard } from "@/components/common/section-card";
 
 export default function HomePage() {
 	const { data, loading } = useUser();
@@ -32,7 +33,13 @@ export default function HomePage() {
 				<Profile />
 				<div>
 					{loading ? (
-						<Loading />
+						<SectionCard iconImage="/icons/user-info.png" title="Asosiy Ma'lumotlar">
+							<div className="flex flex-col gap-2">
+								<Skeleton className="h-4 w-3/4" />
+								<Skeleton className="h-4 w-1/2" />
+								<Skeleton className="h-4 w-2/3" />
+							</div>
+						</SectionCard>
 					) : data && data.code === 0 ? (
 						<>
 							<UserInfo />

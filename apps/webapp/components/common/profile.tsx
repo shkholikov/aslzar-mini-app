@@ -4,7 +4,7 @@ import { Badge } from "../ui/badge";
 import { Separator } from "../ui/separator";
 import { Spinner } from "../ui/spinner";
 import { useUser } from "@/hooks/useUser";
-import { Loading } from "./loading";
+import { Skeleton } from "../ui/skeleton";
 import { useTelegram } from "@/hooks/useTelegram";
 import { BadgeCheckIcon, BadgeXIcon } from "lucide-react";
 import Image from "next/image";
@@ -55,7 +55,7 @@ export function Profile() {
 				<div className="mx-2">
 					<div className="flex justify-center">
 						{loading ? (
-							<Loading />
+							<Skeleton className="h-6 w-40 rounded-full my-2" />
 						) : profileInfo.verified ? (
 							<Badge variant="secondary" className="bg-blue-500 text-white my-2 shadow-sm">
 								<BadgeCheckIcon />
@@ -74,23 +74,35 @@ export function Profile() {
 						<div className="flex-1 min-w-0 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
 							<Image src="/icons/crown.png" alt="Level" width={50} height={50} className="object-contain" />
 							<div className="text-xs font-semibold text-center">Level:</div>
-							<Badge variant="default" className="bg-[#be9941] text-white">
-								{profileInfo.uroven}
-							</Badge>
+							{loading ? (
+								<Skeleton className="h-5 w-14 rounded-full" />
+							) : (
+								<Badge variant="default" className="bg-[#be9941] text-white">
+									{profileInfo.uroven}
+								</Badge>
+							)}
 						</div>
 						<div className="flex-1 min-w-0 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
 							<Image src="/icons/contract.png" alt="Shartnomalar" width={50} height={50} className="object-contain" />
 							<div className="text-xs font-semibold text-center">Shartnomalar:</div>
-							<Badge variant="default" className="bg-[#be9941] text-white">
-								{profileInfo.contracts}
-							</Badge>
+							{loading ? (
+								<Skeleton className="h-5 w-8 rounded-full" />
+							) : (
+								<Badge variant="default" className="bg-[#be9941] text-white">
+									{profileInfo.contracts}
+								</Badge>
+							)}
 						</div>
 						<div className="flex-1 min-w-0 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
 							<Image src="/icons/bonus.png" alt="Bonus" width={50} height={50} className="object-contain" />
 							<div className="text-xs font-semibold text-center">Bonus:</div>
-							<Badge variant="default" className="bg-[#be9941] text-white">
-								{profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
-							</Badge>
+							{loading ? (
+								<Skeleton className="h-5 w-20 rounded-full" />
+							) : (
+								<Badge variant="default" className="bg-[#be9941] text-white">
+									{profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
+								</Badge>
+							)}
 						</div>
 					</div>
 					<Separator className="my-2" />

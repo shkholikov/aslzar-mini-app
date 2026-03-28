@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTelegram } from "@/hooks/useTelegram";
 import { SectionCard } from "@/components/common/section-card";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { Megaphone, Loader2, CheckCircle2 } from "lucide-react";
@@ -77,9 +77,14 @@ export function ChannelSubscribeCard() {
 
 	if (isMember === null) {
 		return (
-			<div className="flex flex-col items-center py-4">
-				<Loading />
-			</div>
+			<SectionCard iconImage="/icons/discussion.png" title="Kanalga obuna bo'ling">
+				<Skeleton className="h-3 w-full mb-1" />
+				<Skeleton className="h-3 w-3/4 mb-4" />
+				<div className="flex flex-col gap-2">
+					<Skeleton className="h-9 w-full rounded-md" />
+					<Skeleton className="h-9 w-full rounded-md" />
+				</div>
+			</SectionCard>
 		);
 	}
 

@@ -2,7 +2,6 @@
 import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
 import { ClockAlert } from "lucide-react";
-import { Loading } from "@/components/common/loading";
 import { format1CDate, parse1CDate } from "@/lib/format1cDate";
 
 interface ScheduleItem {
@@ -22,7 +21,6 @@ interface ContractWithSchedule {
 
 interface UpcomingPaymentsProps {
 	contracts: ContractWithSchedule[];
-	loading: boolean;
 }
 
 interface UpcomingPayment {
@@ -66,9 +64,7 @@ function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment
 	return upcomingPayments;
 }
 
-export function UpcomingPayments({ contracts, loading }: UpcomingPaymentsProps) {
-	if (loading) return <Loading />;
-
+export function UpcomingPayments({ contracts }: UpcomingPaymentsProps) {
 	const upcomingPayments = getUpcomingPayments(contracts);
 
 	if (upcomingPayments.length === 0) return null;
@@ -85,7 +81,11 @@ export function UpcomingPayments({ contracts, loading }: UpcomingPaymentsProps) 
 						<div className="text-xs font-semibold text-center">Shartnoma {payment.contractId}</div>
 						<div className="text-xs text-muted-foreground text-center">{payment.step}-to&apos;lov</div>
 						<div className="text-xs text-muted-foreground text-center">
-							{format1CDate(payment.date, { year: "numeric", month: "long", day: "numeric" })}
+							{format1CDate(payment.date, {
+								year: "numeric",
+								month: "long",
+								day: "numeric"
+							})}
 						</div>
 						<Badge variant="default" className="bg-[#be9941] text-white">
 							{payment.sumToPay.toLocaleString("uz-UZ")} so&apos;m

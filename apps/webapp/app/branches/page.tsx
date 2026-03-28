@@ -7,7 +7,7 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { Copy, Map, Phone, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loading } from "@/components/common/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BranchesPage() {
 	const tg = useTelegram();
@@ -133,7 +133,27 @@ export default function BranchesPage() {
 		<div className="pt-12">
 			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.png" />
 			{loading ? (
-				<Loading />
+				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar">
+					<div className="flex flex-col gap-3">
+						{[0, 1, 2].map((i) => (
+							<div key={i} className="border-2 rounded-3xl px-4 py-3 flex flex-col gap-2">
+								<div className="flex items-center justify-between">
+									<Skeleton className="h-4 w-1/2" />
+									<div className="flex gap-2">
+										<Skeleton className="w-7 h-7 rounded-full" />
+										<Skeleton className="w-7 h-7 rounded-full" />
+									</div>
+								</div>
+								<Skeleton className="h-3 w-3/4" />
+								<Skeleton className="h-3 w-1/2" />
+								<div className="flex gap-2 mt-1">
+									<Skeleton className="flex-1 h-9 rounded-2xl" />
+									<Skeleton className="flex-1 h-9 rounded-2xl" />
+								</div>
+							</div>
+						))}
+					</div>
+				</SectionCard>
 			) : (
 				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar">
 					<div className="flex flex-col gap-3">

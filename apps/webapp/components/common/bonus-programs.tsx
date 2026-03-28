@@ -4,7 +4,7 @@ import { SectionCard } from "@/components/common/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useEffect, useState } from "react";
-import { Loading } from "./loading";
+import { Skeleton } from "../ui/skeleton";
 
 export interface IBonusProgram {
 	uroven: string;
@@ -15,35 +15,35 @@ export interface IBonusProgram {
 }
 
 const programs = {
-	"Silver": {
-		"title": "Silver🥈",
-		"description": "Silver🥈 — bu boshlang'ich bonus darajasi.",
-		"benefits": [
+	Silver: {
+		title: "Silver🥈",
+		description: "Silver🥈 — bu boshlang'ich bonus darajasi.",
+		benefits: [
 			"Mijoz qarzni to'laganda 4% bonus oladi",
 			"To'lovni o'z vaqtida amalga oshirsa — 3% qo'shimcha bonus beriladi",
 			"Yangi shartnoma tuzishda bonuslarning 7% gacha qismini ishlatish mumkin"
 		],
-		"requirement": "Bu darajaga o'tish uchun hech qanday aylanma talab qilinmaydi."
+		requirement: "Bu darajaga o'tish uchun hech qanday aylanma talab qilinmaydi."
 	},
-	"Gold": {
-		"title": "Gold🥇",
-		"description": "Gold🥇 — faol mijozlar uchun yuqori bonus darajasi.",
-		"benefits": [
+	Gold: {
+		title: "Gold🥇",
+		description: "Gold🥇 — faol mijozlar uchun yuqori bonus darajasi.",
+		benefits: [
 			"Qarzni to'laganda 6% bonus beriladi",
 			"O'z vaqtida to'lov uchun yana 5% bonus beriladi",
 			"Yangi shartnoma bo'yicha 7% gacha bonusni chegirma sifatida ishlatish mumkin"
 		],
-		"requirement": "Gold darajasiga o'tish uchun mijozning umumiy aylanishi 1501 dan yuqori bo'lishi kerak."
+		requirement: "Gold darajasiga o'tish uchun mijozning umumiy aylanishi 1501 dan yuqori bo'lishi kerak."
 	},
-	"Diamond": {
-		"title": "Diamond💎",
-		"description": "Diamond💎 — eng yuqori va eng foydali bonus darajasi.",
-		"benefits": [
+	Diamond: {
+		title: "Diamond💎",
+		description: "Diamond💎 — eng yuqori va eng foydali bonus darajasi.",
+		benefits: [
 			"Qarzni to'lashda 9% bonus beriladi",
 			"O'z vaqtida to'lovda qo'shimcha 8% bonus beriladi",
 			"Yangi shartnoma bo'yicha 7% gacha bonuslarni ishlatish mumkin"
 		],
-		"requirement": "Diamond darajasi uchun talab qilinadigan aylanish miqdori — 3001 dan yuqori."
+		requirement: "Diamond darajasi uchun talab qilinadigan aylanish miqdori — 3001 dan yuqori."
 	}
 };
 
@@ -75,7 +75,21 @@ export function BonusPrograms() {
 		fetchBonusProgramData();
 	}, []);
 
-	if (loading) return <Loading />;
+	if (loading) {
+		return (
+			<SectionCard iconImage="/icons/crown.png" title="Bonus darajalari haqida">
+				<div className="flex gap-2 mb-4">
+					<Skeleton className="h-8 w-20 rounded-md" />
+					<Skeleton className="h-8 w-20 rounded-md" />
+					<Skeleton className="h-8 w-20 rounded-md" />
+				</div>
+				<Skeleton className="h-4 w-full mb-2" />
+				<Skeleton className="h-3 w-5/6 mb-1" />
+				<Skeleton className="h-3 w-4/6 mb-1" />
+				<Skeleton className="h-3 w-full mt-3" />
+			</SectionCard>
+		);
+	}
 
 	if (!bonusProgramList || bonusProgramList.length === 0) return null;
 
