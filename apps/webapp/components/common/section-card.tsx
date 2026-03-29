@@ -18,7 +18,7 @@ type SectionCardPropsWithIcon =
 export function SectionCard({ icon: Icon, iconImage, title, children }: SectionCardPropsWithIcon) {
 	return (
 		<div className="mx-2 my-2">
-			<h2 className="flex items-center gap-2 font-semibold text-xl mb-2 px-1">
+			<h2 className="flex items-center gap-2 font-bold text-xl mb-2 px-1">
 				{iconImage ? (
 					<Image src={iconImage} alt={title} width={35} height={35} className="object-contain" />
 				) : Icon ? (

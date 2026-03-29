@@ -20,13 +20,14 @@ export interface MenuDockProps {
 	orientation?: "horizontal" | "vertical";
 	showLabels?: boolean;
 	animated?: boolean;
+	activeIndex?: number;
 }
 
 const defaultItems: MenuDockItem[] = [
 	{ label: "asosiy", iconImage: "/icons/bank.png" },
 	{ label: "moliyaviy", iconImage: "/icons/briefcase.png" },
 	{ label: "referral", iconImage: "/icons/user.png" },
-	{ label: "boshqa", iconImage: "/icons/box.png" },
+	{ label: "boshqa", iconImage: "/icons/box.png" }
 ];
 
 export const MenuDock: React.FC<MenuDockProps> = ({
@@ -35,7 +36,8 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 	variant = "default",
 	orientation = "horizontal",
 	showLabels = true,
-	animated = true
+	animated = true,
+	activeIndex: controlledActiveIndex
 }) => {
 	const finalItems = useMemo(() => {
 		const isValid = items && Array.isArray(items) && items.length >= 2 && items.length <= 8;
@@ -46,7 +48,13 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 		return items;
 	}, [items]);
 
-	const [activeIndex, setActiveIndex] = useState(0);
+	const [activeIndex, setActiveIndex] = useState(controlledActiveIndex ?? 0);
+
+	useEffect(() => {
+		if (controlledActiveIndex !== undefined) {
+			setActiveIndex(controlledActiveIndex);
+		}
+	}, [controlledActiveIndex]);
 	const [underlineWidth, setUnderlineWidth] = useState(0);
 	const [underlineLeft, setUnderlineLeft] = useState(0);
 
@@ -154,11 +162,11 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 							)}
 						>
 							{item.iconImage ? (
-								<Image 
-									src={item.iconImage} 
-									alt={item.label} 
-									width={24} 
-									height={24} 
+								<Image
+									src={item.iconImage}
+									alt={item.label}
+									width={24}
+									height={24}
 									className={cn(styles.icon, "object-contain transition-opacity duration-200", !isActive && "opacity-60")}
 								/>
 							) : IconComponent ? (
@@ -207,11 +215,11 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 								? `${
 										activeIndex * (variant === "large" ? 64 : variant === "compact" ? 56 : 60) +
 										(variant === "large" ? 19 : variant === "compact" ? 16 : 18)
-								  }px`
+									}px`
 								: `${
 										activeIndex * (variant === "large" ? 64 : variant === "compact" ? 56 : 60) +
 										(variant === "large" ? 19 : variant === "compact" ? 16 : 18)
-								  }px`
+									}px`
 					}}
 				/>
 			)}
