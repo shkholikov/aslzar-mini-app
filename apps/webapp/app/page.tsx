@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Profile } from "@/components/common/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -13,23 +13,12 @@ import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
-import type { CatalogProduct } from "@/lib/db";
 
 export default function HomePage() {
 	const { data, loading } = useUser();
 	const tg = useTelegram();
 	const pathname = usePathname();
 	const router = useRouter();
-	const [products, setProducts] = useState<CatalogProduct[]>([]);
-	const [productsLoading, setProductsLoading] = useState(true);
-
-	useEffect(() => {
-		fetch("/api/products")
-			.then((res) => res.json())
-			.then((data) => setProducts(Array.isArray(data.products) ? data.products : []))
-			.catch(() => setProducts([]))
-			.finally(() => setProductsLoading(false));
-	}, []);
 
 	useEffect(() => {
 		if (!tg) return;
@@ -59,7 +48,7 @@ export default function HomePage() {
 					) : (
 						<RegisterPromptCard />
 					)}
-					<ProductCarousel products={products} loading={productsLoading} />
+					<ProductCarousel />
 					<ChannelSubscribeCard />
 					<PlatformInfo />
 					<News />

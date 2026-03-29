@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Header } from "@/components/common/header";
 import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
@@ -10,20 +9,9 @@ import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
-import type { CatalogProduct } from "@/lib/db";
 
 export default function FinancePage() {
 	const { data, loading } = useUser();
-	const [products, setProducts] = useState<CatalogProduct[]>([]);
-	const [productsLoading, setProductsLoading] = useState(true);
-
-	useEffect(() => {
-		fetch("/api/products")
-			.then((res) => res.json())
-			.then((data) => setProducts(Array.isArray(data.products) ? data.products : []))
-			.catch(() => setProducts([]))
-			.finally(() => setProductsLoading(false));
-	}, []);
 
 	return (
 		<div className="pt-12">
@@ -58,7 +46,7 @@ export default function FinancePage() {
 					<>
 						<FinancialStatistics data={data} />
 						<UpcomingPayments contracts={data?.contract?.ids || []} />
-						<ProductCarousel products={products} loading={productsLoading} />
+						<ProductCarousel />
 						<Contracts contracts={data?.contract?.ids || []} />
 					</>
 				) : (

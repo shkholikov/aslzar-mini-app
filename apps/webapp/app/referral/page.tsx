@@ -12,7 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BonusInfo } from "./components/bonus-info";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
-import type { CatalogProduct } from "@/lib/db";
 
 interface IReferral {
 	id: string;
@@ -31,9 +30,6 @@ export default function ReferralPage() {
 	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
 	const [referrals, setReferrals] = useState<IReferral[]>([]);
 	const [referralsLoading, setReferralsLoading] = useState(false);
-	const [products, setProducts] = useState<CatalogProduct[]>([]);
-	const [productsLoading, setProductsLoading] = useState(true);
-
 	const fetchUserReferrals = useCallback(async () => {
 		if (!data) return;
 		try {
@@ -59,14 +55,6 @@ export default function ReferralPage() {
 	useEffect(() => {
 		fetchUserReferrals();
 	}, [fetchUserReferrals]);
-
-	useEffect(() => {
-		fetch("/api/products")
-			.then((res) => res.json())
-			.then((data) => setProducts(Array.isArray(data.products) ? data.products : []))
-			.catch(() => setProducts([]))
-			.finally(() => setProductsLoading(false));
-	}, []);
 
 	useEffect(() => {
 		if (!tg) return;
@@ -135,7 +123,7 @@ export default function ReferralPage() {
 				<>
 					<BonusInfo data={data} />
 					<ReferralQRCode referralLink={referralLink} preparedMessageId={preparedMessageId} onCopy={handleCopy} onShare={handleShare} />
-					<ProductCarousel products={products} loading={productsLoading} />
+					<ProductCarousel />
 					<ReferralsList
 						referrals={referrals}
 						loading={referralsLoading}

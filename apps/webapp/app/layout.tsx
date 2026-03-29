@@ -6,6 +6,7 @@ import { Menu } from "@/components/common/menu";
 import { BackgroundImage } from "@/components/common/background-image";
 import { TelegramProvider } from "@/hooks/useTelegram";
 import { UserProvider } from "@/hooks/useUser";
+import { ProductsProvider } from "@/hooks/useProducts";
 import { Toaster } from "sonner";
 import { TelegramGuard } from "@/components/common/telegram-guard";
 
@@ -67,19 +68,21 @@ export default function RootLayout({
 				<TelegramProvider>
 					<TelegramGuard>
 						<UserProvider>
-							{children}
-							<div className="flex justify-center">
-								<Menu />
-								<Toaster
-									position="top-center"
-									mobileOffset={{
-										top: "calc(var(--tg-content-safe-area-inset-top, 0px) + 50px)"
-									}}
-									offset={{
-										top: "calc(env(safe-area-inset-top, 0px) + 16px)"
-									}}
-								/>
-							</div>
+							<ProductsProvider>
+								{children}
+								<div className="flex justify-center">
+									<Menu />
+									<Toaster
+										position="top-center"
+										mobileOffset={{
+											top: "calc(var(--tg-content-safe-area-inset-top, 0px) + 50px)"
+										}}
+										offset={{
+											top: "calc(env(safe-area-inset-top, 0px) + 16px)"
+										}}
+									/>
+								</div>
+							</ProductsProvider>
 						</UserProvider>
 					</TelegramGuard>
 				</TelegramProvider>
