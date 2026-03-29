@@ -84,7 +84,7 @@ export function Profile() {
 						</div>
 						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
 							<Image src="/icons/contract.png" alt="Shartnomalar" width={64} height={64} className="object-contain" />
-							<div className="text-sm font-semibold text-center">Shartnomalar</div>
+							<div className="text-sm font-semibold text-center">Shartnoma</div>
 							{loading ? (
 								<Skeleton className="h-5 w-8 rounded-full" />
 							) : (
