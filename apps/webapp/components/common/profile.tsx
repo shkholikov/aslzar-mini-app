@@ -46,7 +46,7 @@ export function Profile() {
 					<Spinner className="size-6" />
 				</AvatarFallback>
 			</Avatar>
-			<div>
+			<div className="w-full">
 				<h1 className="text-xl text-center font-bold">Salom {first_name} 👋</h1>
 				<span>
 					<h4 className="text-center font-semibold tracking-tight">ASLZAR platformasiga xush kelibsiz!</h4>
@@ -70,36 +70,36 @@ export function Profile() {
 					</div>
 					<Separator className="my-2" />
 
-					<div className="flex flex-wrap justify-center items-stretch gap-2">
-						<div className="flex-1 min-w-0 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
-							<Image src="/icons/crown.png" alt="Level" width={50} height={50} className="object-contain" />
-							<div className="text-xs font-semibold text-center">Level:</div>
+					<div className="grid grid-cols-3 gap-2 w-full">
+						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
+							<div className="text-xs font-semibold text-center">Level</div>
+							<Image src="/icons/crown.png" alt="Level" width={64} height={64} className="object-contain" />
 							{loading ? (
 								<Skeleton className="h-5 w-14 rounded-full" />
 							) : (
-								<Badge variant="default" className="bg-[#be9941] text-white">
+								<Badge variant="default" className="bg-[#be9941] text-white w-fit">
 									{profileInfo.uroven}
 								</Badge>
 							)}
 						</div>
-						<div className="flex-1 min-w-0 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
-							<Image src="/icons/contract.png" alt="Shartnomalar" width={50} height={50} className="object-contain" />
-							<div className="text-xs font-semibold text-center">Shartnomalar:</div>
+						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
+							<div className="text-xs font-semibold text-center">Shartnomalar</div>
+							<Image src="/icons/contract.png" alt="Shartnomalar" width={64} height={64} className="object-contain" />
 							{loading ? (
 								<Skeleton className="h-5 w-8 rounded-full" />
 							) : (
-								<Badge variant="default" className="bg-[#be9941] text-white">
-									{profileInfo.contracts}
+								<Badge variant="default" className="bg-[#be9941] text-white w-fit">
+									{profileInfo.contracts} ta
 								</Badge>
 							)}
 						</div>
-						<div className="flex-1 min-w-0 backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
-							<Image src="/icons/bonus.png" alt="Bonus" width={50} height={50} className="object-contain" />
-							<div className="text-xs font-semibold text-center">Bonus:</div>
+						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
+							<div className="text-xs font-semibold text-center">Bonus</div>
+							<Image src="/icons/bonus.png" alt="Bonus" width={64} height={64} className="object-contain" />
 							{loading ? (
 								<Skeleton className="h-5 w-20 rounded-full" />
 							) : (
-								<Badge variant="default" className="bg-[#be9941] text-white">
+								<Badge variant="default" className="bg-[#be9941] text-white w-fit">
 									{profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
 								</Badge>
 							)}
