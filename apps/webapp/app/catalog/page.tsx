@@ -9,9 +9,10 @@ import type { CatalogProduct } from "@/lib/db";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
+import { LayoutGrid, List } from "lucide-react";
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|m4v)(\?|$)/i;
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 6;
 
 function productToCardProps(p: CatalogProduct): ProductCardProps {
 	const mediaType: ProductCardProps["mediaType"] = VIDEO_EXTENSIONS.test(p.url) ? "video" : "image";
@@ -31,6 +32,7 @@ export default function CatalogPage() {
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
 	const [page, setPage] = React.useState(1);
+	const [compact, setCompact] = React.useState(true);
 	const tg = useTelegram();
 
 	React.useEffect(() => {
@@ -71,24 +73,50 @@ export default function CatalogPage() {
 		<div className="pt-12">
 			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.png" />
 			<SectionCard iconImage="/icons/book.png" title="Mahsulotlar">
-				<div className="grid grid-cols-1 gap-3 mt-2">
+				<div className="flex justify-end mb-2 gap-1">
+					<button
+						onClick={() => {
+							tg?.HapticFeedback?.impactOccurred("light");
+							setCompact(true);
+						}}
+						className={`p-1.5 rounded-md transition-colors ${compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground hover:text-foreground"}`}
+						aria-label="Compact view"
+					>
+						<LayoutGrid className="size-4" />
+					</button>
+					<button
+						onClick={() => {
+							tg?.HapticFeedback?.impactOccurred("light");
+							setCompact(false);
+						}}
+						className={`p-1.5 rounded-md transition-colors ${!compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground hover:text-foreground"}`}
+						aria-label="List view"
+					>
+						<List className="size-4" />
+					</button>
+				</div>
+				<div className={compact ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-3"}>
 					{loading &&
-						[0, 1, 2, 3].map((i) => (
+						(compact ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3]).map((i) => (
 							<div key={i} className="border-2 rounded-4xl overflow-hidden flex flex-col">
 								<Skeleton className="w-full aspect-[4/5]" />
-								<div className="p-4 flex flex-col gap-2">
-									<Skeleton className="h-4 w-3/4" />
-									<Skeleton className="h-3 w-full" />
-									<Skeleton className="h-3 w-5/6" />
-									<div className="mt-2 flex justify-end">
-										<Skeleton className="h-9 w-28 rounded-md" />
+								<div className={compact ? "p-2 flex flex-col gap-1" : "p-4 flex flex-col gap-2"}>
+									<Skeleton className="h-3 w-3/4" />
+									{!compact && (
+										<>
+											<Skeleton className="h-3 w-full" />
+											<Skeleton className="h-3 w-5/6" />
+										</>
+									)}
+									<div className={`${compact ? "mt-1" : "mt-2"} flex justify-end`}>
+										<Skeleton className={compact ? "h-7 w-7 rounded-md" : "h-9 w-28 rounded-md"} />
 									</div>
 								</div>
 							</div>
 						))}
-					{!loading && error && <p className="text-sm text-red-600 py-4">{error}</p>}
-					{!loading && !error && products.length === 0 && <p className="text-sm text-gray-500 py-4">Hozircha mahsulotlar yo&apos;q.</p>}
-					{!loading && !error && paginated.map((product) => <ProductCard key={product.id} {...product} />)}
+					{!loading && error && <p className="text-sm text-red-600 py-4 col-span-2">{error}</p>}
+					{!loading && !error && products.length === 0 && <p className="text-sm text-gray-500 py-4 col-span-2">Hozircha mahsulotlar yo&apos;q.</p>}
+					{!loading && !error && paginated.map((product) => <ProductCard key={product.id} {...product} compact={compact} />)}
 				</div>
 				{!loading && !error && totalPages > 1 && (
 					<div className="flex items-center justify-between mt-4">

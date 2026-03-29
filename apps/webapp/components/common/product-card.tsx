@@ -29,11 +29,13 @@ export interface ProductCardProps {
 	badgeLabel?: string;
 	/** "image" (default) or "video" */
 	mediaType?: ProductMediaType;
+	/** Compact mode: smaller card for 2-column grid */
+	compact?: boolean;
 }
 
 const SUCCESS_MESSAGE = "Qiziqish bildirganingiz uchun rahmat, biz siz bilan tez orada bog'lanamiz.";
 
-export function ProductCard({ id, title, description, price, url, badgeLabel, mediaType = "image" }: ProductCardProps) {
+export function ProductCard({ id, title, description, price, url, badgeLabel, mediaType = "image", compact = false }: ProductCardProps) {
 	const tg = useTelegram();
 	const [interestDialogOpen, setInterestDialogOpen] = useState(false);
 	const [sending, setSending] = useState(false);
@@ -86,26 +88,34 @@ export function ProductCard({ id, title, description, price, url, badgeLabel, me
 				)}
 				{badgeLabel && (
 					<div className="absolute top-2 left-2">
-						<Badge variant="default" className="bg-[#be9941] text-white">
+						<Badge variant="default" className="bg-[#be9941] text-white text-[10px] px-1.5 py-0.5">
 							{badgeLabel}
 						</Badge>
 					</div>
 				)}
 			</div>
-			<div className="p-4 flex flex-col gap-2">
+			<div className={compact ? "p-2 flex flex-col gap-1" : "p-4 flex flex-col gap-2"}>
 				<div>
-					<h3 className="font-semibold text-base leading-snug line-clamp-2">{title}</h3>
-					<p className="mt-1 text-sm text-muted-foreground line-clamp-3">{description}</p>
+					<h3 className={compact ? "font-semibold text-xs leading-snug line-clamp-2" : "font-semibold text-base leading-snug line-clamp-2"}>
+						{title}
+					</h3>
+					{!compact && <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{description}</p>}
 				</div>
-				<div className={`mt-2 flex items-center gap-3 ${hasPrice ? "justify-between" : "justify-end"}`}>
+				<div className={`${compact ? "mt-1" : "mt-2"} flex items-center gap-2 ${hasPrice ? "justify-between" : "justify-end"}`}>
 					{hasPrice && (
-						<div className="text-sm font-semibold">
+						<div className={compact ? "text-xs font-semibold" : "text-sm font-semibold"}>
 							<span>{formattedPrice}</span> <span className="text-xs text-muted-foreground">so&apos;m</span>
 						</div>
 					)}
-					<RippleButton type="button" variant="outline" className={goldButtonClass} onClick={handleBuy} disabled={sending}>
+					<RippleButton
+						type="button"
+						variant="outline"
+						className={`${goldButtonClass} ${compact ? "h-7 w-7 p-0" : ""}`}
+						onClick={handleBuy}
+						disabled={sending}
+					>
 						<ShoppingCart className="size-4" />
-						{sending ? "..." : "Sotib olish"}
+						{!compact && (sending ? "..." : "Sotib olish")}
 					</RippleButton>
 				</div>
 			</div>
