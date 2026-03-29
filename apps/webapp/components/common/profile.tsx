@@ -55,7 +55,7 @@ export function Profile() {
 				<div className="mx-2">
 					<div className="flex justify-center">
 						{loading ? (
-							<Skeleton className="h-6 w-40 rounded-full my-2" />
+							<Skeleton className="h-5 w-40 rounded-full my-2" />
 						) : profileInfo.verified ? (
 							<Badge variant="secondary" className="bg-blue-500 text-white my-2 shadow-sm">
 								<BadgeCheckIcon />
