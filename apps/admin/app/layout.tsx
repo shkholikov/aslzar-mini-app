@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AdminNav } from "@/components/admin-nav";
+import { AdminContextProvider } from "@/components/common/admin-context";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -33,12 +34,14 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-				<div className="flex min-h-screen flex-col">
-					<AdminNav />
-					<div className="flex flex-1 w-full">
-						<TooltipProvider>{children}</TooltipProvider>
+				<AdminContextProvider>
+					<div className="flex min-h-screen flex-col">
+						<AdminNav />
+						<div className="flex flex-1 w-full">
+							<TooltipProvider>{children}</TooltipProvider>
+						</div>
 					</div>
-				</div>
+				</AdminContextProvider>
 			</body>
 		</html>
 	);

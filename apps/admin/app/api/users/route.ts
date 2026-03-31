@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getAllUsers } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 /**
  * GET /api/users
@@ -8,9 +8,12 @@ import { isAuthenticatedRequest } from "@/lib/auth";
  */
 export async function GET(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "users")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		// Fetch all users from MongoDB

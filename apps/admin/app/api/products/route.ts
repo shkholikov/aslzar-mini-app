@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createProduct, getProducts } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 /**
  * GET /api/products
@@ -8,9 +8,12 @@ import { isAuthenticatedRequest } from "@/lib/auth";
  */
 export async function GET(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "products")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const products = await getProducts();
@@ -34,9 +37,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "products")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const body = await request.json();
@@ -44,8 +50,7 @@ export async function POST(request: NextRequest) {
 		const description = typeof body?.description === "string" ? body.description.trim() : "";
 		const priceRaw = body?.price;
 		const url = typeof body?.url === "string" ? body.url.trim() : "";
-		const badgeLabel =
-			typeof body?.badgeLabel === "string" && body.badgeLabel.trim() ? body.badgeLabel.trim() : undefined;
+		const badgeLabel = typeof body?.badgeLabel === "string" && body.badgeLabel.trim() ? body.badgeLabel.trim() : undefined;
 
 		if (!title || !description || !url) {
 			return NextResponse.json(
@@ -89,4 +94,3 @@ export async function POST(request: NextRequest) {
 		);
 	}
 }
-

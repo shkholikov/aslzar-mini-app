@@ -1,47 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loading } from "@/components/common/loading";
+import { useAdminContext } from "@/components/common/admin-context";
+import type { AdminPermission } from "@/lib/auth-utils";
+import { getFirstAllowedPath, hasPermission } from "@/lib/auth-utils";
 
 interface AdminGuardProps {
 	children: React.ReactNode;
+	requiredPermission?: AdminPermission;
 }
 
-export function AdminGuard({ children }: AdminGuardProps) {
+export function AdminGuard({ children, requiredPermission }: AdminGuardProps) {
 	const router = useRouter();
-	const [checking, setChecking] = useState(true);
+	const { checking, authenticated, role, permissions, username } = useAdminContext();
 
 	useEffect(() => {
-		let cancelled = false;
+		if (checking) return;
 
-		async function check() {
-			try {
-				const res = await fetch("/api/admin/check", { method: "GET" });
-				if (!res.ok) {
-					if (!cancelled) {
-						router.replace("/login");
-					}
-					return;
-				}
-			} catch {
-				if (!cancelled) {
-					router.replace("/login");
-				}
-				return;
-			} finally {
-				if (!cancelled) {
-					setChecking(false);
-				}
-			}
+		if (!authenticated) {
+			router.replace("/login");
+			return;
 		}
 
-		check();
-
-		return () => {
-			cancelled = true;
-		};
-	}, [router]);
+		if (requiredPermission) {
+			const admin = { username: username ?? "", role: role ?? undefined, permissions };
+			if (!hasPermission(admin, requiredPermission)) {
+				router.replace(getFirstAllowedPath(admin));
+			}
+		}
+	}, [checking, authenticated, role, permissions, username, requiredPermission, router]);
 
 	if (checking) {
 		return (
@@ -51,6 +40,16 @@ export function AdminGuard({ children }: AdminGuardProps) {
 		);
 	}
 
+	if (!authenticated) {
+		return null;
+	}
+
+	if (requiredPermission) {
+		const admin = { username: username ?? "", role: role ?? undefined, permissions };
+		if (!hasPermission(admin, requiredPermission)) {
+			return null;
+		}
+	}
+
 	return <>{children}</>;
 }
-

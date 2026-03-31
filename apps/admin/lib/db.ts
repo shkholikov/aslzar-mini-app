@@ -20,6 +20,8 @@ export interface EmployeeDoc extends Document {
 	/** Unique, never-reused referral code like "emp1", "emp2" */
 	referralCode: string;
 	createdAt: Date;
+	/** Username of the admin who created this employee */
+	createdBy?: string;
 }
 
 /** Simple counter document for sequences (e.g. employee_referral) */
@@ -477,7 +479,7 @@ async function getNextEmployeeReferralCode(): Promise<string> {
 /**
  * Creates a new employee with auto-generated unique referralCode (emp1, emp2, ...).
  */
-export async function createEmployee(input: { name: string; surname: string; filial: string }): Promise<EmployeeDoc> {
+export async function createEmployee(input: { name: string; surname: string; filial: string; createdBy?: string }): Promise<EmployeeDoc> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
@@ -492,7 +494,8 @@ export async function createEmployee(input: { name: string; surname: string; fil
 			surname: input.surname.trim(),
 			filial: input.filial.trim(),
 			referralCode,
-			createdAt: now
+			createdAt: now,
+			...(input.createdBy ? { createdBy: input.createdBy } : {})
 		};
 		const result = await coll.insertOne(doc);
 		return { ...doc, _id: result.insertedId };

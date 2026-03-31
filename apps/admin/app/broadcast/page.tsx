@@ -228,7 +228,7 @@ export default function BroadcastPage() {
 	const endItem = Math.min(page * PAGE_SIZE, jobs.length);
 
 	return (
-		<AdminGuard>
+		<AdminGuard requiredPermission="broadcast">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
 				<div className="w-full">
 					<div className="flex items-center gap-2 pb-4">

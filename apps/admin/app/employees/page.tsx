@@ -204,7 +204,7 @@ export default function EmployeesPage() {
 	const endItem = Math.min(page * PAGE_SIZE, employees.length);
 
 	return (
-		<AdminGuard>
+		<AdminGuard requiredPermission="employees">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
 				<div className="w-full">
 					<div className="flex items-center gap-2 pb-4">

@@ -1,12 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { deleteNewsItem, toggleNewsItem } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "news")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 		const { id } = await params;
 		const body = await request.json();
@@ -32,9 +35,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "news")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 		const { id } = await params;
 		const deleted = await deleteNewsItem(id);

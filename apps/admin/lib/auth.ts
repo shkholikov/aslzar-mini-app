@@ -1,6 +1,11 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import crypto from "crypto";
 import { cookies } from "next/headers";
+import type { AdminRole, AdminPermission } from "./auth-utils";
+
+// Re-export pure utilities so callers only need one import
+export type { AdminRole, AdminPermission } from "./auth-utils";
+export { isSuperAdmin, hasPermission, getFirstAllowedPath } from "./auth-utils";
 
 // MongoDB configuration (reuse same DB, separate collection for admin users)
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
@@ -10,10 +15,16 @@ const adminUsersCollection = process.env.MONGO_DB_COLLECTION_ADMIN_USERS || "adm
 const SESSION_COOKIE_NAME = "admin_session";
 const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-type AdminUser = {
+export type AdminUser = {
 	_id?: string;
 	username: string;
 	passwordHash: string;
+	firstName?: string;
+	lastName?: string;
+	role?: AdminRole; // undefined = treat as superadmin (backwards compat)
+	permissions?: AdminPermission[]; // only relevant when role === "staff"
+	createdBy?: string; // username of the superadmin who created this account
+	createdAt?: Date;
 };
 
 function getMongoClient() {
@@ -30,6 +41,19 @@ export async function findAdminByUsername(username: string): Promise<AdminUser |
 		const db = client.db(dbName);
 		const coll = db.collection<AdminUser>(adminUsersCollection);
 		const user = await coll.findOne({ username });
+		return user;
+	} finally {
+		await client.close();
+	}
+}
+
+export async function findAdminById(id: string): Promise<AdminUser | null> {
+	const client = getMongoClient();
+	try {
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<AdminUser>(adminUsersCollection);
+		const user = await coll.findOne({ _id: new ObjectId(id) as unknown as string });
 		return user;
 	} finally {
 		await client.close();
@@ -113,19 +137,23 @@ export async function clearAdminSessionCookie() {
 	});
 }
 
-export async function isAuthenticatedRequest(req: Request): Promise<boolean> {
-	// In route handlers we need to read cookies from the Request, not from next/headers
-	// but we still re-use the same token verification logic.
+function parseCookieHeader(req: Request): Record<string, string> {
 	const cookieHeader = req.headers.get("cookie") ?? "";
-	const cookiesMap = Object.fromEntries(
+	return Object.fromEntries(
 		cookieHeader.split(";").map((c) => {
 			const [k, ...rest] = c.split("=");
 			return [k?.trim(), rest.join("=").trim()];
 		})
 	);
+}
+
+/** Parses session cookie from request, fetches full admin from DB. Returns null if unauthenticated. */
+export async function getAuthenticatedAdmin(req: Request): Promise<AdminUser | null> {
+	const cookiesMap = parseCookieHeader(req);
 	const raw = cookiesMap[SESSION_COOKIE_NAME];
 	const parsed = parseSessionToken(raw);
-	return !!parsed;
+	if (!parsed) return null;
+	return findAdminById(parsed.userId);
 }
 
 export async function getCurrentAdminIdFromCookies(): Promise<string | null> {
@@ -135,3 +163,93 @@ export async function getCurrentAdminIdFromCookies(): Promise<string | null> {
 	return parsed?.userId ?? null;
 }
 
+// ─── Admin user management (superadmin only) ───────────────────────────────
+
+export async function getAllAdminUsers(): Promise<Omit<AdminUser, "passwordHash">[]> {
+	const client = getMongoClient();
+	try {
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<AdminUser>(adminUsersCollection);
+		const users = await coll
+			.find({}, { projection: { passwordHash: 0 } })
+			.sort({ createdAt: 1 })
+			.toArray();
+		return users as Omit<AdminUser, "passwordHash">[];
+	} finally {
+		await client.close();
+	}
+}
+
+export async function createAdminUser(input: {
+	username: string;
+	password: string;
+	firstName?: string;
+	lastName?: string;
+	role: AdminRole;
+	permissions?: AdminPermission[];
+	createdBy: string;
+}): Promise<Omit<AdminUser, "passwordHash">> {
+	const passwordHash = await hashPassword(input.password);
+	const client = getMongoClient();
+	try {
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<AdminUser>(adminUsersCollection);
+
+		const existing = await coll.findOne({ username: input.username });
+		if (existing) {
+			throw new Error("Bu username allaqachon mavjud");
+		}
+
+		const doc: AdminUser = {
+			username: input.username,
+			passwordHash,
+			...(input.firstName ? { firstName: input.firstName } : {}),
+			...(input.lastName ? { lastName: input.lastName } : {}),
+			role: input.role,
+			permissions: input.role === "staff" ? (input.permissions ?? []) : undefined,
+			createdBy: input.createdBy,
+			createdAt: new Date()
+		};
+
+		const result = await coll.insertOne(doc as Parameters<typeof coll.insertOne>[0]);
+		const { passwordHash: _ph, ...safe } = { ...doc, _id: result.insertedId.toString() };
+		return safe;
+	} finally {
+		await client.close();
+	}
+}
+
+export async function updateAdminUser(id: string, input: { role?: AdminRole; permissions?: AdminPermission[] }): Promise<boolean> {
+	const client = getMongoClient();
+	try {
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<AdminUser>(adminUsersCollection);
+
+		const update: Partial<AdminUser> = {};
+		if (input.role !== undefined) update.role = input.role;
+		if (input.permissions !== undefined) {
+			update.permissions = input.role === "staff" ? input.permissions : undefined;
+		}
+
+		const result = await coll.updateOne({ _id: new ObjectId(id) as unknown as string }, { $set: update });
+		return result.matchedCount > 0;
+	} finally {
+		await client.close();
+	}
+}
+
+export async function deleteAdminUser(id: string): Promise<boolean> {
+	const client = getMongoClient();
+	try {
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<AdminUser>(adminUsersCollection);
+		const result = await coll.deleteOne({ _id: new ObjectId(id) as unknown as string });
+		return result.deletedCount > 0;
+	} finally {
+		await client.close();
+	}
+}

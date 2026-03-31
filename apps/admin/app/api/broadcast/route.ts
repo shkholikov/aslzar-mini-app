@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createBroadcastJob, getBroadcastJobs, type BroadcastAudienceFilters } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 /**
  * GET /api/broadcast
@@ -8,9 +8,12 @@ import { isAuthenticatedRequest } from "@/lib/auth";
  */
 export async function GET(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "broadcast")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const jobs = await getBroadcastJobs();
@@ -33,9 +36,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "broadcast")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const body = await request.json();

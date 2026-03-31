@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getProduct, deleteProduct } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 interface RouteParams {
 	params: Promise<{ id: string }>;
@@ -34,9 +34,12 @@ function getR2Key(url: string): string | null {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "products")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const { id } = await params;

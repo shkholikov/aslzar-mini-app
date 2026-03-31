@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { countUsersByEmployeeCode, createEmployee, getEmployees } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 /**
  * GET /api/employees
@@ -8,9 +8,12 @@ import { isAuthenticatedRequest } from "@/lib/auth";
  */
 export async function GET(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "employees")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const employees = await getEmployees();
@@ -41,9 +44,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "employees")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const body = await request.json();
@@ -55,7 +61,7 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "name, surname va filial majburiy" }, { status: 400 });
 		}
 
-		const employee = await createEmployee({ name, surname, filial });
+		const employee = await createEmployee({ name, surname, filial, createdBy: admin.username });
 
 		return NextResponse.json({ employee }, { status: 201 });
 	} catch (error) {

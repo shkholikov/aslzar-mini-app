@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Shield } from "lucide-react";
 
 export default function AdminLoginPage() {
-	const router = useRouter();
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -33,8 +31,7 @@ export default function AdminLoginPage() {
 				throw new Error(data.error || "Kirishda xatolik yuz berdi");
 			}
 
-			router.push("/");
-			router.refresh();
+			window.location.href = "/";
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Kutilmagan xatolik");
 		} finally {

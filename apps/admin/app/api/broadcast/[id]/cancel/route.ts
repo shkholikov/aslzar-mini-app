@@ -1,19 +1,19 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cancelBroadcastJob } from "@/lib/db";
-import { isAuthenticatedRequest } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 /**
  * PATCH /api/broadcast/[id]/cancel
  * Cancels a broadcast job (pending or processing). No-op if already completed/failed/cancelled.
  */
-export async function PATCH(
-	request: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
 	try {
-		const ok = await isAuthenticatedRequest(request);
-		if (!ok) {
+		const admin = await getAuthenticatedAdmin(request);
+		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+		}
+		if (!hasPermission(admin, "broadcast")) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const { id } = await params;
@@ -23,10 +23,7 @@ export async function PATCH(
 
 		const cancelled = await cancelBroadcastJob(id);
 		if (!cancelled) {
-			return NextResponse.json(
-				{ error: "Job not found or already completed/cancelled" },
-				{ status: 404 }
-			);
+			return NextResponse.json({ error: "Job not found or already completed/cancelled" }, { status: 404 });
 		}
 
 		return NextResponse.json({ cancelled: true }, { status: 200 });

@@ -160,7 +160,7 @@ export default function SuggestionsPage() {
 	}
 
 	return (
-		<AdminGuard>
+		<AdminGuard requiredPermission="suggestions">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
 				<div className="w-full">
 					<div className="flex flex-wrap items-center justify-between gap-4 pb-4">
