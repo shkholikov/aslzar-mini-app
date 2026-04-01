@@ -57,7 +57,7 @@ export function ProductCarousel() {
 							>
 								<div className="relative aspect-[4/5]">
 									{video ? (
-										<video src={product.url} className="absolute h-full w-full object-cover" autoPlay muted loop playsInline />
+										<video src={product.url} poster={product.url} className="absolute h-full w-full object-cover" />
 									) : (
 										<Image src={product.url} alt={product.title} fill className="object-cover" sizes="42vw" />
 									)}

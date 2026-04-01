@@ -82,7 +82,7 @@ export function ProductCard({ id, title, description, price, url, badgeLabel, me
 		<div className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md overflow-hidden flex flex-col">
 			<div className="relative w-full aspect-[4/5] overflow-hidden bg-muted/30">
 				{isVideo ? (
-					<video src={url} poster={url} controls playsInline className="absolute inset-0 w-full h-full object-cover" preload="metadata" />
+					<video src={url} controls playsInline className="absolute inset-0 w-full h-full object-cover" />
 				) : (
 					<Image src={url} alt={title} fill className="object-cover" />
 				)}
