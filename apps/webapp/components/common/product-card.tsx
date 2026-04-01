@@ -84,7 +84,13 @@ export function ProductCard({ id, title, description, price, url, badgeLabel, me
 				{isVideo ? (
 					<video src={url} controls playsInline className="absolute inset-0 w-full h-full object-cover" />
 				) : (
-					<Image src={url} alt={title} fill className="object-cover" />
+					<Image
+						src={url}
+						alt={title}
+						fill
+						className="object-cover"
+						sizes={compact ? "(max-width: 768px) 48vw, 400px" : "(max-width: 768px) 100vw, 560px"}
+					/>
 				)}
 				{badgeLabel && (
 					<div className="absolute top-2 left-2">

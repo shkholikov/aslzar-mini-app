@@ -7,6 +7,7 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { ExternalLink } from "lucide-react";
 import { goldButtonClass } from "@/components/common/button-variants";
+import Image from "next/image";
 
 interface NewsItem {
 	id: string;
@@ -93,19 +94,17 @@ export function News() {
 							<h3 className="font-semibold text-base leading-snug">{item.title}</h3>
 							{item.pubDate && <p className="text-xs text-muted-foreground mt-1">{formatNewsDate(item.pubDate)}</p>}
 							{(item.imageUrl || item.videoUrl) && (
-								<div className="mt-3 w-full rounded-2xl overflow-hidden bg-muted/50 aspect-[4/5] shrink-0">
+								<div className="relative mt-3 w-full rounded-2xl overflow-hidden bg-muted/50 aspect-[4/5] shrink-0">
 									{item.videoUrl ? (
-										<video
-											src={item.videoUrl}
-											poster={item.videoUrl}
-											className="w-full h-full object-cover"
-											controls
-											playsInline
-											preload="metadata"
-										/>
+										<video src={item.videoUrl} className="absolute inset-0 h-full w-full object-cover" controls playsInline />
 									) : item.imageUrl ? (
-										// eslint-disable-next-line @next/next/no-img-element
-										<img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+										<Image
+											src={item.imageUrl}
+											alt={item.title ? `${item.title} — yangilik` : "Yangilik"}
+											fill
+											className="object-cover"
+											sizes="(max-width: 768px) 94vw, 520px"
+										/>
 									) : null}
 								</div>
 							)}
