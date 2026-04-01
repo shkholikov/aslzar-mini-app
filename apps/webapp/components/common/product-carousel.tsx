@@ -37,9 +37,11 @@ export function ProductCarousel() {
 		);
 	}
 
-	if (products.length < 2) return null;
+	const latest = products.slice(0, 3);
 
-	const items = [...products, ...products];
+	if (latest.length < 2) return null;
+
+	const items = [...latest, ...latest];
 
 	return (
 		<div className="overflow-hidden w-full">

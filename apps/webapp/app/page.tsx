@@ -32,7 +32,7 @@ export default function HomePage() {
 		<main className="flex flex-col items-center min-h-screen pt-12">
 			<>
 				<Profile />
-				<div>
+				<div className="w-full overflow-hidden">
 					{loading ? (
 						<SectionCard iconImage="/icons/user-info.png" title="Asosiy Ma'lumotlar">
 							<div className="flex flex-col gap-2">
