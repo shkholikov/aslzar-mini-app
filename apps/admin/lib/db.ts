@@ -524,8 +524,9 @@ export async function getEmployees(): Promise<EmployeeDoc[]> {
 
 /**
  * Counts users who were referred by the given employee code.
+ * Optionally filtered to users who started the bot within a date range.
  */
-export async function countUsersByEmployeeCode(referralCode: string): Promise<number> {
+export async function countUsersByEmployeeCode(referralCode: string, dateRange?: { from: Date; to: Date }): Promise<number> {
 	let client: MongoClient | null = null;
 	try {
 		if (!dbUri || !dbName || !usersCollection) throw new Error("MongoDB configuration is missing");
@@ -534,7 +535,8 @@ export async function countUsersByEmployeeCode(referralCode: string): Promise<nu
 		const db = client.db(dbName);
 		const coll = db.collection<UserDocument>(usersCollection);
 		const count = await coll.countDocuments({
-			"value.referredByEmployeeCode": referralCode
+			"value.referredByEmployeeCode": referralCode,
+			...(dateRange ? { "value.createdAt": { $gte: dateRange.from, $lte: dateRange.to } } : {})
 		});
 		return count;
 	} finally {

@@ -102,31 +102,55 @@ export default function EmployeesPage() {
 	const [filial, setFilial] = React.useState("");
 	const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
 	const [page, setPage] = React.useState(1);
+	const [fromDate, setFromDate] = React.useState("");
+	const [toDate, setToDate] = React.useState("");
+	const [activeRange, setActiveRange] = React.useState<{ from: string; to: string } | null>(null);
 
-	const fetchEmployees = React.useCallback(async () => {
-		try {
-			setError(null);
-			const res = await fetch("/api/employees");
-			if (res.status === 401) {
-				router.replace("/login");
-				return;
+	const fetchEmployees = React.useCallback(
+		async (range?: { from: string; to: string }) => {
+			try {
+				setError(null);
+				setLoading(true);
+				const url = range ? `/api/employees?from=${range.from}&to=${range.to}` : "/api/employees";
+				const res = await fetch(url);
+				if (res.status === 401) {
+					router.replace("/login");
+					return;
+				}
+				if (!res.ok) {
+					const data = await res.json().catch(() => ({}));
+					throw new Error(data.error || "Xodimlarni yuklab bo’lmadi");
+				}
+				const data = await res.json();
+				setEmployees((data.employees || []) as EmployeeWithCount[]);
+			} catch (e) {
+				setError(e instanceof Error ? e.message : "Noma’lum xatolik");
+			} finally {
+				setLoading(false);
 			}
-			if (!res.ok) {
-				const data = await res.json().catch(() => ({}));
-				throw new Error(data.error || "Xodimlarni yuklab bo‘lmadi");
-			}
-			const data = await res.json();
-			setEmployees((data.employees || []) as EmployeeWithCount[]);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : "Noma’lum xatolik");
-		} finally {
-			setLoading(false);
-		}
-	}, [router]);
+		},
+		[router]
+	);
 
 	React.useEffect(() => {
 		fetchEmployees();
 	}, [fetchEmployees]);
+
+	function handleFilter() {
+		if (!fromDate || !toDate) return;
+		const range = { from: fromDate, to: toDate };
+		setActiveRange(range);
+		setPage(1);
+		fetchEmployees(range);
+	}
+
+	function handleClear() {
+		setFromDate("");
+		setToDate("");
+		setActiveRange(null);
+		setPage(1);
+		fetchEmployees();
+	}
 
 	React.useEffect(() => {
 		const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
@@ -216,7 +240,26 @@ export default function EmployeesPage() {
 							</p>
 						</div>
 					</div>
-					<Separator className="mb-6" />
+					<Separator className="mb-4" />
+
+					<div className="flex flex-wrap items-end gap-3 mb-6">
+						<div>
+							<label className="block text-xs font-medium text-gray-700 mb-1">Dan</label>
+							<Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-9" />
+						</div>
+						<div>
+							<label className="block text-xs font-medium text-gray-700 mb-1">Gacha</label>
+							<Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-9" />
+						</div>
+						<Button type="button" size="sm" disabled={!fromDate || !toDate || loading} onClick={handleFilter}>
+							Filtrlash
+						</Button>
+						{activeRange && (
+							<Button type="button" size="sm" variant="outline" onClick={handleClear}>
+								Tozalash
+							</Button>
+						)}
+					</div>
 
 					{loading ? (
 						<div className="py-10">
@@ -254,7 +297,9 @@ export default function EmployeesPage() {
 											<TableHead>Filial</TableHead>
 											<TableHead>Qo‘shilgan sana</TableHead>
 											<TableHead>Referral havola</TableHead>
-											<TableHead>Taklif qilinganlar</TableHead>
+											<TableHead>
+												{activeRange ? `Taklif qilinganlar (${activeRange.from} – ${activeRange.to})` : "Taklif qilinganlar (jami)"}
+											</TableHead>
 											<TableHead>QR kod</TableHead>
 										</TableRow>
 									</TableHeader>

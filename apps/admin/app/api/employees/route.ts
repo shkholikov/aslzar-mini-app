@@ -16,11 +16,16 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
+		const { searchParams } = request.nextUrl;
+		const fromParam = searchParams.get("from");
+		const toParam = searchParams.get("to");
+		const dateRange = fromParam && toParam ? { from: new Date(fromParam), to: new Date(toParam + "T23:59:59.999Z") } : undefined;
+
 		const employees = await getEmployees();
 		const withCounts = await Promise.all(
 			employees.map(async (emp) => ({
 				...emp,
-				referredCount: await countUsersByEmployeeCode(emp.referralCode)
+				referredCount: await countUsersByEmployeeCode(emp.referralCode, dateRange)
 			}))
 		);
 
