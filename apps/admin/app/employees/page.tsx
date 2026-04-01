@@ -12,6 +12,7 @@ import { Loading } from "@/components/common/loading";
 import { Copy, Users } from "lucide-react";
 import QRCode from "qrcode";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const BOT_LINK = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzaruzbot";
 const PAGE_SIZE = 10;
@@ -25,6 +26,11 @@ function formatDate(d: Date | string | undefined) {
 		dateStyle: "short",
 		timeStyle: "short"
 	}).format(date);
+}
+
+function formatDateShort(isoDate: string) {
+	const [y, m, d] = isoDate.split("-");
+	return `${d}.${m}.${y}`;
 }
 
 function buildReferralLink(code: string) {
@@ -245,17 +251,17 @@ export default function EmployeesPage() {
 					<div className="flex flex-wrap items-end gap-3 mb-6">
 						<div>
 							<label className="block text-xs font-medium text-gray-700 mb-1">Dan</label>
-							<Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-9" />
+							<DatePicker value={fromDate} onChange={setFromDate} />
 						</div>
 						<div>
 							<label className="block text-xs font-medium text-gray-700 mb-1">Gacha</label>
-							<Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-9" />
+							<DatePicker value={toDate} onChange={setToDate} />
 						</div>
-						<Button type="button" size="sm" disabled={!fromDate || !toDate || loading} onClick={handleFilter}>
+						<Button type="button" disabled={!fromDate || !toDate || loading} onClick={handleFilter}>
 							Filtrlash
 						</Button>
 						{activeRange && (
-							<Button type="button" size="sm" variant="outline" onClick={handleClear}>
+							<Button type="button" variant="outline" onClick={handleClear}>
 								Tozalash
 							</Button>
 						)}
@@ -298,7 +304,9 @@ export default function EmployeesPage() {
 											<TableHead>Qo‘shilgan sana</TableHead>
 											<TableHead>Referral havola</TableHead>
 											<TableHead>
-												{activeRange ? `Taklif qilinganlar (${activeRange.from} – ${activeRange.to})` : "Taklif qilinganlar (jami)"}
+												{activeRange
+													? `Taklif qilinganlar (${formatDateShort(activeRange.from)} – ${formatDateShort(activeRange.to)})`
+													: "Taklif qilinganlar (jami)"}
 											</TableHead>
 											<TableHead>QR kod</TableHead>
 										</TableRow>
