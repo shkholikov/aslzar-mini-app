@@ -52,6 +52,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.id,
 			id: "id",
+			meta: { className: "hidden md:table-cell" },
 			header: ({ column }) => {
 				return (
 					<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -78,12 +79,14 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.last_name,
 			id: "last_name",
+			meta: { className: "hidden md:table-cell" },
 			header: "Familiya",
 			cell: ({ row }) => <div>{row.original.value.last_name || "-"}</div>
 		},
 		{
 			accessorFn: (row) => row.value.username,
 			id: "username",
+			meta: { className: "hidden md:table-cell" },
 			header: ({ column }) => {
 				return (
 					<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -120,18 +123,21 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.isChannelMember,
 			id: "isChannelMember",
+			meta: { className: "hidden md:table-cell" },
 			header: "Kanal a'zosi",
 			cell: ({ row }) => <div className="capitalize">{row.original.value.isChannelMember ? "Ha" : "Yo'q"}</div>
 		},
 		{
 			accessorFn: (row) => row.value.user1CData,
 			id: "user1CData",
+			meta: { className: "hidden md:table-cell" },
 			header: "1C Ma'lumotlari",
 			cell: ({ row }) => <div>{row.original.value.user1CData ? "Mavjud" : "Mavjud emas"}</div>
 		},
 		{
 			accessorFn: (row) => row.value.referredByEmployeeCode ?? null,
 			id: "referredByEmployeeCode",
+			meta: { className: "hidden md:table-cell" },
 			header: "Xodim(referral)",
 			cell: ({ row }) => {
 				const code = row.original.value.referredByEmployeeCode;
@@ -160,6 +166,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.user1CData?.bonusInfo?.uroven ?? null,
 			id: "uroven",
+			meta: { className: "hidden md:table-cell" },
 			header: "Level",
 			cell: ({ row }) => {
 				const uroven = row.original.value.user1CData?.bonusInfo?.uroven;
@@ -167,6 +174,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			}
 		},
 		{
+			meta: { className: "hidden md:table-cell" },
 			accessorFn: (row) => {
 				const createdAt = row.value.createdAt;
 				if (!createdAt) return 0;
@@ -358,12 +366,12 @@ export function UsersList() {
 
 	return (
 		<div className="w-full">
-			<div className="flex items-center py-4">
+			<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 py-4">
 				<Input
 					placeholder="Foydalanuvchi nomi, telefon yoki ism bo'yicha qidirish..."
 					value={(table.getColumn("username")?.getFilterValue() as string) ?? ""}
 					onChange={(event) => table.getColumn("username")?.setFilterValue(event.target.value)}
-					className="max-w-sm"
+					className="w-full sm:max-w-sm"
 				/>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -396,8 +404,9 @@ export function UsersList() {
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => {
+									const meta = header.column.columnDef.meta as { className?: string } | undefined;
 									return (
-										<TableHead key={header.id}>
+										<TableHead key={header.id} className={meta?.className}>
 											{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
 										</TableHead>
 									);
@@ -409,9 +418,14 @@ export function UsersList() {
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
 								<TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-									))}
+									{row.getVisibleCells().map((cell) => {
+										const meta = cell.column.columnDef.meta as { className?: string } | undefined;
+										return (
+											<TableCell key={cell.id} className={meta?.className}>
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										);
+									})}
 								</TableRow>
 							))
 						) : (

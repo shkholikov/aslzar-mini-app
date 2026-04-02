@@ -273,14 +273,14 @@ export default function ProductsPage() {
 					) : (
 						<>
 							<div className="overflow-x-auto border rounded-md">
-								<Table className="min-w-[760px]">
+								<Table>
 									<TableHeader>
 										<TableRow>
 											<TableHead>Nomi</TableHead>
-											<TableHead>Badji</TableHead>
+											<TableHead className="hidden sm:table-cell">Badji</TableHead>
 											<TableHead>Narx (so‘m)</TableHead>
-											<TableHead>URL</TableHead>
-											<TableHead>Yaratilgan</TableHead>
+											<TableHead className="hidden sm:table-cell">URL</TableHead>
+											<TableHead className="hidden md:table-cell">Yaratilgan</TableHead>
 											<TableHead className="w-[100px] text-right">Amallar</TableHead>
 										</TableRow>
 									</TableHeader>
@@ -288,10 +288,10 @@ export default function ProductsPage() {
 										{paginatedProducts.map((p) => (
 											<TableRow key={String(p._id)}>
 												<TableCell className="font-medium">{p.title}</TableCell>
-												<TableCell>{p.badgeLabel ?? "-"}</TableCell>
+												<TableCell className="hidden sm:table-cell">{p.badgeLabel ?? "-"}</TableCell>
 												<TableCell>{formatPrice(p.price)}</TableCell>
-												<TableCell className="max-w-xs truncate text-xs text-gray-600">{p.url}</TableCell>
-												<TableCell className="whitespace-nowrap text-xs">{formatDate(p.createdAt)}</TableCell>
+												<TableCell className="hidden sm:table-cell max-w-xs truncate text-xs text-gray-600">{p.url}</TableCell>
+												<TableCell className="hidden md:table-cell whitespace-nowrap text-xs">{formatDate(p.createdAt)}</TableCell>
 												<TableCell className="text-right">
 													<Button variant="destructive" size="sm" onClick={() => handleDelete(p._id as string)}>
 														O‘chirish

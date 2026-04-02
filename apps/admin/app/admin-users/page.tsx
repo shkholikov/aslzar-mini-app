@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserCog, Trash2 } from "lucide-react";
 import { ALL_PERMISSIONS, type AdminPermission, type AdminRole } from "@/lib/auth-utils";
 
@@ -137,7 +138,7 @@ function AdminUsersContent() {
 								placeholder="Username *"
 								value={newUsername}
 								onChange={(e) => setNewUsername(e.target.value)}
-								className="w-44"
+								className="flex-1 min-w-[140px]"
 								autoComplete="off"
 							/>
 							<Input
@@ -145,11 +146,11 @@ function AdminUsersContent() {
 								type="password"
 								value={newPassword}
 								onChange={(e) => setNewPassword(e.target.value)}
-								className="w-48"
+								className="flex-1 min-w-[160px]"
 								autoComplete="new-password"
 							/>
-							<Input placeholder="Ism" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} className="w-36" />
-							<Input placeholder="Familiya" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} className="w-36" />
+							<Input placeholder="Ism" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} className="flex-1 min-w-[120px]" />
+							<Input placeholder="Familiya" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} className="flex-1 min-w-[120px]" />
 							<select
 								value={newRole}
 								onChange={(e) => {
@@ -188,47 +189,47 @@ function AdminUsersContent() {
 				</div>
 
 				{/* Users table */}
-				<div className="rounded-lg border border-border bg-card overflow-hidden">
-					<table className="w-full text-sm">
-						<thead className="bg-muted/50">
-							<tr>
-								<th className="text-left px-4 py-3 font-medium">Username</th>
-								<th className="text-left px-4 py-3 font-medium">Ism Familiya</th>
-								<th className="text-left px-4 py-3 font-medium">Rol</th>
-								<th className="text-left px-4 py-3 font-medium">Ruxsatlar</th>
-								<th className="text-left px-4 py-3 font-medium">Qo'shdi</th>
-								<th className="text-left px-4 py-3 font-medium">Sana</th>
-								<th className="px-4 py-3" />
-							</tr>
-						</thead>
-						<tbody>
+				<div className="overflow-x-auto rounded-md border">
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Username</TableHead>
+								<TableHead>Ism Familiya</TableHead>
+								<TableHead>Rol</TableHead>
+								<TableHead className="hidden md:table-cell">Ruxsatlar</TableHead>
+								<TableHead className="hidden md:table-cell">Qo'shdi</TableHead>
+								<TableHead className="hidden md:table-cell">Sana</TableHead>
+								<TableHead />
+							</TableRow>
+						</TableHeader>
+						<TableBody>
 							{loading ? (
-								<tr>
-									<td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+								<TableRow>
+									<TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
 										Yuklanmoqda...
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							) : users.length === 0 ? (
-								<tr>
-									<td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+								<TableRow>
+									<TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
 										Adminlar yo'q
-									</td>
-								</tr>
+									</TableCell>
+								</TableRow>
 							) : (
 								users.map((user) => {
 									const effectiveRole = user.role ?? "superadmin";
 									const isSelf = user.username === currentUsername;
 									const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
 									return (
-										<tr key={user._id} className="border-t border-border">
-											<td className="px-4 py-3 font-medium">{user.username}</td>
-											<td className="px-4 py-3 text-muted-foreground">{fullName || "—"}</td>
-											<td className="px-4 py-3">
+										<TableRow key={user._id}>
+											<TableCell className="font-medium">{user.username}</TableCell>
+											<TableCell className="text-muted-foreground">{fullName || "—"}</TableCell>
+											<TableCell>
 												<Badge variant={effectiveRole === "superadmin" ? "default" : "secondary"}>
 													{effectiveRole === "superadmin" ? "Superadmin" : "Staff"}
 												</Badge>
-											</td>
-											<td className="px-4 py-3">
+											</TableCell>
+											<TableCell className="hidden md:table-cell">
 												{effectiveRole === "superadmin" ? (
 													<span className="text-muted-foreground text-xs">Barcha ruxsatlar</span>
 												) : (user.permissions ?? []).length === 0 ? (
@@ -242,12 +243,12 @@ function AdminUsersContent() {
 														))}
 													</div>
 												)}
-											</td>
-											<td className="px-4 py-3 text-muted-foreground">{user.createdBy ?? "—"}</td>
-											<td className="px-4 py-3 text-muted-foreground text-xs">
+											</TableCell>
+											<TableCell className="hidden md:table-cell text-muted-foreground">{user.createdBy ?? "—"}</TableCell>
+											<TableCell className="hidden md:table-cell text-muted-foreground text-xs">
 												{user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : "—"}
-											</td>
-											<td className="px-4 py-3 text-right">
+											</TableCell>
+											<TableCell className="text-right">
 												<Button
 													variant="ghost"
 													size="icon"
@@ -258,13 +259,13 @@ function AdminUsersContent() {
 												>
 													<Trash2 className="h-4 w-4" />
 												</Button>
-											</td>
-										</tr>
+											</TableCell>
+										</TableRow>
 									);
 								})
 							)}
-						</tbody>
-					</table>
+						</TableBody>
+					</Table>
 				</div>
 			</div>
 		</main>

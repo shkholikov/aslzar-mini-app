@@ -400,16 +400,16 @@ export default function BroadcastPage() {
 						) : (
 							<div className="space-y-4">
 								<div className="overflow-x-auto rounded-md border">
-									<Table className="min-w-[1200px]">
+									<Table>
 										<TableHeader>
 											<TableRow>
 												<TableHead>Sana</TableHead>
 												<TableHead>Status</TableHead>
-												<TableHead>Auditoriya</TableHead>
+												<TableHead className="hidden md:table-cell">Auditoriya</TableHead>
 												<TableHead>Xabar</TableHead>
-												<TableHead>Media</TableHead>
+												<TableHead className="hidden sm:table-cell">Media</TableHead>
 												<TableHead>Statistika</TableHead>
-												<TableHead>Xatolik</TableHead>
+												<TableHead className="hidden md:table-cell">Xatolik</TableHead>
 												<TableHead className="text-right">Amal</TableHead>
 											</TableRow>
 										</TableHeader>
@@ -446,13 +446,13 @@ export default function BroadcastPage() {
 																{statusLabel(job.status)}
 															</span>
 														</TableCell>
-														<TableCell className="max-w-[260px] text-xs text-muted-foreground">
+														<TableCell className="hidden md:table-cell max-w-[260px] text-xs text-muted-foreground">
 															<div className="whitespace-pre-wrap break-words">{audienceText || "Barcha foydalanuvchilar"}</div>
 														</TableCell>
-														<TableCell className="max-w-[420px]">
+														<TableCell className="max-w-[280px] sm:max-w-[420px]">
 															<div className="text-sm whitespace-pre-wrap break-words">{job.message}</div>
 														</TableCell>
-														<TableCell>
+														<TableCell className="hidden sm:table-cell">
 															{job.mediaUrl ? (
 																<span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
 																	{job.mediaType === "photo" ? <ImageIcon className="h-3.5 w-3.5" /> : <VideoIcon className="h-3.5 w-3.5" />}
@@ -466,7 +466,7 @@ export default function BroadcastPage() {
 															Yuborildi: {job.sentCount ?? 0}, xatolik: {job.failedCount ?? 0}
 															{job.totalUsers != null && ` (jami: ${job.totalUsers})`}
 														</TableCell>
-														<TableCell className="max-w-[240px]">
+														<TableCell className="hidden md:table-cell max-w-[240px]">
 															<div className="text-xs text-destructive whitespace-pre-wrap break-words">{job.error ?? "-"}</div>
 														</TableCell>
 														<TableCell className="text-right">

@@ -64,6 +64,7 @@ const columns: ColumnDef<SuggestionDoc>[] = [
 	{
 		accessorKey: "userId",
 		id: "userId",
+		meta: { className: "hidden md:table-cell" },
 		header: "User ID",
 		cell: ({ row }) => <div>{row.original.userId ?? "-"}</div>
 	},
@@ -76,12 +77,14 @@ const columns: ColumnDef<SuggestionDoc>[] = [
 	{
 		accessorKey: "lastName",
 		id: "lastName",
+		meta: { className: "hidden md:table-cell" },
 		header: "Familiya",
 		cell: ({ row }) => <div>{row.original.lastName ?? "-"}</div>
 	},
 	{
 		accessorKey: "username",
 		id: "username",
+		meta: { className: "hidden md:table-cell" },
 		header: ({ column }) => (
 			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
 				Foydalanuvchi nomi
@@ -195,15 +198,18 @@ export default function SuggestionsPage() {
 								/>
 							</div>
 							<div className="overflow-x-auto rounded-md border">
-								<Table className="min-w-[900px]">
+								<Table>
 									<TableHeader>
 										{table.getHeaderGroups().map((headerGroup) => (
 											<TableRow key={headerGroup.id}>
-												{headerGroup.headers.map((header) => (
-													<TableHead key={header.id}>
-														{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-													</TableHead>
-												))}
+												{headerGroup.headers.map((header) => {
+													const meta = header.column.columnDef.meta as { className?: string } | undefined;
+													return (
+														<TableHead key={header.id} className={meta?.className}>
+															{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+														</TableHead>
+													);
+												})}
 											</TableRow>
 										))}
 									</TableHeader>
@@ -211,9 +217,14 @@ export default function SuggestionsPage() {
 										{table.getRowModel().rows?.length ? (
 											table.getRowModel().rows.map((row) => (
 												<TableRow key={row.id}>
-													{row.getVisibleCells().map((cell) => (
-														<TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-													))}
+													{row.getVisibleCells().map((cell) => {
+														const meta = cell.column.columnDef.meta as { className?: string } | undefined;
+														return (
+															<TableCell key={cell.id} className={meta?.className}>
+																{flexRender(cell.column.columnDef.cell, cell.getContext())}
+															</TableCell>
+														);
+													})}
 												</TableRow>
 											))
 										) : (
