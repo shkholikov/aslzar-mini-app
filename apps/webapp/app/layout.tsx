@@ -22,6 +22,10 @@ export const metadata: Metadata = {
 		"ASLZAR — Sizning sodiqlik va zamonaviy to'lovlar markazingiz! Platformamiz orqali ishonchli, tez va xavfsiz to'lovlar amalga oshirasiz. Har bir tranzaksiyada doimiy keshbek va eksklyuziv takliflar sizni kutmoqda.",
 	keywords: ["ASLZAR", "sodiqlik tizimi", "to'lovlar", "keshbek", "bonus", "telegram", "loyalty program"],
 	authors: [{ name: "ASLZAR" }],
+	icons: {
+		icon: "/images/aslzar-logo.png",
+		apple: "/images/aslzar-logo.png"
+	},
 	openGraph: {
 		title: "ASLZAR - Sodiqlik va zamonaviy to'lovlar markazi",
 		description:

@@ -20,6 +20,10 @@ export const metadata: Metadata = {
 	description: "Aslzar Telegram boti foydalanuvchilarini boshqarish",
 	keywords: ["ASLZAR", "admin", "dashboard", "telegram bot", "user management"],
 	authors: [{ name: "ASLZAR" }],
+	icons: {
+		icon: "/images/aslzar-logo.png",
+		apple: "/images/aslzar-logo.png"
+	},
 	robots: {
 		index: false,
 		follow: false
