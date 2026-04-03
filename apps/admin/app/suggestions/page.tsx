@@ -64,7 +64,6 @@ const columns: ColumnDef<SuggestionDoc>[] = [
 	{
 		accessorKey: "userId",
 		id: "userId",
-		meta: { className: "hidden md:table-cell" },
 		header: "User ID",
 		cell: ({ row }) => <div>{row.original.userId ?? "-"}</div>
 	},
@@ -77,14 +76,12 @@ const columns: ColumnDef<SuggestionDoc>[] = [
 	{
 		accessorKey: "lastName",
 		id: "lastName",
-		meta: { className: "hidden md:table-cell" },
 		header: "Familiya",
 		cell: ({ row }) => <div>{row.original.lastName ?? "-"}</div>
 	},
 	{
 		accessorKey: "username",
 		id: "username",
-		meta: { className: "hidden md:table-cell" },
 		header: ({ column }) => (
 			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
 				Foydalanuvchi nomi

@@ -223,9 +223,9 @@ function AdminUsersContent() {
 								<TableHead>Username</TableHead>
 								<TableHead>Ism Familiya</TableHead>
 								<TableHead>Rol</TableHead>
-								<TableHead className="hidden md:table-cell">Ruxsatlar</TableHead>
-								<TableHead className="hidden md:table-cell">Qo'shdi</TableHead>
-								<TableHead className="hidden md:table-cell">Sana</TableHead>
+								<TableHead>Ruxsatlar</TableHead>
+								<TableHead>Qo'shdi</TableHead>
+								<TableHead>Sana</TableHead>
 								<TableHead />
 							</TableRow>
 						</TableHeader>
@@ -256,7 +256,7 @@ function AdminUsersContent() {
 													{effectiveRole === "superadmin" ? "Superadmin" : "Staff"}
 												</Badge>
 											</TableCell>
-											<TableCell className="hidden md:table-cell">
+											<TableCell>
 												{effectiveRole === "superadmin" ? (
 													<span className="text-muted-foreground text-xs">Barcha ruxsatlar</span>
 												) : (user.permissions ?? []).length === 0 ? (
@@ -271,8 +271,8 @@ function AdminUsersContent() {
 													</div>
 												)}
 											</TableCell>
-											<TableCell className="hidden md:table-cell text-muted-foreground">{user.createdBy ?? "—"}</TableCell>
-											<TableCell className="hidden md:table-cell text-muted-foreground text-xs">
+											<TableCell className="text-muted-foreground">{user.createdBy ?? "—"}</TableCell>
+											<TableCell className="text-muted-foreground text-xs">
 												{user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : "—"}
 											</TableCell>
 											<TableCell className="text-right">

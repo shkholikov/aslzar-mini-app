@@ -322,7 +322,7 @@ export default function EmployeesPage() {
 											<TableHead>Familiya</TableHead>
 											<TableHead>Filial</TableHead>
 											<TableHead>Qo‘shilgan sana</TableHead>
-											<TableHead className="hidden lg:table-cell">Referral havola</TableHead>
+											<TableHead>Referral havola</TableHead>
 											<TableHead>
 												{activeRange
 													? `Taklif qilinganlar (${formatDateShort(activeRange.from)} – ${formatDateShort(activeRange.to)})`
@@ -346,8 +346,8 @@ export default function EmployeesPage() {
 														<TableCell>{emp.name}</TableCell>
 														<TableCell>{emp.surname}</TableCell>
 														<TableCell>{emp.filial}</TableCell>
-														<TableCell className="hidden md:table-cell">{formatDate(emp.createdAt)}</TableCell>
-														<TableCell className="hidden lg:table-cell">
+														<TableCell>{formatDate(emp.createdAt)}</TableCell>
+														<TableCell>
 															<div className="flex items-center gap-1">
 																<code className="text-xs bg-muted px-1 py-0.5 rounded break-all" title={link}>
 																	{link}

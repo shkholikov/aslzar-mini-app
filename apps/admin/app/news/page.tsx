@@ -370,8 +370,8 @@ export default function NewsPage() {
 												<TableHead>Sana</TableHead>
 												<TableHead>Sarlavha</TableHead>
 												<TableHead>Tavsif</TableHead>
-												<TableHead className="hidden sm:table-cell">Media</TableHead>
-												<TableHead className="hidden sm:table-cell">Tugma</TableHead>
+												<TableHead>Media</TableHead>
+												<TableHead>Tugma</TableHead>
 												<TableHead>Holat</TableHead>
 												<TableHead className="text-right">Amal</TableHead>
 											</TableRow>
@@ -380,13 +380,13 @@ export default function NewsPage() {
 											{paginatedItems.map((item) => (
 												<TableRow key={String(item._id)}>
 													<TableCell className="whitespace-nowrap text-xs">{formatDate(item.createdAt)}</TableCell>
-													<TableCell className="hidden sm:table-cell max-w-[160px]">
+													<TableCell className="max-w-[160px]">
 														<div className="text-sm font-medium truncate">{item.title}</div>
 													</TableCell>
 													<TableCell className="max-w-[260px]">
 														<div className="text-xs text-muted-foreground line-clamp-2">{item.description}</div>
 													</TableCell>
-													<TableCell className="hidden sm:table-cell">
+													<TableCell>
 														{item.mediaUrl ? (
 															<span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
 																{item.mediaType === "photo" ? <ImageIcon className="h-3.5 w-3.5" /> : <VideoIcon className="h-3.5 w-3.5" />}
@@ -396,7 +396,7 @@ export default function NewsPage() {
 															<span className="text-xs text-muted-foreground">—</span>
 														)}
 													</TableCell>
-													<TableCell className="hidden sm:table-cell max-w-[160px]">
+													<TableCell className="max-w-[160px]">
 														{item.buttonText ? (
 															<div className="text-xs truncate">{item.buttonText}</div>
 														) : (
