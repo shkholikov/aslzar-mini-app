@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Megaphone, Loader2, ImageIcon, VideoIcon, X, Upload } from "lucide-react";
+import { Megaphone, Loader2, ImageIcon, VideoIcon, X, Upload, Download } from "lucide-react";
+import { exportToExcel } from "@/lib/export";
 import type { BroadcastJobDoc, BroadcastAudienceFilters } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
@@ -26,6 +27,8 @@ const FILTER_ROW_2_LEVELS: {
 	{ key: "gold", label: "Gold" },
 	{ key: "diamond", label: "Diamond" }
 ];
+
+const ALL_FILTERS = [...FILTER_ROW_1, ...FILTER_ROW_2_LEVELS];
 
 const PAGE_SIZE = 10;
 const CAPTION_LIMIT = 1024;
@@ -208,6 +211,18 @@ export default function BroadcastPage() {
 		return map[status] ?? status;
 	}
 
+	function getAudienceText(job: BroadcastJobDoc): string {
+		if (job.audienceFilters) {
+			const labels = ALL_FILTERS.filter((f) => job.audienceFilters?.[f.key])
+				.map((f) => f.label)
+				.join(", ");
+			return labels || "Barcha foydalanuvchilar";
+		}
+		if (job.audience === "verified") return "Tasdiqlangan";
+		if (job.audience === "non_verified") return "Tasdiqlanmagan";
+		return job.audience || "Barcha foydalanuvchilar";
+	}
+
 	async function handleCancel(job: BroadcastJobDoc) {
 		const id = job._id;
 		if (!id || (job.status !== "pending" && job.status !== "processing")) return;
@@ -226,6 +241,21 @@ export default function BroadcastPage() {
 	const paginatedJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 	const startItem = jobs.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
 	const endItem = Math.min(page * PAGE_SIZE, jobs.length);
+
+	function handleExport() {
+		const rows = jobs.map((job) => ({
+			Sana: formatDate(job.createdAt),
+			Status: statusLabel(job.status),
+			Auditoriya: getAudienceText(job),
+			Xabar: job.message,
+			Media: job.mediaUrl ? (job.mediaType === "photo" ? "Rasm" : "Video") : "",
+			Yuborildi: job.sentCount ?? 0,
+			"Xatoliklar soni": job.failedCount ?? 0,
+			Jami: job.totalUsers ?? "",
+			"Xato xabari": job.error ?? ""
+		}));
+		exportToExcel(rows, "Broadcastlar", "broadcastlar");
+	}
 
 	return (
 		<AdminGuard requiredPermission="broadcast">
@@ -392,7 +422,13 @@ export default function BroadcastPage() {
 					</form>
 
 					<div>
-						<h2 className="text-lg font-medium text-gray-800 mb-3">So&apos;nggi broadcastlar</h2>
+						<div className="flex items-center justify-between mb-3">
+							<h2 className="text-lg font-medium text-gray-800">So&apos;nggi broadcastlar</h2>
+							<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={jobs.length === 0} className="shrink-0">
+								<Download className="mr-2 h-4 w-4" />
+								Excel
+							</Button>
+						</div>
 						{loadingJobs ? (
 							<Loading />
 						) : jobs.length === 0 ? (
@@ -415,16 +451,7 @@ export default function BroadcastPage() {
 										</TableHeader>
 										<TableBody>
 											{paginatedJobs.map((job) => {
-												const audienceText = job.audienceFilters
-													? [...FILTER_ROW_1, ...FILTER_ROW_2_LEVELS]
-															.filter((f) => job.audienceFilters?.[f.key])
-															.map((f) => f.label)
-															.join(", ")
-													: job.audience === "verified"
-														? "Tasdiqlangan"
-														: job.audience === "non_verified"
-															? "Tasdiqlanmagan"
-															: job.audience;
+												const audienceText = getAudienceText(job);
 
 												return (
 													<TableRow key={String(job._id)}>

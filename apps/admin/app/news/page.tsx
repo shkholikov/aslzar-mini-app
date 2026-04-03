@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Newspaper, Loader2, ImageIcon, VideoIcon, X, Upload, Trash2 } from "lucide-react";
+import { Newspaper, Loader2, ImageIcon, VideoIcon, X, Upload, Trash2, Download } from "lucide-react";
+import { exportToExcel } from "@/lib/export";
 import type { NewsItemDoc } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
@@ -205,6 +206,19 @@ export default function NewsPage() {
 	const startItem = items.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
 	const endItem = Math.min(page * PAGE_SIZE, items.length);
 
+	function handleExport() {
+		const rows = items.map((item) => ({
+			Sana: formatDate(item.createdAt),
+			Sarlavha: item.title,
+			Tavsif: item.description,
+			Media: item.mediaUrl ? (item.mediaType === "photo" ? "Rasm" : "Video") : "",
+			"Tugma matni": item.buttonText ?? "",
+			"Tugma havolasi": item.buttonUrl ?? "",
+			Holat: item.isActive !== false ? "Faol" : "Nofaol"
+		}));
+		exportToExcel(rows, "Yangiliklar", "yangiliklar");
+	}
+
 	return (
 		<AdminGuard requiredPermission="news">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
@@ -336,7 +350,13 @@ export default function NewsPage() {
 					</form>
 
 					<div>
-						<h2 className="text-lg font-medium text-gray-800 mb-3">Yangiliklar ro'yxati</h2>
+						<div className="flex items-center justify-between mb-3">
+							<h2 className="text-lg font-medium text-gray-800">Yangiliklar ro'yxati</h2>
+							<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={items.length === 0} className="shrink-0">
+								<Download className="mr-2 h-4 w-4" />
+								Excel
+							</Button>
+						</div>
 						{loadingItems ? (
 							<Loading />
 						) : items.length === 0 ? (

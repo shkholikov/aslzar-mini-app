@@ -14,12 +14,12 @@ import {
 	type SortingState
 } from "@tanstack/react-table";
 import { ArrowUpDown, Download, MessageSquare } from "lucide-react";
-import * as XLSX from "xlsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { SuggestionDoc } from "@/lib/db";
+import { exportToExcel } from "@/lib/export";
 import { AdminGuard } from "@/components/common/admin-guard";
 import { Loading } from "@/components/common/loading";
 
@@ -143,7 +143,7 @@ export default function SuggestionsPage() {
 		table.setPageSize(10);
 	}, [table]);
 
-	function exportToExcel() {
+	function handleExport() {
 		const rows = table.getFilteredRowModel().rows.map((row) => {
 			const s = row.original;
 			return {
@@ -155,29 +155,19 @@ export default function SuggestionsPage() {
 				"Foydalanuvchi nomi": s.username ? `@${s.username}` : ""
 			};
 		});
-		if (rows.length === 0) return;
-		const ws = XLSX.utils.json_to_sheet(rows);
-		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, "Takliflar");
-		XLSX.writeFile(wb, `takliflar_${new Date().toISOString().slice(0, 10)}.xlsx`);
+		exportToExcel(rows, "Takliflar", "takliflar");
 	}
 
 	return (
 		<AdminGuard requiredPermission="suggestions">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
 				<div className="w-full">
-					<div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-						<div className="flex items-center gap-2">
-							<MessageSquare className="w-10 h-10 text-gray-800" />
-							<div>
-								<h1 className="text-2xl text-gray-800 font-semibold">Takliflar va shikoyatlar</h1>
-								<p className="text-sm text-gray-600">Foydalanuvchilardan kelgan xabarlar</p>
-							</div>
+					<div className="flex items-center gap-2 pb-4">
+						<MessageSquare className="w-10 h-10 text-gray-800" />
+						<div>
+							<h1 className="text-2xl text-gray-800 font-semibold">Takliflar va shikoyatlar</h1>
+							<p className="text-sm text-gray-600">Foydalanuvchilardan kelgan xabarlar</p>
 						</div>
-						<Button type="button" variant="outline" size="sm" onClick={exportToExcel} disabled={suggestions.length === 0} className="shrink-0">
-							<Download className="mr-2 h-4 w-4" />
-							Excel
-						</Button>
 					</div>
 					<Separator className="mb-6" />
 
@@ -189,6 +179,13 @@ export default function SuggestionsPage() {
 						<p className="text-muted-foreground">Hali takliflar yo&apos;q.</p>
 					) : (
 						<div className="space-y-4">
+							<div className="flex items-center justify-between mb-3">
+								<h2 className="text-lg font-medium text-gray-800">Takliflar ro'yxati</h2>
+								<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={suggestions.length === 0} className="shrink-0">
+									<Download className="mr-2 h-4 w-4" />
+									Excel
+								</Button>
+							</div>
 							<div className="flex items-center gap-2">
 								<Input
 									placeholder="Matn yoki foydalanuvchi bo'yicha qidirish..."

@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProductDoc } from "@/lib/db";
-import { Loader2, Package, Upload } from "lucide-react";
+import { Download, Loader2, Package, Upload } from "lucide-react";
+import { exportToExcel } from "@/lib/export";
 
 const ACCEPT_MEDIA = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime";
 const PAGE_SIZE = 10;
@@ -197,6 +198,17 @@ export default function ProductsPage() {
 	const startItem = products.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
 	const endItem = Math.min(page * PAGE_SIZE, products.length);
 
+	function handleExport() {
+		const rows = products.map((p) => ({
+			Nomi: p.title,
+			Badji: p.badgeLabel ?? "",
+			"Narx (so\'m)": typeof p.price === "number" && p.price > 0 ? p.price : "",
+			URL: p.url,
+			Yaratilgan: formatDate(p.createdAt)
+		}));
+		exportToExcel(rows, "Mahsulotlar", "mahsulotlar");
+	}
+
 	return (
 		<AdminGuard requiredPermission="products">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
@@ -262,7 +274,13 @@ export default function ProductsPage() {
 
 					<Separator className="mb-4" />
 
-					<h2 className="text-lg font-semibold mb-2">Mavjud mahsulotlar</h2>
+					<div className="flex items-center justify-between mb-3">
+						<h2 className="text-lg font-semibold">Mavjud mahsulotlar</h2>
+						<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={products.length === 0} className="shrink-0">
+							<Download className="mr-2 h-4 w-4" />
+							Excel
+						</Button>
+					</div>
 					{loading ? (
 						<div className="flex items-center gap-2 text-gray-600">
 							<Loader2 className="w-4 h-4 animate-spin" />

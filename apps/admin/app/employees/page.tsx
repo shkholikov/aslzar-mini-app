@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { EmployeeDoc } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
-import { Copy, Users } from "lucide-react";
+import { Copy, Download, Users } from "lucide-react";
+import { exportToExcel } from "@/lib/export";
 import QRCode from "qrcode";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -233,6 +234,18 @@ export default function EmployeesPage() {
 	const startItem = employees.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
 	const endItem = Math.min(page * PAGE_SIZE, employees.length);
 
+	function handleExport() {
+		const rows = employees.map((emp) => ({
+			Ism: emp.name,
+			Familiya: emp.surname,
+			Filial: emp.filial,
+			"Qo\'shilgan sana": formatDate(emp.createdAt),
+			"Referral havola": buildReferralLink(emp.referralCode),
+			"Taklif qilinganlar": emp.referredCount ?? 0
+		}));
+		exportToExcel(rows, "Xodimlar", "xodimlar");
+	}
+
 	return (
 		<AdminGuard requiredPermission="employees">
 			<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
@@ -294,6 +307,13 @@ export default function EmployeesPage() {
 								</Button>
 							</form>
 
+							<div className="flex items-center justify-between mb-3">
+								<h2 className="text-lg font-medium text-gray-800">Xodimlar ro'yxati</h2>
+								<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={employees.length === 0} className="shrink-0">
+									<Download className="mr-2 h-4 w-4" />
+									Excel
+								</Button>
+							</div>
 							<div className="overflow-x-auto rounded-md border">
 								<Table>
 									<TableHeader>

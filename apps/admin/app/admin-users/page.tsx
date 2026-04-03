@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCog, Trash2 } from "lucide-react";
+import { Download, UserCog, Trash2 } from "lucide-react";
+import { exportToExcel } from "@/lib/export";
 import { ALL_PERMISSIONS, type AdminPermission, type AdminRole } from "@/lib/auth-utils";
 
 interface AdminUserRow {
@@ -117,6 +118,26 @@ function AdminUsersContent() {
 
 	if (!isSuperadmin) return null;
 
+	function handleExport() {
+		const rows = users.map((user) => {
+			const effectiveRole = user.role ?? "superadmin";
+			const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+			const permLabels =
+				effectiveRole === "superadmin"
+					? "Barcha ruxsatlar"
+					: (user.permissions ?? []).map((p) => ALL_PERMISSIONS.find((x) => x.value === p)?.label ?? p).join(", ");
+			return {
+				Username: user.username,
+				"Ism Familiya": fullName || "",
+				Rol: effectiveRole === "superadmin" ? "Superadmin" : "Staff",
+				Ruxsatlar: permLabels,
+				"Qo\'shdi": user.createdBy ?? "",
+				Sana: user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : ""
+			};
+		});
+		exportToExcel(rows, "Adminlar", "adminlar");
+	}
+
 	return (
 		<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
 			<div className="w-full">
@@ -188,7 +209,13 @@ function AdminUsersContent() {
 					</form>
 				</div>
 
-				{/* Users table */}
+				<div className="flex items-center justify-between mb-3">
+					<h2 className="text-lg font-medium text-gray-800">Adminlar ro'yxati</h2>
+					<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={users.length === 0} className="shrink-0">
+						<Download className="mr-2 h-4 w-4" />
+						Excel
+					</Button>
+				</div>
 				<div className="overflow-x-auto rounded-md border">
 					<Table>
 						<TableHeader>

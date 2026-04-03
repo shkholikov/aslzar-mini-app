@@ -14,7 +14,8 @@ import {
 	type SortingState,
 	type VisibilityState
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, Download } from "lucide-react";
+import { exportToExcel } from "@/lib/export";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -364,6 +365,47 @@ export function UsersList() {
 		return <p className="text-sm text-destructive py-4">{error}</p>;
 	}
 
+	function handleExport() {
+		const rows = table.getFilteredRowModel().rows.map((row) => {
+			const val = row.original.value;
+			let createdAtStr = "";
+			const createdAt = val.createdAt;
+			if (createdAt) {
+				let date: Date | null = null;
+				if (createdAt instanceof Date) {
+					date = createdAt;
+				} else if (typeof createdAt === "object" && "$date" in createdAt && typeof createdAt.$date === "string") {
+					date = new Date(createdAt.$date);
+				} else if (typeof createdAt === "string") {
+					date = new Date(createdAt);
+				}
+				if (date && !isNaN(date.getTime())) {
+					createdAtStr = new Intl.DateTimeFormat("uz-UZ", {
+						year: "numeric",
+						month: "2-digit",
+						day: "2-digit",
+						hour: "2-digit",
+						minute: "2-digit"
+					}).format(date);
+				}
+			}
+			return {
+				ID: val.id ?? "",
+				Ism: val.first_name ?? "",
+				Familiya: val.last_name ?? "",
+				Username: val.username ?? "",
+				Telefon: val.phone_number ?? "",
+				Tasdiqlangan: val.isVerified ? "Ha" : "Yo\'q",
+				"Kanal a\'zosi": val.isChannelMember ? "Ha" : "Yo\'q",
+				"1C Ma\'lumotlari": val.user1CData ? "Mavjud" : "Mavjud emas",
+				Status: val.user1CData?.status === true ? "Aktiv" : val.user1CData?.status === false ? "Aktiv emas" : "",
+				Level: val.user1CData?.bonusInfo?.uroven ?? "",
+				"Yaratilgan sana": createdAtStr
+			};
+		});
+		exportToExcel(rows, "Foydalanuvchilar", "foydalanuvchilar");
+	}
+
 	return (
 		<div className="w-full">
 			<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 py-4">
@@ -397,6 +439,13 @@ export function UsersList() {
 							})}
 					</DropdownMenuContent>
 				</DropdownMenu>
+			</div>
+			<div className="flex items-center justify-between mb-3">
+				<h2 className="text-lg font-medium text-gray-800">Foydalanuvchilar ro'yxati</h2>
+				<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={users.length === 0} className="shrink-0">
+					<Download className="mr-2 h-4 w-4" />
+					Excel
+				</Button>
 			</div>
 			<div className="overflow-hidden rounded-md border">
 				<Table>
