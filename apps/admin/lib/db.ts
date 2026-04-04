@@ -65,6 +65,10 @@ export interface BroadcastAudienceFilters {
 	silver?: boolean; // bonusInfo.uroven === "Silver"
 	gold?: boolean; // bonusInfo.uroven === "Gold"
 	diamond?: boolean; // bonusInfo.uroven === "Diamond"
+	lastVisit?: boolean; // user1CData.lastVisit === true
+	lastVisitNo?: boolean; // user1CData.lastVisit === false
+	contractFirst?: boolean; // user1CData.contractFirst === true
+	contractFirstNo?: boolean; // user1CData.contractFirst === false
 }
 
 /** Broadcast job (same shape as bot's BroadcastJob) */

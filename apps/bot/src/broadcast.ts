@@ -36,6 +36,10 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 		if (filters.nonVerified === true) conditions.push({ "value.isVerified": { $ne: true } });
 		if (filters.aktiv === true) conditions.push({ "value.user1CData.status": true });
 		if (filters.aktivEmas === true) conditions.push({ "value.user1CData.status": false });
+		if (filters.lastVisit === true) conditions.push({ "value.user1CData.lastVisit": true });
+		if (filters.lastVisitNo === true) conditions.push({ "value.user1CData.lastVisit": false });
+		if (filters.contractFirst === true) conditions.push({ "value.user1CData.contractFirst": true });
+		if (filters.contractFirstNo === true) conditions.push({ "value.user1CData.contractFirst": false });
 		// Level filters (Silver/Gold/Diamond): OR selected levels, then AND with rest
 		const levelUroven: string[] = [];
 		if (filters.silver === true) levelUroven.push("Silver");

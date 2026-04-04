@@ -115,6 +115,10 @@ export interface BroadcastAudienceFilters {
 	silver?: boolean;
 	gold?: boolean;
 	diamond?: boolean;
+	lastVisit?: boolean; // user1CData.lastVisit === true
+	lastVisitNo?: boolean; // user1CData.lastVisit === false
+	contractFirst?: boolean; // user1CData.contractFirst === true
+	contractFirstNo?: boolean; // user1CData.contractFirst === false
 }
 
 /** Broadcast job created by admin; processed by bot */

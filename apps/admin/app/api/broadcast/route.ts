@@ -59,7 +59,11 @@ export async function POST(request: NextRequest) {
 				raw.aktivEmas === true ||
 				raw.silver === true ||
 				raw.gold === true ||
-				raw.diamond === true);
+				raw.diamond === true ||
+				raw.lastVisit === true ||
+				raw.lastVisitNo === true ||
+				raw.contractFirst === true ||
+				raw.contractFirstNo === true);
 		const audienceFilters: BroadcastAudienceFilters | undefined =
 			hasAny && raw && typeof raw === "object"
 				? {
@@ -69,7 +73,11 @@ export async function POST(request: NextRequest) {
 						...(raw.aktivEmas === true && { aktivEmas: true }),
 						...(raw.silver === true && { silver: true }),
 						...(raw.gold === true && { gold: true }),
-						...(raw.diamond === true && { diamond: true })
+						...(raw.diamond === true && { diamond: true }),
+						...(raw.lastVisit === true && { lastVisit: true }),
+						...(raw.lastVisitNo === true && { lastVisitNo: true }),
+						...(raw.contractFirst === true && { contractFirst: true }),
+						...(raw.contractFirstNo === true && { contractFirstNo: true })
 					}
 				: undefined;
 		const mediaUrl = typeof body?.mediaUrl === "string" ? body.mediaUrl.trim() : undefined;

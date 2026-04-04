@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Megaphone, Loader2, ImageIcon, VideoIcon, X, Upload, Download } from "lucide-react";
 import { exportToExcel } from "@/lib/export";
@@ -12,23 +11,52 @@ import type { BroadcastJobDoc, BroadcastAudienceFilters } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
 
-const FILTER_ROW_1: { key: keyof BroadcastAudienceFilters; label: string }[] = [
-	{ key: "verified", label: "Tasdiqlangan" },
-	{ key: "nonVerified", label: "Tasdiqlanmagan" },
-	{ key: "aktiv", label: "Aktiv" },
-	{ key: "aktivEmas", label: "Aktiv emas" }
-];
+type FilterOption = { key: keyof BroadcastAudienceFilters; label: string };
+type FilterGroup = { type: "radio"; label: string; options: FilterOption[] } | { type: "checkbox"; label: string; options: FilterOption[] };
 
-const FILTER_ROW_2_LEVELS: {
-	key: keyof BroadcastAudienceFilters;
-	label: string;
-}[] = [
-	{ key: "silver", label: "Silver" },
-	{ key: "gold", label: "Gold" },
-	{ key: "diamond", label: "Diamond" }
+const FILTER_GROUPS: FilterGroup[] = [
+	{
+		type: "radio",
+		label: "Tasdiqlangan",
+		options: [
+			{ key: "verified", label: "Ha" },
+			{ key: "nonVerified", label: "Yo'q" }
+		]
+	},
+	{
+		type: "radio",
+		label: "Aktiv",
+		options: [
+			{ key: "aktiv", label: "Ha" },
+			{ key: "aktivEmas", label: "Yo'q" }
+		]
+	},
+	{
+		type: "radio",
+		label: "Последний визит",
+		options: [
+			{ key: "lastVisit", label: "Ha" },
+			{ key: "lastVisitNo", label: "Yo'q" }
+		]
+	},
+	{
+		type: "radio",
+		label: "Xarid qilgan",
+		options: [
+			{ key: "contractFirst", label: "Ha" },
+			{ key: "contractFirstNo", label: "Yo'q" }
+		]
+	},
+	{
+		type: "checkbox",
+		label: "Level",
+		options: [
+			{ key: "silver", label: "Silver" },
+			{ key: "gold", label: "Gold" },
+			{ key: "diamond", label: "Diamond" }
+		]
+	}
 ];
-
-const ALL_FILTERS = [...FILTER_ROW_1, ...FILTER_ROW_2_LEVELS];
 
 const PAGE_SIZE = 10;
 const CAPTION_LIMIT = 1024;
@@ -213,10 +241,15 @@ export default function BroadcastPage() {
 
 	function getAudienceText(job: BroadcastJobDoc): string {
 		if (job.audienceFilters) {
-			const labels = ALL_FILTERS.filter((f) => job.audienceFilters?.[f.key])
-				.map((f) => f.label)
-				.join(", ");
-			return labels || "Barcha foydalanuvchilar";
+			const labels: string[] = [];
+			for (const group of FILTER_GROUPS) {
+				for (const opt of group.options) {
+					if (job.audienceFilters[opt.key]) {
+						labels.push(`${group.label}: ${opt.label}`);
+					}
+				}
+			}
+			return labels.join(", ") || "Barcha foydalanuvchilar";
 		}
 		if (job.audience === "verified") return "Tasdiqlangan";
 		if (job.audience === "non_verified") return "Tasdiqlanmagan";
@@ -274,45 +307,66 @@ export default function BroadcastPage() {
 						<div>
 							<label className="block text-sm font-medium text-gray-700 mb-2">Qaysi foydalanuvchilarga</label>
 							<p className="text-sm text-muted-foreground mb-3">
-								Agar hech qanday filterni tanlamasangiz, xabar barcha bot foydalanuvchilariga yuboriladi. Bir yoki bir nechta filterni tanlasangiz,
-								faqat barcha shartlarga mos keladigan foydalanuvchilarga yuboriladi (masalan: Tasdiqlangan va Aktiv — tasdiqlangan va aktiv
-								foydalanuvchilar).
+								Har bir qator — alohida shart. Qatorlardagi shartlar bir-biriga AND (VA) bog&apos;langan: faqat barcha tanlangan shartlarga mos
+								foydalanuvchilarga yuboriladi. Har qatorda faqat bitta variant tanlanishi mumkin (Ha yoki Yo&apos;q). Level qatorida bir nechta daraja
+								tanlanishi mumkin — ular o&apos;zaro OR (YOKI) mantiqida ishlaydi. Hech qanday filtr tanlanmasa, xabar barcha foydalanuvchilarga
+								yuboriladi.
 							</p>
-							<div className="space-y-3">
-								<div className="flex flex-wrap gap-4">
-									{FILTER_ROW_1.map(({ key, label }) => (
-										<label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
-											<Checkbox
-												checked={filters[key] === true}
-												onCheckedChange={(checked) =>
-													setFilters((prev) => ({
-														...prev,
-														[key]: checked === true
-													}))
-												}
-												disabled={sending}
-											/>
-											{label}
-										</label>
-									))}
-								</div>
-								<div className="flex flex-wrap gap-4">
-									{FILTER_ROW_2_LEVELS.map(({ key, label }) => (
-										<label key={key} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 select-none">
-											<Checkbox
-												checked={filters[key] === true}
-												onCheckedChange={(checked) =>
-													setFilters((prev) => ({
-														...prev,
-														[key]: checked === true
-													}))
-												}
-												disabled={sending}
-											/>
-											{label}
-										</label>
-									))}
-								</div>
+							<div className="space-y-2">
+								{FILTER_GROUPS.map((group) => (
+									<div key={group.label} className="flex items-center gap-3">
+										<span className="text-sm text-gray-600 w-36 shrink-0">{group.label}</span>
+										<div className="flex items-center gap-1">
+											{group.type === "radio" && (
+												<Button
+													type="button"
+													size="sm"
+													variant={group.options.every((o) => !filters[o.key]) ? "default" : "outline"}
+													className="h-7 px-3 text-xs"
+													disabled={sending}
+													onClick={() =>
+														setFilters((prev) => {
+															const next = { ...prev };
+															for (const o of group.options) delete next[o.key];
+															return next;
+														})
+													}
+												>
+													—
+												</Button>
+											)}
+											{group.options.map((opt) => (
+												<Button
+													key={opt.key}
+													type="button"
+													size="sm"
+													variant={filters[opt.key] ? "default" : "outline"}
+													className="h-7 px-3 text-xs"
+													disabled={sending}
+													onClick={() => {
+														if (group.type === "radio") {
+															setFilters((prev) => {
+																const next = { ...prev };
+																for (const o of group.options) delete next[o.key];
+																next[opt.key] = true;
+																return next;
+															});
+														} else {
+															setFilters((prev) => {
+																const next = { ...prev };
+																if (prev[opt.key]) delete next[opt.key];
+																else next[opt.key] = true;
+																return next;
+															});
+														}
+													}}
+												>
+													{opt.label}
+												</Button>
+											))}
+										</div>
+									</div>
+								))}
 							</div>
 						</div>
 						<label className="block text-sm font-medium text-gray-700" htmlFor="message">

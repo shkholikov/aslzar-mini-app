@@ -58,7 +58,7 @@ export function StatsCards() {
 		{ label: "Tasdiqlangan", value: stats.verified, icon: CheckCircle, suffix: "ta" },
 		{ label: "Tasdiqlanmagan", value: stats.nonVerified, icon: XCircle, suffix: "ta" },
 		{ label: "Joriy oy kelgan foydalanuvchilar", value: stats.currentMonthUsers, icon: Calendar, suffix: "ta" },
-		{ label: "Последний визит", value: stats.lastVisitTrue, icon: Eye, suffix: "ta" },
+		{ label: "Последний визит(Ha)", value: stats.lastVisitTrue, icon: Eye, suffix: "ta" },
 		{ label: "Xarid qilmagan", value: stats.contractFirstFalse, icon: ShoppingBag, suffix: "ta" }
 	];
 
