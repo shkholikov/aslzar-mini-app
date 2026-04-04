@@ -30,30 +30,34 @@ export async function GET(request: NextRequest) {
 			return NextResponse.json({ error: "User not found or phone number not available" }, { status: 404 });
 		}
 
+		// Return cached 1C data if refreshed within the last hour
+		const ONE_HOUR = 60 * 60 * 1000;
+		const rawUpdatedAt = tgSessionData.user1CDataUpdatedAt;
+		const updatedAt = rawUpdatedAt instanceof Date ? rawUpdatedAt : rawUpdatedAt ? new Date((rawUpdatedAt as { $date: string }).$date) : null;
+		const isStale = !updatedAt || Date.now() - updatedAt.getTime() > ONE_HOUR;
+
+		if (!isStale && tgSessionData.user1CData) {
+			return NextResponse.json({ ...tgSessionData.user1CData, tgData: tgSessionData }, { status: 200 });
+		}
+
 		// Validate environment variables
 		if (!API_BASE_URL || !API_USERNAME || !API_PASSWORD) {
 			return NextResponse.json({ error: "1C API configuration is missing" }, { status: 500 });
 		}
 
-		// Step 2: Build the full endpoint URL
 		const endpoint = `${API_BASE_URL}search`;
-
-		// Prepare Basic Auth header
 		const auth = Buffer.from(`${API_USERNAME}:${API_PASSWORD}`).toString("base64");
 		const headers: HeadersInit = {
 			"Content-Type": "application/json",
 			"Authorization": `Basic ${auth}`
 		};
 
-		// Step 3: Format phone number with + prefix (avoid double ++)
 		const phone = tgSessionData.phone_number;
 		const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
 		const response = await fetch(endpoint, {
 			method: "POST",
 			headers,
-			body: JSON.stringify({
-				phone: formattedPhone
-			})
+			body: JSON.stringify({ phone: formattedPhone })
 		});
 
 		if (!response.ok) {
@@ -63,13 +67,11 @@ export async function GET(request: NextRequest) {
 		}
 
 		const data = await response.json();
-		// Refresh cached 1C data in MongoDB so the bot (reminders, referrals) uses up-to-date data
 		if (data?.code === 0) {
 			await updateUserSession1CData(userId, data as Record<string, unknown>, true);
 		}
-		const userData = { ...data, tgData: tgSessionData };
 
-		return NextResponse.json(userData, { status: 200 });
+		return NextResponse.json({ ...data, tgData: tgSessionData }, { status: 200 });
 	} catch (error) {
 		console.error("Error searching user:", error);
 		return NextResponse.json({ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });

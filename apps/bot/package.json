@@ -7,7 +7,9 @@
 		"build": "tsc",
 		"start": "NODE_ENV=production node dist/bot.js",
 		"start:dev": "NODE_ENV=development node dist/bot.js",
-		"start:prod": "NODE_ENV=production node dist/bot.js"
+		"start:prod": "NODE_ENV=production node dist/bot.js",
+		"backfill": "NODE_ENV=production ts-node src/scripts/backfill-1c-data.ts",
+		"backfill:dry": "NODE_ENV=production ts-node src/scripts/backfill-1c-data.ts --dry-run"
 	},
 	"keywords": [],
 	"author": "",

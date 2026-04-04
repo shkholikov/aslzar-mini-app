@@ -80,10 +80,16 @@ async function bootstrap() {
 			initializeSession(ctx);
 			await sendWebApp(ctx, rawCode ?? undefined);
 		} else {
-			const fresh1C = await searchUserByPhone(ctx.session.phone_number);
-			if (fresh1C) {
-				ctx.session.user1CData = fresh1C;
-				ctx.session.isVerified = true;
+			const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+			const updatedAt = ctx.session.user1CDataUpdatedAt;
+			const isStale = !updatedAt || Date.now() - new Date(updatedAt).getTime() > TWENTY_FOUR_HOURS;
+			if (isStale) {
+				const fresh1C = await searchUserByPhone(ctx.session.phone_number);
+				if (fresh1C) {
+					ctx.session.user1CData = fresh1C;
+					ctx.session.isVerified = true;
+					ctx.session.user1CDataUpdatedAt = new Date();
+				}
 			}
 			await sendWebApp(ctx, rawCode ?? undefined);
 		}
@@ -104,6 +110,7 @@ async function bootstrap() {
 		if (user1CData) {
 			ctx.session.user1CData = user1CData;
 			ctx.session.isVerified = true;
+			ctx.session.user1CDataUpdatedAt = new Date();
 		}
 
 		// Process pending user referral (numeric code) if exists (after phone verification)

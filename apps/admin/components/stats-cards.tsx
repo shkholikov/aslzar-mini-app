@@ -1,14 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Users, CheckCircle, XCircle, Calendar } from "lucide-react";
-
-interface AdminStats {
-	totalUsers: number;
-	verified: number;
-	nonVerified: number;
-	currentMonthUsers: number;
-}
+import { Users, CheckCircle, XCircle, Calendar, Eye, ShoppingBag } from "lucide-react";
+import type { AdminStats } from "@/lib/db";
 
 export function StatsCards() {
 	const [stats, setStats] = React.useState<AdminStats | null>(null);
@@ -42,8 +36,8 @@ export function StatsCards() {
 
 	if (loading) {
 		return (
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-				{[1, 2, 3, 4].map((i) => (
+			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
+				{[1, 2, 3, 4, 5, 6].map((i) => (
 					<div key={i} className="rounded-lg border bg-card p-4 animate-pulse">
 						<div className="h-4 w-24 bg-muted rounded mb-2" />
 						<div className="h-8 w-16 bg-muted rounded" />
@@ -63,11 +57,13 @@ export function StatsCards() {
 		{ label: "Umumiy foydalanuvchilar", value: stats.totalUsers, icon: Users, suffix: "ta" },
 		{ label: "Tasdiqlangan", value: stats.verified, icon: CheckCircle, suffix: "ta" },
 		{ label: "Tasdiqlanmagan", value: stats.nonVerified, icon: XCircle, suffix: "ta" },
-		{ label: "Joriy oy kelgan foydalanuvchilar", value: stats.currentMonthUsers, icon: Calendar, suffix: "ta" }
+		{ label: "Joriy oy kelgan foydalanuvchilar", value: stats.currentMonthUsers, icon: Calendar, suffix: "ta" },
+		{ label: "Последний визит", value: stats.lastVisitTrue, icon: Eye, suffix: "ta" },
+		{ label: "Xarid qilmagan", value: stats.contractFirstFalse, icon: ShoppingBag, suffix: "ta" }
 	];
 
 	return (
-		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-6">
 			{cards.map(({ label, value, icon: Icon, suffix }) => (
 				<div key={label} className="rounded-lg border bg-card p-4 shadow-sm">
 					<div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">

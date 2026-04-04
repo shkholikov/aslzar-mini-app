@@ -172,6 +172,7 @@ export interface UserDocument extends Document {
 			};
 			clientId?: string;
 			contractFirst?: boolean;
+			lastVisit?: boolean;
 			referalCount?: number;
 			referalLimit?: number;
 		} | null;
@@ -220,6 +221,10 @@ export interface AdminStats {
 	nonVerified: number;
 	/** Users created in the current calendar month */
 	currentMonthUsers: number;
+	/** Count of users where lastVisit === true */
+	lastVisitTrue: number;
+	/** Count of users where contractFirst === false (never purchased) */
+	contractFirstFalse: number;
 }
 
 /**
@@ -240,18 +245,22 @@ export async function getAdminStats(): Promise<AdminStats> {
 		const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 		const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-		const [totalUsers, verified, currentMonthUsers] = await Promise.all([
+		const [totalUsers, verified, currentMonthUsers, lastVisitTrue, contractFirstFalse] = await Promise.all([
 			users.countDocuments({}),
 			users.countDocuments({ "value.isVerified": true }),
 			users.countDocuments({
 				"value.createdAt": { $gte: startOfMonth, $lte: endOfMonth }
-			})
+			}),
+			users.countDocuments({ "value.user1CData.lastVisit": true }),
+			users.countDocuments({ "value.user1CData.contractFirst": false })
 		]);
 		return {
 			totalUsers,
 			verified,
 			nonVerified: totalUsers - verified,
-			currentMonthUsers
+			currentMonthUsers,
+			lastVisitTrue,
+			contractFirstFalse
 		};
 	} catch (error) {
 		console.error("Error fetching admin stats:", error);

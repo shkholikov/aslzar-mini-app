@@ -77,6 +77,8 @@ export interface I1CUserData {
 	referalLimit: number;
 	/** 1C activity status: true = Aktiv, false = Aktiv emas */
 	status?: boolean;
+	/** Whether the user visited in the current month */
+	lastVisit: boolean;
 	// Allow additional fields that might be added in the future
 	[key: string]: unknown;
 }
@@ -92,7 +94,8 @@ export interface ISessionData {
 	preparedMessageId?: string;
 	createdAt: Date;
 	isVerified?: boolean;
-	user1CData?: Partial<I1CUserData>; // Store 1C user data in session (all properties optional)
+	user1CData?: Partial<I1CUserData>;
+	user1CDataUpdatedAt?: Date;
 	pendingReferralCode?: string; // Store referral code until user registers with phone (user-to-user referral)
 	pendingEmployeeReferralCode?: string; // Store employee referral code (e.g. emp5) until user shares contact
 	referredByEmployeeCode?: string; // Set once when user joins via employee link

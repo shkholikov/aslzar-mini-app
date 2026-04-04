@@ -4,12 +4,9 @@ import { MongoClient, Document } from "mongodb";
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
 const dbName = process.env.MONGO_DB_NAME || "";
 const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
-const suggestionsCollection =
-  process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
-const newsItemsCollection =
-  process.env.MONGO_DB_COLLECTION_NEWS || "news_items";
-const productsCollection =
-  process.env.MONGO_DB_COLLECTION_PRODUCTS || "products";
+const suggestionsCollection = process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions";
+const newsItemsCollection = process.env.MONGO_DB_COLLECTION_NEWS || "news_items";
+const productsCollection = process.env.MONGO_DB_COLLECTION_PRODUCTS || "products";
 
 /**
  * Session data structure stored in MongoDB by MongoDBAdapter
@@ -19,23 +16,26 @@ const productsCollection =
  * - value: Actual session data object
  */
 export interface MongoDBUserDocument extends Document {
-  _id: {
-    $oid: string;
-  };
-  key: string; // Session key (Telegram user ID as string)
-  value: {
-    id?: number;
-    username?: string;
-    first_name?: string;
-    last_name?: string;
-    phone_number?: string;
-    isChannelMember?: boolean;
-    createdAt?:
-      | {
-          $date: string;
-        }
-      | Date;
-  };
+	_id: {
+		$oid: string;
+	};
+	key: string; // Session key (Telegram user ID as string)
+	value: {
+		id?: number;
+		username?: string;
+		first_name?: string;
+		last_name?: string;
+		phone_number?: string;
+		isChannelMember?: boolean;
+		isVerified?: boolean;
+		user1CData?: Record<string, unknown>;
+		user1CDataUpdatedAt?: Date | { $date: string };
+		createdAt?:
+			| {
+					$date: string;
+			  }
+			| Date;
+	};
 }
 
 /**
@@ -43,40 +43,38 @@ export interface MongoDBUserDocument extends Document {
  * @param userId - Telegram user ID (used as session key/_id in MongoDB)
  * @returns User data object or null if not found
  */
-export async function getUserDataByUserId(
-  userId: string,
-): Promise<MongoDBUserDocument["value"] | null> {
-  let client: MongoClient | null = null;
+export async function getUserDataByUserId(userId: string): Promise<MongoDBUserDocument["value"] | null> {
+	let client: MongoClient | null = null;
 
-  try {
-    // Validate configuration
-    if (!dbUri || !dbName || !usersCollection) {
-      throw new Error("MongoDB configuration is missing");
-    }
+	try {
+		// Validate configuration
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
 
-    // Connect to MongoDB
-    client = new MongoClient(dbUri);
-    await client.connect();
+		// Connect to MongoDB
+		client = new MongoClient(dbUri);
+		await client.connect();
 
-    const db = client.db(dbName);
-    const users = db.collection<MongoDBUserDocument>(usersCollection);
+		const db = client.db(dbName);
+		const users = db.collection<MongoDBUserDocument>(usersCollection);
 
-    // Find user by Telegram ID (stored as session key)
-    const user = await users.findOne({ key: userId });
+		// Find user by Telegram ID (stored as session key)
+		const user = await users.findOne({ key: userId });
 
-    if (!user || !user.value) {
-      return null;
-    }
+		if (!user || !user.value) {
+			return null;
+		}
 
-    return user.value;
-  } catch (error) {
-    console.error("Error fetching user data from database:", error);
-    throw error;
-  } finally {
-    if (client) {
-      await client.close();
-    }
-  }
+		return user.value;
+	} catch (error) {
+		console.error("Error fetching user data from database:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
 }
 
 /**
@@ -87,43 +85,40 @@ export async function getUserDataByUserId(
  * @param user1CData - Full 1C API response (search result with code === 0)
  * @param isVerified - Whether the user is verified in 1C
  */
-export async function updateUserSession1CData(
-  userId: string,
-  user1CData: Record<string, unknown>,
-  isVerified: boolean,
-): Promise<boolean> {
-  let client: MongoClient | null = null;
+export async function updateUserSession1CData(userId: string, user1CData: Record<string, unknown>, isVerified: boolean): Promise<boolean> {
+	let client: MongoClient | null = null;
 
-  try {
-    if (!dbUri || !dbName || !usersCollection) {
-      throw new Error("MongoDB configuration is missing");
-    }
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
 
-    client = new MongoClient(dbUri);
-    await client.connect();
+		client = new MongoClient(dbUri);
+		await client.connect();
 
-    const db = client.db(dbName);
-    const users = db.collection<MongoDBUserDocument>(usersCollection);
+		const db = client.db(dbName);
+		const users = db.collection<MongoDBUserDocument>(usersCollection);
 
-    const result = await users.updateOne(
-      { key: userId },
-      {
-        $set: {
-          "value.user1CData": user1CData,
-          "value.isVerified": isVerified,
-        },
-      },
-    );
+		const result = await users.updateOne(
+			{ key: userId },
+			{
+				$set: {
+					"value.user1CData": user1CData,
+					"value.isVerified": isVerified,
+					"value.user1CDataUpdatedAt": new Date()
+				}
+			}
+		);
 
-    return result.matchedCount > 0 && result.modifiedCount > 0;
-  } catch (error) {
-    console.error("Error updating user session 1C data:", error);
-    throw error;
-  } finally {
-    if (client) {
-      await client.close();
-    }
-  }
+		return result.matchedCount > 0 && result.modifiedCount > 0;
+	} catch (error) {
+		console.error("Error updating user session 1C data:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
 }
 
 /**
@@ -134,113 +129,98 @@ export async function updateUserSession1CData(
  * @param isChannelMember - Whether the user is a member of the channel
  * @returns true if a document was matched and updated
  */
-export async function updateUserChannelMember(
-  userId: string,
-  isChannelMember: boolean,
-): Promise<boolean> {
-  let client: MongoClient | null = null;
+export async function updateUserChannelMember(userId: string, isChannelMember: boolean): Promise<boolean> {
+	let client: MongoClient | null = null;
 
-  try {
-    if (!dbUri || !dbName || !usersCollection) {
-      throw new Error("MongoDB configuration is missing");
-    }
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
 
-    client = new MongoClient(dbUri);
-    await client.connect();
+		client = new MongoClient(dbUri);
+		await client.connect();
 
-    const db = client.db(dbName);
-    const users = db.collection<MongoDBUserDocument>(usersCollection);
+		const db = client.db(dbName);
+		const users = db.collection<MongoDBUserDocument>(usersCollection);
 
-    const result = await users.updateOne(
-      { key: userId },
-      { $set: { "value.isChannelMember": isChannelMember } },
-    );
+		const result = await users.updateOne({ key: userId }, { $set: { "value.isChannelMember": isChannelMember } });
 
-    return result.matchedCount > 0;
-  } catch (error) {
-    console.error("Error updating user channel member:", error);
-    throw error;
-  } finally {
-    if (client) {
-      await client.close();
-    }
-  }
+		return result.matchedCount > 0;
+	} catch (error) {
+		console.error("Error updating user channel member:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
 }
 
 /** Product record for catalog (same shape as admin ProductDoc; field is `url`). */
 export interface CatalogProduct {
-  id: string;
-  title: string;
-  description: string;
-  price?: number;
-  url: string;
-  badgeLabel?: string;
+	id: string;
+	title: string;
+	description: string;
+	price?: number;
+	url: string;
+	badgeLabel?: string;
 }
 
 type ProductRow = {
-  _id?: unknown;
-  title: string;
-  description: string;
-  price?: number;
-  url?: string;
-  imageUrl?: string;
-  badgeLabel?: string;
+	_id?: unknown;
+	title: string;
+	description: string;
+	price?: number;
+	url?: string;
+	imageUrl?: string;
+	badgeLabel?: string;
 };
 
 /**
  * Fetches products for the webapp catalog from MongoDB (same collection as admin).
  * Reads `url`; falls back to `imageUrl` for documents created before the rename.
  */
-export async function getCatalogProducts(
-  limit = 100,
-): Promise<CatalogProduct[]> {
-  let client: MongoClient | null = null;
-  try {
-    if (!dbUri || !dbName) return [];
-    client = new MongoClient(dbUri);
-    await client.connect();
-    const db = client.db(dbName);
-    const coll = db.collection<ProductRow>(productsCollection);
-    const list = await coll
-      .find({})
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .toArray();
-    return list.map((p) => ({
-      id: String(p._id),
-      title: p.title,
-      description: p.description,
-      price:
-        typeof p.price === "number" && isFinite(p.price) && p.price > 0
-          ? p.price
-          : undefined,
-      url: p.url ?? p.imageUrl ?? "",
-      badgeLabel: p.badgeLabel,
-    }));
-  } catch (error) {
-    console.error("Error fetching catalog products:", error);
-    return [];
-  } finally {
-    if (client) await client.close();
-  }
+export async function getCatalogProducts(limit = 100): Promise<CatalogProduct[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) return [];
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<ProductRow>(productsCollection);
+		const list = await coll.find({}).sort({ createdAt: -1 }).limit(limit).toArray();
+		return list.map((p) => ({
+			id: String(p._id),
+			title: p.title,
+			description: p.description,
+			price: typeof p.price === "number" && isFinite(p.price) && p.price > 0 ? p.price : undefined,
+			url: p.url ?? p.imageUrl ?? "",
+			badgeLabel: p.badgeLabel
+		}));
+	} catch (error) {
+		console.error("Error fetching catalog products:", error);
+		return [];
+	} finally {
+		if (client) await client.close();
+	}
 }
 
 /** Suggestion/complaint document stored in MongoDB */
 export interface SuggestionDocument extends Document {
-  text: string;
-  userId?: string;
-  firstName?: string;
-  lastName?: string;
-  username?: string;
-  createdAt: Date;
+	text: string;
+	userId?: string;
+	firstName?: string;
+	lastName?: string;
+	username?: string;
+	createdAt: Date;
 }
 
 /** Options for inserting a suggestion (Telegram user info when available) */
 export interface InsertSuggestionOptions {
-  userId?: string;
-  firstName?: string;
-  lastName?: string;
-  username?: string;
+	userId?: string;
+	firstName?: string;
+	lastName?: string;
+	username?: string;
 }
 
 /**
@@ -248,56 +228,51 @@ export interface InsertSuggestionOptions {
  * @param text - The suggestion or complaint text
  * @param options - Optional Telegram user info (userId, firstName, lastName, username)
  */
-export async function insertSuggestion(
-  text: string,
-  options?: InsertSuggestionOptions,
-): Promise<void> {
-  let client: MongoClient | null = null;
+export async function insertSuggestion(text: string, options?: InsertSuggestionOptions): Promise<void> {
+	let client: MongoClient | null = null;
 
-  try {
-    if (!dbUri || !dbName || !suggestionsCollection) {
-      throw new Error("MongoDB configuration is missing");
-    }
+	try {
+		if (!dbUri || !dbName || !suggestionsCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
 
-    client = new MongoClient(dbUri);
-    await client.connect();
+		client = new MongoClient(dbUri);
+		await client.connect();
 
-    const db = client.db(dbName);
-    const suggestions = db.collection<SuggestionDocument>(
-      suggestionsCollection,
-    );
+		const db = client.db(dbName);
+		const suggestions = db.collection<SuggestionDocument>(suggestionsCollection);
 
-    const doc: SuggestionDocument = {
-      text,
-      createdAt: new Date(),
-    };
-    if (options?.userId) doc.userId = options.userId;
-    if (options?.firstName) doc.firstName = options.firstName;
-    if (options?.lastName) doc.lastName = options.lastName;
-    if (options?.username) doc.username = options.username;
+		const doc: SuggestionDocument = {
+			text,
+			createdAt: new Date()
+		};
+		if (options?.userId) doc.userId = options.userId;
+		if (options?.firstName) doc.firstName = options.firstName;
+		if (options?.lastName) doc.lastName = options.lastName;
+		if (options?.username) doc.username = options.username;
 
-    await suggestions.insertOne(doc);
-  } catch (error) {
-    console.error("Error inserting suggestion:", error);
-    throw error;
-  } finally {
-    if (client) {
-      await client.close();
-    }
-  }
+		await suggestions.insertOne(doc);
+	} catch (error) {
+		console.error("Error inserting suggestion:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
 }
 
 /** Admin-managed news item */
 export interface NewsItemRecord {
-  _id?: unknown;
-  title: string;
-  description: string;
-  mediaUrl?: string;
-  mediaType?: "photo" | "video";
-  buttonText?: string;
-  buttonUrl?: string;
-  isActive?: boolean;
-  createdAt: Date;
+	_id?: unknown;
+	title: string;
+	description: string;
+	mediaUrl?: string;
+	mediaType?: "photo" | "video";
+	buttonText?: string;
+	buttonUrl?: string;
+	isActive?: boolean;
+	createdAt: Date;
 }
 
 /**
@@ -305,22 +280,22 @@ export interface NewsItemRecord {
  * Used by /api/news to display "Yangiliklar" in the webapp.
  */
 export async function getNewsItems(limit = 10): Promise<NewsItemRecord[]> {
-  let client: MongoClient | null = null;
-  try {
-    if (!dbUri || !dbName) return [];
-    client = new MongoClient(dbUri);
-    await client.connect();
-    const db = client.db(dbName);
-    const coll = db.collection<NewsItemRecord>(newsItemsCollection);
-    return await coll
-      .find({ isActive: { $ne: false } })
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .toArray();
-  } catch (error) {
-    console.error("Error fetching news items:", error);
-    return [];
-  } finally {
-    if (client) await client.close();
-  }
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName) return [];
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const coll = db.collection<NewsItemRecord>(newsItemsCollection);
+		return await coll
+			.find({ isActive: { $ne: false } })
+			.sort({ createdAt: -1 })
+			.limit(limit)
+			.toArray();
+	} catch (error) {
+		console.error("Error fetching news items:", error);
+		return [];
+	} finally {
+		if (client) await client.close();
+	}
 }

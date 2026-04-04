@@ -168,6 +168,26 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			}
 		},
 		{
+			accessorFn: (row) => row.value.user1CData?.lastVisit ?? null,
+			id: "lastVisit",
+			header: "Последний визит",
+			cell: ({ row }) => {
+				const user1CData = row.original.value.user1CData;
+				if (!user1CData) return <div>-</div>;
+				return <div>{user1CData.lastVisit ? "Ha" : "Yo'q"}</div>;
+			}
+		},
+		{
+			accessorFn: (row) => row.value.user1CData?.contractFirst ?? null,
+			id: "contractFirst",
+			header: "Xarid qilgan",
+			cell: ({ row }) => {
+				const user1CData = row.original.value.user1CData;
+				if (!user1CData) return <div>-</div>;
+				return <div>{user1CData.contractFirst ? "Ha" : "Yo'q"}</div>;
+			}
+		},
+		{
 			accessorFn: (row) => {
 				const createdAt = row.value.createdAt;
 				if (!createdAt) return 0;
@@ -392,6 +412,8 @@ export function UsersList() {
 				"1C Ma\'lumotlari": val.user1CData ? "Mavjud" : "Mavjud emas",
 				Status: val.user1CData?.status === true ? "Aktiv" : val.user1CData?.status === false ? "Aktiv emas" : "",
 				Level: val.user1CData?.bonusInfo?.uroven ?? "",
+				"Последний визит": val.user1CData?.lastVisit === true ? "Ha" : val.user1CData?.lastVisit === false ? "Yo'q" : "",
+				"Xarid qilgan": val.user1CData?.contractFirst === true ? "Ha" : val.user1CData?.contractFirst === false ? "Yo'q" : "",
 				"Yaratilgan sana": createdAtStr
 			};
 		});
