@@ -20,9 +20,9 @@ export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShar
 			<p className="mb-2">
 				<strong>Doʻstlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
 			</p>
-			<p className="mb-2 text-sm ">
+			{/* <p className="mb-2 text-sm ">
 				Har bir taklif qilingan mijoz uchun <strong className="text-foreground">10 000 so&apos;m</strong> bonus qo&apos;lga kiriting.
-			</p>
+			</p> */}
 			<div className="flex flex-col items-center justify-center">
 				<QRCodeGenerator href={referralLink} />
 				<Button variant="link" disabled={true} className="text-gray-800">
