@@ -4,6 +4,7 @@ import { AdminNav } from "@/components/admin-nav";
 import { AdminContextProvider } from "@/components/common/admin-context";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import pkg from "../package.json";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -44,6 +45,9 @@ export default function RootLayout({
 						<div className="flex flex-1 w-full">
 							<TooltipProvider>{children}</TooltipProvider>
 						</div>
+						<footer className="border-t border-border py-3 text-center text-xs text-muted-foreground">
+							v{pkg.version}
+						</footer>
 					</div>
 				</AdminContextProvider>
 			</body>
