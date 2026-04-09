@@ -274,6 +274,69 @@ export async function getAdminStats(): Promise<AdminStats> {
 	}
 }
 
+export interface MonthlyGrowthPoint {
+	month: string;
+	users: number;
+}
+
+const MONTH_NAMES_UZ = ["Yan", "Fev", "Mar", "Apr", "May", "Iyn", "Iyl", "Avg", "Sen", "Okt", "Noy", "Dek"] as const;
+
+/**
+ * Returns new user counts grouped by month for the last 12 months.
+ */
+export async function getMonthlyUserGrowth(): Promise<MonthlyGrowthPoint[]> {
+	let client: MongoClient | null = null;
+	try {
+		if (!dbUri || !dbName || !usersCollection) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+		const db = client.db(dbName);
+		const users = db.collection<UserDocument>(usersCollection);
+
+		const now = new Date();
+		const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+		const pipeline = [
+			{
+				$match: {
+					"value.createdAt": { $gte: twelveMonthsAgo, $type: "date" }
+				}
+			},
+			{
+				$group: {
+					_id: {
+						year: { $year: "$value.createdAt" },
+						month: { $month: "$value.createdAt" }
+					},
+					count: { $sum: 1 }
+				}
+			},
+			{ $sort: { "_id.year": 1, "_id.month": 1 } }
+		];
+
+		const results = await users.aggregate(pipeline).toArray();
+
+		const resultMap = new Map<string, number>();
+		for (const r of results) {
+			const key = `${r._id.year}-${r._id.month}`;
+			resultMap.set(key, r.count);
+		}
+
+		const series: MonthlyGrowthPoint[] = [];
+		for (let i = 11; i >= 0; i--) {
+			const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+			const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+			series.push({
+				month: MONTH_NAMES_UZ[d.getMonth()],
+				users: resultMap.get(key) ?? 0
+			});
+		}
+		return series;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
 /**
  * Creates a new broadcast job (status: pending). Bot sends by audienceFilters: when none set, all users; when set, AND conditions.
  */
