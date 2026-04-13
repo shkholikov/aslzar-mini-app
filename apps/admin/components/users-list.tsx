@@ -401,6 +401,10 @@ export function UsersList() {
 					}).format(date);
 				}
 			}
+			const empCode = val.referredByEmployeeCode;
+			const emp = empCode ? employeesByCode[empCode] : undefined;
+			const xodim = emp ? `${emp.name} ${emp.surname}`.trim() : empCode ?? "";
+
 			return {
 				ID: val.id ?? "",
 				Ism: val.first_name ?? "",
@@ -410,6 +414,7 @@ export function UsersList() {
 				Tasdiqlangan: val.isVerified ? "Ha" : "Yo\'q",
 				"Kanal a\'zosi": val.isChannelMember ? "Ha" : "Yo\'q",
 				"1C Ma\'lumotlari": val.user1CData ? "Mavjud" : "Mavjud emas",
+				"Xodim(referral)": xodim,
 				Status: val.user1CData?.status === true ? "Aktiv" : val.user1CData?.status === false ? "Aktiv emas" : "",
 				Level: val.user1CData?.bonusInfo?.uroven ?? "",
 				"Последний визит": val.user1CData?.lastVisit === true ? "Ha" : val.user1CData?.lastVisit === false ? "Yo'q" : "",
