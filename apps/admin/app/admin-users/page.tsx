@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Download, UserCog, Trash2 } from "lucide-react";
+import { Loading } from "@/components/common/loading";
 import { exportToExcel } from "@/lib/export";
 import { ALL_PERMISSIONS, type AdminPermission, type AdminRole } from "@/lib/auth-utils";
 
@@ -232,8 +233,8 @@ function AdminUsersContent() {
 						<TableBody>
 							{loading ? (
 								<TableRow>
-									<TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-										Yuklanmoqda...
+									<TableCell colSpan={7}>
+										<Loading />
 									</TableCell>
 								</TableRow>
 							) : users.length === 0 ? (

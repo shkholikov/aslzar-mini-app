@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProductDoc } from "@/lib/db";
 import { Download, Loader2, Package, Upload } from "lucide-react";
+import { Loading } from "@/components/common/loading";
 import { exportToExcel } from "@/lib/export";
 
 const ACCEPT_MEDIA = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime";
@@ -282,10 +283,7 @@ export default function ProductsPage() {
 						</Button>
 					</div>
 					{loading ? (
-						<div className="flex items-center gap-2 text-gray-600">
-							<Loader2 className="w-4 h-4 animate-spin" />
-							<span>Yuklanmoqda...</span>
-						</div>
+						<Loading />
 					) : products.length === 0 ? (
 						<p className="text-sm text-gray-600">Hozircha mahsulotlar yo‘q.</p>
 					) : (
