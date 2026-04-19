@@ -125,7 +125,11 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 	return (
 		<nav
 			className={cn(
-				"relative inline-flex items-center rounded-4xl bg-card border shadow-sm",
+				"relative inline-flex items-center rounded-4xl",
+				"bg-card/55 backdrop-blur-xl backdrop-saturate-150",
+				"border border-white/40 dark:border-white/15",
+				"shadow-[0_10px_30px_-6px_rgba(0,0,0,0.15),0_2px_6px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.55)]",
+				"dark:shadow-[0_10px_30px_-6px_rgba(0,0,0,0.5),0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.15)]",
 				orientation === "horizontal" ? "flex-row" : "flex-col",
 				styles.container,
 				className
