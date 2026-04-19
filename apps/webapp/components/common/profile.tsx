@@ -57,12 +57,18 @@ export function Profile() {
 						{loading ? (
 							<Skeleton className="h-5 w-40 rounded-full my-2" />
 						) : profileInfo.verified ? (
-							<Badge variant="secondary" className="bg-blue-500 text-white my-2 shadow-sm">
+							<Badge
+								variant="secondary"
+								className="bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 text-white my-2 border border-white/40 shadow-[0_4px_12px_-2px_rgba(59,130,246,0.45),inset_0_1px_0_rgba(255,255,255,0.55),inset_0_-1px_0_rgba(0,0,0,0.15)]"
+							>
 								<BadgeCheckIcon />
 								Tasdiqlangan Mijoz
 							</Badge>
 						) : (
-							<Badge variant="secondary" className="bg-amber-400 text-white my-2 shadow-sm">
+							<Badge
+								variant="secondary"
+								className="bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 text-white my-2 border border-white/45 shadow-[0_4px_12px_-2px_rgba(251,191,36,0.45),inset_0_1px_0_rgba(255,255,255,0.6),inset_0_-1px_0_rgba(0,0,0,0.12)]"
+							>
 								<BadgeXIcon />
 								Tasdiqlanmagan Mijoz
 							</Badge>
