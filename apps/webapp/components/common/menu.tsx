@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { navigationItems } from "@/lib/navigation";
 import { useRouter, usePathname } from "next/navigation";
 import { MenuDock } from "@/components/ui/shadcn-io/menu-dock";
@@ -15,6 +16,11 @@ export function Menu() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const tg = useTelegram();
+
+	// Warm the router cache for every top-level tab so bottom-nav switches feel instant.
+	useEffect(() => {
+		navigationItems.forEach((item) => router.prefetch(item.path));
+	}, [router]);
 
 	const effectivePath = SUB_ROUTE_PARENTS[pathname] ?? pathname;
 	const activeIndex = navigationItems.findIndex((item) => item.path === effectivePath);

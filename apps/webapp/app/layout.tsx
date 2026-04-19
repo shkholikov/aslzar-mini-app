@@ -13,7 +13,7 @@ import { TelegramGuard } from "@/components/common/telegram-guard";
 const montserratFont = Montserrat({
 	variable: "--font-radley",
 	subsets: ["latin"],
-	weight: ["300", "400", "500", "600", "700"]
+	weight: ["400", "500", "600", "700"]
 });
 
 export const metadata: Metadata = {
