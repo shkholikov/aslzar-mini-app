@@ -9,13 +9,15 @@ interface SectionCardProps {
 	iconImage?: string;
 	title: string;
 	children: ReactNode;
+	/** When true, render only the heading with children flush below — no glass panel wrapper. Use when children already are their own cards, to avoid nested-card visual heaviness. */
+	bare?: boolean;
 }
 
 type SectionCardPropsWithIcon =
 	| (SectionCardProps & { icon: LucideIcon; iconImage?: never })
 	| (SectionCardProps & { iconImage: string; icon?: never });
 
-export function SectionCard({ icon: Icon, iconImage, title, children }: SectionCardPropsWithIcon) {
+export function SectionCard({ icon: Icon, iconImage, title, children, bare = false }: SectionCardPropsWithIcon) {
 	return (
 		<div className="mx-2 my-2">
 			<h2 className="flex items-center gap-2 font-bold text-xl mb-2 px-1">
@@ -26,7 +28,11 @@ export function SectionCard({ icon: Icon, iconImage, title, children }: SectionC
 				) : null}
 				{title}
 			</h2>
-			<div className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent p-4 shadow-md">{children}</div>
+			{bare ? (
+				<div>{children}</div>
+			) : (
+				<div className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent p-4 shadow-md">{children}</div>
+			)}
 		</div>
 	);
 }

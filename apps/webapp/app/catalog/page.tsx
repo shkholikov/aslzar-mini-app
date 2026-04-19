@@ -72,7 +72,7 @@ export default function CatalogPage() {
 	return (
 		<div className="pt-12">
 			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.png" />
-			<SectionCard iconImage="/icons/book.png" title="Mahsulotlar">
+			<SectionCard iconImage="/icons/book.png" title="Mahsulotlar" bare>
 				<div className="flex justify-end mb-2 gap-1">
 					<button
 						onClick={() => {
@@ -115,7 +115,9 @@ export default function CatalogPage() {
 							</div>
 						))}
 					{!loading && error && <p className="text-sm text-red-600 py-4 col-span-2">{error}</p>}
-					{!loading && !error && products.length === 0 && <p className="text-sm text-gray-500 py-4 col-span-2">Hozircha mahsulotlar yo&apos;q.</p>}
+					{!loading && !error && products.length === 0 && (
+						<p className="text-sm text-gray-500 py-4 col-span-2">Hozircha mahsulotlar yo&apos;q.</p>
+					)}
 					{!loading && !error && paginated.map((product) => <ProductCard key={product.id} {...product} compact={compact} />)}
 				</div>
 				{!loading && !error && totalPages > 1 && (

@@ -133,7 +133,7 @@ export default function BranchesPage() {
 		<div className="pt-12">
 			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.png" />
 			{loading ? (
-				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar">
+				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar" bare>
 					<div className="flex flex-col gap-3">
 						{[0, 1, 2].map((i) => (
 							<div key={i} className="border-2 rounded-3xl px-4 py-3 flex flex-col gap-2">
@@ -155,14 +155,18 @@ export default function BranchesPage() {
 					</div>
 				</SectionCard>
 			) : (
-				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar">
+				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar" bare>
 					<div className="flex flex-col gap-3">
 						{branches?.map((branch) => {
 							const primaryPhone = branch.phone1 || branch.phone2;
 							const primaryMap = branch.yandexMaps || branch.googleMaps;
 
 							return (
-								<Item key={branch.id} variant="outline" className="border-2 backdrop-blur-[10px] rounded-3xl bg-muted/50 shadow-md px-4 py-3">
+								<Item
+									key={branch.id}
+									variant="outline"
+									className="border-2 backdrop-blur-[10px] rounded-3xl bg-muted/50 shadow-md px-4 py-3"
+								>
 									<ItemContent>
 										<div className="flex items-center justify-between gap-2">
 											<ItemTitle className="font-semibold text-base">{branch.name}</ItemTitle>

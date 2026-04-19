@@ -71,7 +71,7 @@ export function News() {
 	};
 
 	return (
-		<SectionCard iconImage="/icons/news.png" title="Yangiliklar">
+		<SectionCard iconImage="/icons/news.png" title="Yangiliklar" bare>
 			{loading ? (
 				<div className="flex flex-col gap-4">
 					{[0, 1, 2].map((i) => (
@@ -90,7 +90,10 @@ export function News() {
 			) : (
 				<div className="flex flex-col gap-4">
 					{items.map((item) => (
-						<div key={item.id} className="m-2 w-[calc(100%-1rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 p-4">
+						<div
+							key={item.id}
+							className="m-2 w-[calc(100%-1rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 p-4"
+						>
 							<h3 className="font-semibold text-base leading-snug">{item.title}</h3>
 							{item.pubDate && <p className="text-xs text-muted-foreground mt-1">{formatNewsDate(item.pubDate)}</p>}
 							{(item.imageUrl || item.videoUrl) && (

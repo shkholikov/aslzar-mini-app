@@ -70,7 +70,7 @@ export function UpcomingPayments({ contracts }: UpcomingPaymentsProps) {
 	if (upcomingPayments.length === 0) return null;
 
 	return (
-		<SectionCard iconImage="/icons/paper.png" title="Kutilayotgan to'lovlar">
+		<SectionCard iconImage="/icons/paper.png" title="Kutilayotgan to'lovlar" bare>
 			<div className="flex flex-wrap gap-2">
 				{upcomingPayments.map((payment, idx) => (
 					<div

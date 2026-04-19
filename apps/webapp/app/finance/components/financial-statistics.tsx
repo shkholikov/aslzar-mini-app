@@ -18,7 +18,7 @@ interface FinancialStatisticsProps {
 
 export function FinancialStatistics({ data }: FinancialStatisticsProps) {
 	return (
-		<SectionCard iconImage="/icons/statistics.png" title="Moliyaviy Statistika">
+		<SectionCard iconImage="/icons/statistics.png" title="Moliyaviy Statistika" bare>
 			<div className="flex flex-wrap gap-2">
 				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
 					<Image src="/icons/contract.png" alt="Faol shartnomalar" width={50} height={50} className="object-contain" />
