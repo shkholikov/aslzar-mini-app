@@ -9,6 +9,7 @@ import { UserProvider } from "@/hooks/useUser";
 import { ProductsProvider } from "@/hooks/useProducts";
 import { Toaster } from "sonner";
 import { TelegramGuard } from "@/components/common/telegram-guard";
+import { AnimatedPage } from "@/components/common/animated-page";
 
 const montserratFont = Montserrat({
 	variable: "--font-radley",
@@ -73,7 +74,7 @@ export default function RootLayout({
 					<TelegramGuard>
 						<UserProvider>
 							<ProductsProvider>
-								{children}
+								<AnimatedPage>{children}</AnimatedPage>
 								<div className="flex justify-center">
 									<Menu />
 									<Toaster
