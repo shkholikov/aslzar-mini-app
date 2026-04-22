@@ -23,7 +23,7 @@ app.use(
 	"/docs",
 	swaggerUi.serve,
 	swaggerUi.setup(openApiSpec, {
-		customSiteTitle: "ASLZAR External API Docs",
+		customSiteTitle: "ASLZAR BOT External API Docs",
 		customfavIcon: "/favicon.ico",
 		swaggerOptions: {
 			persistAuthorization: true,

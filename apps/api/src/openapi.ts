@@ -11,8 +11,8 @@
 export const openApiSpec = {
 	openapi: "3.1.0",
 	info: {
-		title: "ASLZAR External API",
-		version: "0.1.0",
+		title: "ASLZAR BOT External API",
+		version: "1.0.0",
 		description:
 			"HTTP service that lets authorized external developers send plain-text Telegram messages (confirmation codes, notifications) via the ASLZAR bot.\n\n**Authentication:** Every request must include an `Authorization: Bearer <api-key>` header. API keys start with `ak_` and are provisioned by the ASLZAR team.",
 		contact: {
