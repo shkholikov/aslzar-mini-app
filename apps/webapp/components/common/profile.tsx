@@ -31,7 +31,7 @@ export function Profile() {
 				verified: data.code === 0,
 				uroven: data.bonusInfo.uroven ?? DEFAULT_PROFILE_INFO.uroven,
 				bonusOstatok: data.bonusOstatok ?? DEFAULT_PROFILE_INFO.bonusOstatok,
-				contracts: data.contract.ids.length ?? DEFAULT_PROFILE_INFO.contracts
+				contracts: data.contract?.ids?.length ?? DEFAULT_PROFILE_INFO.contracts
 			});
 		} else {
 			setProfileInfo(DEFAULT_PROFILE_INFO);
