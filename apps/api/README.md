@@ -28,7 +28,7 @@ Send a plain-text message to a Telegram user via the bot.
 
 ```json
 {
-  "chat_id": 6764272076,
+  "chat_id": 123456789,
   "text": "Your confirmation code is 123456"
 }
 ```
@@ -46,7 +46,7 @@ Send a plain-text message to a Telegram user via the bot.
   "result": {
     "message_id": 12345,
     "date": 1729501234,
-    "chat": { "id": 6764272076, "type": "private" },
+    "chat": { "id": 123456789, "type": "private" },
     "text": "Your confirmation code is 123456"
   }
 }
@@ -94,7 +94,7 @@ curl -X POST https://api.aslzarbot.uz/v1/external/sendMessage \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ak_YOUR_KEY" \
   -d '{
-    "chat_id": 6764272076,
+    "chat_id": 123456789,
     "text": "Your ASLZAR confirmation code: 123456"
   }'
 ```

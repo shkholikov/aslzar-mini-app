@@ -65,7 +65,7 @@ export const openApiSpec = {
 								confirmationCode: {
 									summary: "Confirmation code",
 									value: {
-										chat_id: 0000,
+										chat_id: 123456789,
 										text: "Your ASLZAR verification code is 482913"
 									}
 								},
