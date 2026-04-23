@@ -158,7 +158,7 @@ export const openApiSpec = {
 				properties: {
 					chat_id: {
 						oneOf: [
-							{ type: "integer", example: 0000 },
+							{ type: "integer", example: 123456789 },
 							{ type: "string", example: "@aslzar_news" }
 						],
 						description:
@@ -190,7 +190,7 @@ export const openApiSpec = {
 					chat: {
 						type: "object",
 						properties: {
-							id: { type: "integer", example: 0000 },
+							id: { type: "integer", example: 123456789 },
 							type: { type: "string", enum: ["private", "group", "supergroup", "channel"] }
 						}
 					},
