@@ -6,8 +6,8 @@ HTTP service that lets authorized external developers send plain-text Telegram m
 
 Live OpenAPI/Swagger UI is served from the API itself:
 
-- **UI:** `https://api.aslzar.uz/docs` (or `http://localhost:3001/docs` in dev)
-- **Raw spec:** `https://api.aslzar.uz/docs.json` — import into Postman, Insomnia, `openapi-typescript`, or any code generator
+- **UI:** `https://api.aslzarbot.uz/docs` (or `http://localhost:3001/docs` in dev)
+- **Raw spec:** `https://api.aslzarbot.uz/docs.json` — import into Postman, Insomnia, `openapi-typescript`, or any code generator
 
 The UI includes a **Try It Out** button — paste an API key once (persists across reloads), fill in a chat_id and text, click Execute, see the real Telegram response.
 
@@ -90,7 +90,7 @@ Send a plain-text message to a Telegram user via the bot.
 4. Send the message:
 
 ```bash
-curl -X POST https://api.aslzar.uz/v1/external/sendMessage \
+curl -X POST https://api.aslzarbot.uz/v1/external/sendMessage \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ak_YOUR_KEY" \
   -d '{
@@ -163,7 +163,7 @@ Don't set `PORT` — Railway injects it automatically at deploy time.
 
 1. Service **Settings** → **Networking** → **Generate Domain** to get the default `*.up.railway.app`
 2. Verify it works: `curl https://<default>.up.railway.app/health` → `{"ok":true}`
-3. **Add Custom Domain** → e.g. `api.aslzar.uz`
+3. **Add Custom Domain** → e.g. `api.aslzarbot.uz`
 4. Railway shows you a CNAME target
 5. On your DNS provider (Cloudflare etc.), add:
    ```

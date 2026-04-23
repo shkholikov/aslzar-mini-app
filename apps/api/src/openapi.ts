@@ -20,7 +20,7 @@ export const openApiSpec = {
 		}
 	},
 	servers: [
-		{ url: "https://api.aslzar.uz", description: "Production" },
+		{ url: "https://api.aslzarbot.uz", description: "Production" },
 		{ url: "http://localhost:3001", description: "Local development" }
 	],
 	security: [{ bearerAuth: [] }],
@@ -65,7 +65,7 @@ export const openApiSpec = {
 								confirmationCode: {
 									summary: "Confirmation code",
 									value: {
-										chat_id: 6764272076,
+										chat_id: 0000,
 										text: "Your ASLZAR verification code is 482913"
 									}
 								},
@@ -158,7 +158,7 @@ export const openApiSpec = {
 				properties: {
 					chat_id: {
 						oneOf: [
-							{ type: "integer", example: 6764272076 },
+							{ type: "integer", example: 0000 },
 							{ type: "string", example: "@aslzar_news" }
 						],
 						description:
@@ -190,7 +190,7 @@ export const openApiSpec = {
 					chat: {
 						type: "object",
 						properties: {
-							id: { type: "integer", example: 6764272076 },
+							id: { type: "integer", example: 0000 },
 							type: { type: "string", enum: ["private", "group", "supergroup", "channel"] }
 						}
 					},
