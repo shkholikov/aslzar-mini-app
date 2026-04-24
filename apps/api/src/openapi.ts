@@ -14,7 +14,7 @@ export const openApiSpec = {
 		title: "ASLZAR BOT External API",
 		version: "1.0.0",
 		description:
-			"HTTP service that lets authorized external developers send Telegram messages (confirmation codes, notifications) via the ASLZAR bot.\n\n**How it works**\n- Send the customer's phone number (digits only, no `+`). We look it up in our database to find the matching Telegram user.\n- If no match is found, we return `user_not_registered` — the user must first open **@aslzar_bot** and tap **Start**, then share their phone.\n- Text can optionally be formatted via `parse_mode` (HTML or MarkdownV2). Omitting `parse_mode` sends plain text.\n\n**Authentication:** Every request must include an `Authorization: Bearer <api-key>` header. API keys start with `ak_` and are provisioned by the ASLZAR team.\n\n**Rate limit:** 60 requests per minute per API key (in addition to Telegram's own ~30 msg/sec global and ~1 msg/sec per private chat limits). Exceeding ours returns `429 rate_limited` with a `retry_after` field.",
+			"HTTP service that lets authorized external developers send Telegram messages (confirmation codes, notifications) via the ASLZAR bot.\n\n**How it works**\n- Send the customer's phone number (digits only, no `+`). We look it up in our database to find the matching Telegram user.\n- If no match is found, we return `user_not_registered` — the user must first open **@aslzaruzbot** and tap **Start**, then share their phone.\n- Text can optionally be formatted via `parse_mode` (HTML or MarkdownV2). Omitting `parse_mode` sends plain text.\n\n**Authentication:** Every request must include an `Authorization: Bearer <api-key>` header. API keys start with `ak_` and are provisioned by the ASLZAR team.\n\n**Rate limit:** 60 requests per minute per API key (in addition to Telegram's own ~30 msg/sec global and ~1 msg/sec per private chat limits). Exceeding ours returns `429 rate_limited` with a `retry_after` field.",
 		contact: {
 			name: "ASLZAR"
 		}
@@ -55,7 +55,7 @@ export const openApiSpec = {
 				tags: ["Messages"],
 				summary: "Send a Telegram message",
 				description:
-					'Sends a Telegram message via the ASLZAR bot to the user identified by the given phone number.\n\n### Flow\n1. Client sends `{ phone, text, parse_mode? }` (phone = digits only).\n2. We look up the phone in our users collection. If no match → `404 user_not_registered`.\n3. We resolve the Telegram `chat_id` from the matched user and call Telegram\'s `sendMessage`.\n\n### Prerequisites\n- The recipient must have started the bot (tapped Start in @aslzar_bot) **and** shared their phone before they can receive messages.\n- By default `text` is sent as plain text. Pass `parse_mode: "HTML"` or `"MarkdownV2"` to format bold, links, code blocks, etc.\n\n### Rate limits\n- **Ours:** 60 requests/minute per API key. Over-limit → `429 rate_limited` with `retry_after` seconds.\n- **Telegram\'s (upstream):** ~30 msg/sec global per bot, ~1 msg/sec per private chat, ~20/min per group. If Telegram throttles us, we pass through `429 rate_limited` with its `retry_after`.',
+					'Sends a Telegram message via the ASLZAR bot to the user identified by the given phone number.\n\n### Flow\n1. Client sends `{ phone, text, parse_mode? }` (phone = digits only).\n2. We look up the phone in our users collection. If no match → `404 user_not_registered`.\n3. We resolve the Telegram `chat_id` from the matched user and call Telegram\'s `sendMessage`.\n\n### Prerequisites\n- The recipient must have started the bot (tapped Start in @aslzaruzbot) **and** shared their phone before they can receive messages.\n- By default `text` is sent as plain text. Pass `parse_mode: "HTML"` or `"MarkdownV2"` to format bold, links, code blocks, etc.\n\n### Rate limits\n- **Ours:** 60 requests/minute per API key. Over-limit → `429 rate_limited` with `retry_after` seconds.\n- **Telegram\'s (upstream):** ~30 msg/sec global per bot, ~1 msg/sec per private chat, ~20/min per group. If Telegram throttles us, we pass through `429 rate_limited` with its `retry_after`.',
 				requestBody: {
 					required: true,
 					content: {
@@ -180,7 +180,7 @@ export const openApiSpec = {
 						pattern: "^\\d{7,15}$",
 						example: "998957770000",
 						description:
-							"Customer phone number — digits only, no `+` sign, no spaces, no punctuation. 7–15 digits. Must match a Telegram user who has already started @aslzar_bot and shared their phone. If no user is found with this phone, the API returns `404 user_not_registered`."
+							"Customer phone number — digits only, no `+` sign, no spaces, no punctuation. 7–15 digits. Must match a Telegram user who has already started @aslzaruzbot and shared their phone. If no user is found with this phone, the API returns `404 user_not_registered`."
 					},
 					text: {
 						type: "string",

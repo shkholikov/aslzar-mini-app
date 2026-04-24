@@ -35,7 +35,7 @@ Send a Telegram message (confirmation code, notification) to a user identified b
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `phone` | string | Yes | Customer phone — **digits only, no `+` sign, no spaces, no punctuation**. Must match `/^\d{7,15}$/`. The user **must have already started @aslzar_bot and shared their phone**, otherwise the API returns `404 user_not_registered`. |
+| `phone` | string | Yes | Customer phone — **digits only, no `+` sign, no spaces, no punctuation**. Must match `/^\d{7,15}$/`. The user **must have already started @aslzaruzbot and shared their phone**, otherwise the API returns `404 user_not_registered`. |
 | `text` | string | Yes | 1–4096 characters. Plain text by default. Use `parse_mode` to enable formatting. |
 | `parse_mode` | string | No | One of `"HTML"`, `"MarkdownV2"`, `"Markdown"`. Omit to send plain text (default). See [Telegram formatting options](https://core.telegram.org/bots/api#formatting-options). |
 
@@ -77,7 +77,7 @@ Send a Telegram message (confirmation code, notification) to a user identified b
 | 401 | `invalid_api_key` | Key not recognized. |
 | 403 | `disabled_api_key` | Key was disabled by admin. |
 | 403 | `user_blocked_bot` | User blocked the bot. |
-| 403 | `user_not_started` | User started the bot once but hasn't shared their phone, and Telegram now refuses to let us initiate the conversation. Ask them to re-open @aslzar_bot. |
+| 403 | `user_not_started` | User started the bot once but hasn't shared their phone, and Telegram now refuses to let us initiate the conversation. Ask them to re-open @aslzaruzbot. |
 | 403 | `user_deactivated` | User's Telegram account is deactivated. |
 | **404** | **`user_not_registered`** | **Phone does not match any user who has started @aslzaruzbot. Ask the user to open the bot, tap Start, then register in the mini app.** |
 | 429 | `rate_limited` | Hit a rate limit — either ours (60 req/min per API key) or Telegram's (see below). Response includes `retry_after` seconds; wait that long, then retry. |
@@ -100,7 +100,7 @@ If Telegram throttles us, we map it to the same `429 rate_limited` with their `r
 ## Quickstart for external devs
 
 1. Get an API key from the ASLZAR team.
-2. Tell your customer to open **@aslzar_bot** in Telegram, tap **Start**, and share their phone number when prompted. This is a one-time step — Telegram requires it before any bot can send them messages.
+2. Tell your customer to open **@aslzaruzbot** in Telegram, tap **Start**, and share their phone number when prompted. This is a one-time step — Telegram requires it before any bot can send them messages.
 3. Send the message using the phone they registered with (digits only, no `+`):
 
 ```bash
