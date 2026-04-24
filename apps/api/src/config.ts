@@ -31,6 +31,8 @@ export const config = {
 	MONGO_DB_CONNECTION_STRING: required("MONGO_DB_CONNECTION_STRING"),
 	MONGO_DB_NAME: required("MONGO_DB_NAME"),
 	MONGO_DB_COLLECTION_API_KEYS: process.env.MONGO_DB_COLLECTION_API_KEYS || "api_keys",
+	MONGO_DB_COLLECTION_USERS: process.env.MONGO_DB_COLLECTION_USERS || "users",
+	MONGO_DB_COLLECTION_API_CALLS: process.env.MONGO_DB_COLLECTION_API_CALLS || "api_calls",
 	BOT_TOKEN: required("BOT_TOKEN"),
 	PORT: parseInt(process.env.PORT || "3001", 10)
 };

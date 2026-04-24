@@ -2,6 +2,7 @@ import { config } from "./config";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import { requireApiKey } from "./auth";
+import { rateLimitByApiKey } from "./rate-limit";
 import { sendMessageHandler } from "./routes/send-message";
 import { openApiSpec } from "./openapi";
 
@@ -32,7 +33,7 @@ app.use(
 	})
 );
 
-app.post("/v1/external/sendMessage", requireApiKey, sendMessageHandler);
+app.post("/v1/external/sendMessage", requireApiKey, rateLimitByApiKey, sendMessageHandler);
 
 app.use((_req, res) => {
 	res.status(404).json({

@@ -1,8 +1,11 @@
 import { config } from "./config";
 
+export type TelegramParseMode = "HTML" | "MarkdownV2" | "Markdown";
+
 export type SendMessageParams = {
 	chat_id: string | number;
 	text: string;
+	parse_mode?: TelegramParseMode;
 };
 
 export type TelegramMessage = {
@@ -45,11 +48,7 @@ export async function sendTelegramMessage(params: SendMessageParams): Promise<Te
 	};
 
 	if (!data.ok || !data.result) {
-		throw new TelegramApiError(
-			data.description || "Telegram API error",
-			data.error_code ?? res.status,
-			data.parameters?.retry_after
-		);
+		throw new TelegramApiError(data.description || "Telegram API error", data.error_code ?? res.status, data.parameters?.retry_after);
 	}
 	return data.result;
 }

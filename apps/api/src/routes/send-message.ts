@@ -1,11 +1,20 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 import { z } from "zod";
 import { sendTelegramMessage, TelegramApiError } from "../telegram";
+import { findTelegramIdByPhone, getApiCallsCollection, type ApiCallStatus } from "../db";
+import type { AuthedRequest, AuthenticatedApiKey } from "../auth";
 
+/**
+ * `phone` must be digits-only, no '+' or separators.
+ * The bot stores `value.phone_number` as digits-only (see apps/bot/src/bot.ts:105,
+ * which normalizes via `.replace(/\D/g, "")`). Keeping the input contract strict
+ * means lookups are a direct equality match with zero normalization drift.
+ */
 const SendMessageSchema = z
 	.object({
-		chat_id: z.union([z.string().min(1), z.number()]),
-		text: z.string().min(1).max(4096)
+		phone: z.string().regex(/^\d{7,15}$/, "phone must contain 7–15 digits only, no '+' or separators"),
+		text: z.string().min(1).max(4096),
+		parse_mode: z.enum(["HTML", "MarkdownV2", "Markdown"]).optional()
 	})
 	.strict();
 
@@ -34,9 +43,55 @@ function mapTelegramError(errorCode: number, description: string): MappedError {
 	return { status: 502, code: "telegram_error" };
 }
 
-export async function sendMessageHandler(req: Request, res: Response): Promise<void> {
+type AuditInput = {
+	apiKey: AuthenticatedApiKey;
+	phone: string;
+	chatId?: number;
+	status: ApiCallStatus;
+	errorCode?: string;
+	telegramMessageId?: number;
+};
+
+function logApiCall(input: AuditInput): void {
+	// Fire-and-forget — the response is returned before this promise resolves.
+	getApiCallsCollection()
+		.then((col) =>
+			col.insertOne({
+				apiKeyId: input.apiKey.id,
+				apiKeyName: input.apiKey.name,
+				phone: input.phone,
+				chatId: input.chatId,
+				status: input.status,
+				errorCode: input.errorCode,
+				telegramMessageId: input.telegramMessageId,
+				createdAt: new Date()
+			})
+		)
+		.catch((err) => {
+			console.error("[sendMessage] audit log write failed", err);
+		});
+}
+
+export async function sendMessageHandler(req: AuthedRequest, res: Response): Promise<void> {
+	const apiKey = req.apiKey;
+	if (!apiKey) {
+		// requireApiKey should have blocked this path; defensive guard.
+		res.status(500).json({
+			ok: false,
+			error: { code: "internal_error", message: "Missing authenticated API key context" }
+		});
+		return;
+	}
+
 	const parseResult = SendMessageSchema.safeParse(req.body);
 	if (!parseResult.success) {
+		const attemptedPhone = typeof (req.body as { phone?: unknown })?.phone === "string" ? ((req.body as { phone: string }).phone) : "";
+		logApiCall({
+			apiKey,
+			phone: attemptedPhone,
+			status: "invalid_request",
+			errorCode: "invalid_request"
+		});
 		res.status(400).json({
 			ok: false,
 			error: {
@@ -48,12 +103,51 @@ export async function sendMessageHandler(req: Request, res: Response): Promise<v
 		return;
 	}
 
+	const { phone, text, parse_mode } = parseResult.data;
+
+	const chatId = await findTelegramIdByPhone(phone);
+	if (chatId === null) {
+		logApiCall({
+			apiKey,
+			phone,
+			status: "user_not_registered",
+			errorCode: "user_not_registered"
+		});
+		res.status(404).json({
+			ok: false,
+			error: {
+				code: "user_not_registered",
+				message:
+					"No user with that phone number has started the bot yet. Ask the user to open @aslzar_bot and tap Start, then share their phone."
+			}
+		});
+		return;
+	}
+
 	try {
-		const result = await sendTelegramMessage(parseResult.data);
+		const result = await sendTelegramMessage({
+			chat_id: chatId,
+			text,
+			...(parse_mode && { parse_mode })
+		});
+		logApiCall({
+			apiKey,
+			phone,
+			chatId,
+			status: "sent",
+			telegramMessageId: result.message_id
+		});
 		res.status(200).json({ ok: true, result });
 	} catch (err) {
 		if (err instanceof TelegramApiError) {
 			const { status, code } = mapTelegramError(err.errorCode, err.description);
+			logApiCall({
+				apiKey,
+				phone,
+				chatId,
+				status: "telegram_error",
+				errorCode: code
+			});
 			res.status(status).json({
 				ok: false,
 				error: {
@@ -65,6 +159,13 @@ export async function sendMessageHandler(req: Request, res: Response): Promise<v
 			return;
 		}
 		console.error("[sendMessage] internal error", err);
+		logApiCall({
+			apiKey,
+			phone,
+			chatId,
+			status: "telegram_error",
+			errorCode: "internal_error"
+		});
 		res.status(500).json({
 			ok: false,
 			error: { code: "internal_error", message: "Unexpected server error" }

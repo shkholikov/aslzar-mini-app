@@ -14,7 +14,7 @@ export const openApiSpec = {
 		title: "ASLZAR BOT External API",
 		version: "1.0.0",
 		description:
-			"HTTP service that lets authorized external developers send plain-text Telegram messages (confirmation codes, notifications) via the ASLZAR bot.\n\n**Authentication:** Every request must include an `Authorization: Bearer <api-key>` header. API keys start with `ak_` and are provisioned by the ASLZAR team.",
+			"HTTP service that lets authorized external developers send Telegram messages (confirmation codes, notifications) via the ASLZAR bot.\n\n**How it works**\n- Send the customer's phone number (digits only, no `+`). We look it up in our database to find the matching Telegram user.\n- If no match is found, we return `user_not_registered` — the user must first open **@aslzar_bot** and tap **Start**, then share their phone.\n- Text can optionally be formatted via `parse_mode` (HTML or MarkdownV2). Omitting `parse_mode` sends plain text.\n\n**Authentication:** Every request must include an `Authorization: Bearer <api-key>` header. API keys start with `ak_` and are provisioned by the ASLZAR team.\n\n**Rate limit:** 60 requests per minute per API key (in addition to Telegram's own ~30 msg/sec global and ~1 msg/sec per private chat limits). Exceeding ours returns `429 rate_limited` with a `retry_after` field.",
 		contact: {
 			name: "ASLZAR"
 		}
@@ -55,7 +55,7 @@ export const openApiSpec = {
 				tags: ["Messages"],
 				summary: "Send a Telegram message",
 				description:
-					"Sends a plain-text message via the ASLZAR bot to the specified Telegram chat.\n\n### Prerequisites\n- The recipient must have started the bot (tapped Start in @aslzar_bot) before they can receive messages. Telegram does not allow bots to initiate conversations.\n- `text` is sent as plain text — no Markdown or HTML parsing.\n\n### Rate limits\n- Telegram global: ~30 messages/second per bot\n- Per private chat: ~1 message/second (burst up to 4)\n- Per group: ~20 messages/minute\n\nWhen Telegram rate-limits us, you get a `429` with `retry_after` seconds.",
+					'Sends a Telegram message via the ASLZAR bot to the user identified by the given phone number.\n\n### Flow\n1. Client sends `{ phone, text, parse_mode? }` (phone = digits only).\n2. We look up the phone in our users collection. If no match → `404 user_not_registered`.\n3. We resolve the Telegram `chat_id` from the matched user and call Telegram\'s `sendMessage`.\n\n### Prerequisites\n- The recipient must have started the bot (tapped Start in @aslzar_bot) **and** shared their phone before they can receive messages.\n- By default `text` is sent as plain text. Pass `parse_mode: "HTML"` or `"MarkdownV2"` to format bold, links, code blocks, etc.\n\n### Rate limits\n- **Ours:** 60 requests/minute per API key. Over-limit → `429 rate_limited` with `retry_after` seconds.\n- **Telegram\'s (upstream):** ~30 msg/sec global per bot, ~1 msg/sec per private chat, ~20/min per group. If Telegram throttles us, we pass through `429 rate_limited` with its `retry_after`.',
 				requestBody: {
 					required: true,
 					content: {
@@ -63,17 +63,26 @@ export const openApiSpec = {
 							schema: { $ref: "#/components/schemas/SendMessageRequest" },
 							examples: {
 								confirmationCode: {
-									summary: "Confirmation code",
+									summary: "Plain confirmation code",
 									value: {
-										chat_id: 123456789,
+										phone: "998940601154",
 										text: "Your ASLZAR verification code is 482913"
 									}
 								},
-								channelPost: {
-									summary: "Post to channel by username",
+								htmlFormatted: {
+									summary: "HTML-formatted message",
 									value: {
-										chat_id: "@aslzar_news",
-										text: "New products available — check the catalog!"
+										phone: "998940601154",
+										text: "Your code: <b>482913</b>. Expires in 5 minutes.",
+										parse_mode: "HTML"
+									}
+								},
+								markdownFormatted: {
+									summary: "MarkdownV2-formatted message",
+									value: {
+										phone: "998940601154",
+										text: "Order ready\\! Track it here: [link](https://example\\.com/track/123)",
+										parse_mode: "MarkdownV2"
 									}
 								}
 							}
@@ -90,7 +99,7 @@ export const openApiSpec = {
 						}
 					},
 					"400": {
-						description: "Invalid request body or Telegram rejected the chat_id/text",
+						description: "Invalid request body (failed phone/text validation) or Telegram rejected the message",
 						content: {
 							"application/json": {
 								schema: { $ref: "#/components/schemas/ErrorResponse" }
@@ -106,7 +115,16 @@ export const openApiSpec = {
 						}
 					},
 					"403": {
-						description: "Telegram refused to deliver (user blocked bot, hasn't started bot, etc.)",
+						description: "Telegram refused to deliver (user blocked bot, user deactivated, bot kicked from group, etc.)",
+						content: {
+							"application/json": {
+								schema: { $ref: "#/components/schemas/ErrorResponse" }
+							}
+						}
+					},
+					"404": {
+						description:
+							"Phone does not match any user who has started @aslzar_bot. Ask the user to open the bot, tap Start, then share their phone. Error code: `user_not_registered`.",
 						content: {
 							"application/json": {
 								schema: { $ref: "#/components/schemas/ErrorResponse" }
@@ -114,7 +132,8 @@ export const openApiSpec = {
 						}
 					},
 					"429": {
-						description: "Rate limited by Telegram. Response includes retry_after seconds.",
+						description:
+							"Rate limited. Either our per-key limit (60 req/min) or Telegram's (~30 msg/sec global / ~1 msg/sec per chat). Response includes `retry_after` seconds.",
 						content: {
 							"application/json": {
 								schema: { $ref: "#/components/schemas/ErrorResponse" }
@@ -153,23 +172,29 @@ export const openApiSpec = {
 		schemas: {
 			SendMessageRequest: {
 				type: "object",
-				required: ["chat_id", "text"],
+				required: ["phone", "text"],
 				additionalProperties: false,
 				properties: {
-					chat_id: {
-						oneOf: [
-							{ type: "integer", example: 123456789 },
-							{ type: "string", example: "@aslzar_news" }
-						],
+					phone: {
+						type: "string",
+						pattern: "^\\d{7,15}$",
+						example: "998940601154",
 						description:
-							"Telegram chat identifier.\n- For private 1:1 chats: the user's Telegram ID (positive integer)\n- For channels: `@channelusername` or the negative channel ID\n- For groups/supergroups: the negative group ID"
+							"Customer phone number — digits only, no `+` sign, no spaces, no punctuation. 7–15 digits. Must match a Telegram user who has already started @aslzar_bot and shared their phone. If no user is found with this phone, the API returns `404 user_not_registered`."
 					},
 					text: {
 						type: "string",
 						minLength: 1,
 						maxLength: 4096,
-						description: "Message body. Plain text only — 1 to 4096 characters.",
-						example: "Your code is 482913"
+						description:
+							"Message body. 1–4096 characters. By default sent as plain text. Use `parse_mode` to enable HTML/Markdown formatting.",
+						example: "Your ASLZAR verification code is 482913"
+					},
+					parse_mode: {
+						type: "string",
+						enum: ["HTML", "MarkdownV2", "Markdown"],
+						description:
+							'Optional formatting mode for `text`. Omit (the default) to send plain text with no parsing. `HTML` supports `<b>`, `<i>`, `<a href="...">`, `<code>`, etc. `MarkdownV2` uses `*bold*`, `_italic_`, `[link](url)` syntax — special characters like `.`, `-`, `(`, `)` **must** be escaped with a backslash per Telegram\'s rules. `Markdown` is legacy and officially deprecated — prefer `MarkdownV2`. See https://core.telegram.org/bots/api#formatting-options'
 					}
 				}
 			},
@@ -215,6 +240,7 @@ export const openApiSpec = {
 									"invalid_authorization_scheme",
 									"invalid_api_key",
 									"disabled_api_key",
+									"user_not_registered",
 									"chat_not_found",
 									"text_too_long",
 									"empty_text",
