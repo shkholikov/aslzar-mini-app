@@ -81,7 +81,7 @@ export async function getUsersCollection(): Promise<Collection<UserSessionDoc>> 
 
 /**
  * Finds a user's Telegram ID by phone number.
- * @param phone Digits-only phone (e.g. "998940601154") — the exact format the bot
+ * @param phone Digits-only phone (e.g. "998957770000") — the exact format the bot
  *              writes to `value.phone_number` (see apps/bot/src/bot.ts:105, which
  *              normalizes incoming contact.phone_number via `replace(/\D/g, "")`).
  *              No normalization happens here; the caller must pass digits only.

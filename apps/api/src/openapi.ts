@@ -65,14 +65,14 @@ export const openApiSpec = {
 								confirmationCode: {
 									summary: "Plain confirmation code",
 									value: {
-										phone: "998940601154",
+										phone: "998957770000",
 										text: "Your ASLZAR verification code is 482913"
 									}
 								},
 								htmlFormatted: {
 									summary: "HTML-formatted message",
 									value: {
-										phone: "998940601154",
+										phone: "998957770000",
 										text: "Your code: <b>482913</b>. Expires in 5 minutes.",
 										parse_mode: "HTML"
 									}
@@ -80,7 +80,7 @@ export const openApiSpec = {
 								markdownFormatted: {
 									summary: "MarkdownV2-formatted message",
 									value: {
-										phone: "998940601154",
+										phone: "998957770000",
 										text: "Order ready\\! Track it here: [link](https://example\\.com/track/123)",
 										parse_mode: "MarkdownV2"
 									}
@@ -178,7 +178,7 @@ export const openApiSpec = {
 					phone: {
 						type: "string",
 						pattern: "^\\d{7,15}$",
-						example: "998940601154",
+						example: "998957770000",
 						description:
 							"Customer phone number — digits only, no `+` sign, no spaces, no punctuation. 7–15 digits. Must match a Telegram user who has already started @aslzar_bot and shared their phone. If no user is found with this phone, the API returns `404 user_not_registered`."
 					},

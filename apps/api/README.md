@@ -28,7 +28,7 @@ Send a Telegram message (confirmation code, notification) to a user identified b
 
 ```json
 {
-  "phone": "998940601154",
+  "phone": "998957770000",
   "text": "Your confirmation code is 123456"
 }
 ```
@@ -108,7 +108,7 @@ curl -X POST https://api.aslzarbot.uz/v1/external/sendMessage \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ak_YOUR_KEY" \
   -d '{
-    "phone": "998940601154",
+    "phone": "998957770000",
     "text": "Your ASLZAR confirmation code: 123456"
   }'
 ```
@@ -120,7 +120,7 @@ curl -X POST https://api.aslzarbot.uz/v1/external/sendMessage \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ak_YOUR_KEY" \
   -d '{
-    "phone": "998940601154",
+    "phone": "998957770000",
     "text": "Your code: <b>482913</b>. Expires in 5 minutes.",
     "parse_mode": "HTML"
   }'
@@ -148,7 +148,7 @@ pnpm --filter api create-key "local-dev"
 curl -X POST http://localhost:3001/v1/external/sendMessage \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ak_..." \
-  -d '{ "phone": "998940601154", "text": "Hello" }'
+  -d '{ "phone": "998957770000", "text": "Hello" }'
 ```
 
 ## Production build
