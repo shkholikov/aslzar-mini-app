@@ -124,7 +124,7 @@ export const openApiSpec = {
 					},
 					"404": {
 						description:
-							"Phone does not match any user who has started @aslzar_bot. Ask the user to open the bot, tap Start, then share their phone. Error code: `user_not_registered`.",
+							"Phone does not match any user who has started @aslzaruzbot. Ask the user to open the bot, tap Start, then register in the mini app. Error code: `user_not_registered`.",
 						content: {
 							"application/json": {
 								schema: { $ref: "#/components/schemas/ErrorResponse" }

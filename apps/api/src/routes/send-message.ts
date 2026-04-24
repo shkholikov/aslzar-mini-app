@@ -85,7 +85,7 @@ export async function sendMessageHandler(req: AuthedRequest, res: Response): Pro
 
 	const parseResult = SendMessageSchema.safeParse(req.body);
 	if (!parseResult.success) {
-		const attemptedPhone = typeof (req.body as { phone?: unknown })?.phone === "string" ? ((req.body as { phone: string }).phone) : "";
+		const attemptedPhone = typeof (req.body as { phone?: unknown })?.phone === "string" ? (req.body as { phone: string }).phone : "";
 		logApiCall({
 			apiKey,
 			phone: attemptedPhone,
@@ -118,7 +118,7 @@ export async function sendMessageHandler(req: AuthedRequest, res: Response): Pro
 			error: {
 				code: "user_not_registered",
 				message:
-					"No user with that phone number has started the bot yet. Ask the user to open @aslzar_bot and tap Start, then share their phone."
+					"No user with that phone number has started the bot yet. Ask the user to open @aslzaruzbot and tap Start, then register in the mini app."
 			}
 		});
 		return;

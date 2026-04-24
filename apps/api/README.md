@@ -60,7 +60,7 @@ Send a Telegram message (confirmation code, notification) to a user identified b
   "ok": false,
   "error": {
     "code": "user_not_registered",
-    "message": "No user with that phone number has started the bot yet. Ask the user to open @aslzar_bot and tap Start, then share their phone."
+    "message": "No user with that phone number has started the bot yet. Ask the user to open @aslzaruzbot and tap Start, then register in the mini app."
   }
 }
 ```
@@ -79,7 +79,7 @@ Send a Telegram message (confirmation code, notification) to a user identified b
 | 403 | `user_blocked_bot` | User blocked the bot. |
 | 403 | `user_not_started` | User started the bot once but hasn't shared their phone, and Telegram now refuses to let us initiate the conversation. Ask them to re-open @aslzar_bot. |
 | 403 | `user_deactivated` | User's Telegram account is deactivated. |
-| **404** | **`user_not_registered`** | **Phone does not match any user who has started @aslzar_bot. Ask the user to open the bot, tap Start, then share their phone.** |
+| **404** | **`user_not_registered`** | **Phone does not match any user who has started @aslzaruzbot. Ask the user to open the bot, tap Start, then register in the mini app.** |
 | 429 | `rate_limited` | Hit a rate limit — either ours (60 req/min per API key) or Telegram's (see below). Response includes `retry_after` seconds; wait that long, then retry. |
 | 502 | `bot_misconfigured` | Server-side bot token issue. |
 | 502 | `telegram_unavailable` | Telegram API is down or 5xx. |
