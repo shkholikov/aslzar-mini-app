@@ -77,7 +77,7 @@ export function ChannelSubscribeCard() {
 
 	if (isMember === null) {
 		return (
-			<SectionCard iconImage="/icons/discussion.png" title="Kanalga obuna bo'ling">
+			<SectionCard iconImage="/icons/discussion.webp" title="Kanalga obuna bo'ling">
 				<Skeleton className="h-3 w-full mb-1" />
 				<Skeleton className="h-3 w-3/4 mb-4" />
 				<div className="flex flex-col gap-2">
@@ -91,7 +91,7 @@ export function ChannelSubscribeCard() {
 	if (isMember) return null;
 
 	return (
-		<SectionCard iconImage="/icons/discussion.png" title="Kanalga obuna bo'ling">
+		<SectionCard iconImage="/icons/discussion.webp" title="Kanalga obuna bo'ling">
 			<p className="text-muted-foreground text-sm mb-4">
 				Yangiliklar va maxsus takliflar — ASLZAR rasmiy Telegram kanalimizda. Obuna bo&apos;ling va yangiliklardan xabardor bo&apos;ling.
 			</p>

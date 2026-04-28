@@ -56,8 +56,9 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
+				<link rel="preconnect" href="https://telegram.org" crossOrigin="" />
+				<link rel="dns-prefetch" href="https://telegram.org" />
 				<Script src="https://telegram.org/js/telegram-web-app.js?59" strategy="beforeInteractive" />
-				<Script async src="https://telegram.org/js/telegram-widget.js?22" strategy="afterInteractive" />
 				<Script src="/scripts/disableZoom.js" strategy="afterInteractive" />
 			</head>
 			<body

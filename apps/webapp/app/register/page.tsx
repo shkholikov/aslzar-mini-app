@@ -195,8 +195,8 @@ export default function RegisterPage() {
 	if (userLoading && step === "share_phone") {
 		return (
 			<div className="pt-12">
-				<Header title="Ro'yxatdan o'tish" description="ASLZAR platformasida ro'yxatdan o'ting" iconImage="/icons/paper.png" />
-				<SectionCard iconImage="/icons/user.png" title="Ro'yxatdan o'tish">
+				<Header title="Ro'yxatdan o'tish" description="ASLZAR platformasida ro'yxatdan o'ting" iconImage="/icons/paper.webp" />
+				<SectionCard iconImage="/icons/user.webp" title="Ro'yxatdan o'tish">
 					<Skeleton className="h-3 w-full mb-1" />
 					<Skeleton className="h-3 w-3/4 mb-4" />
 					<Skeleton className="h-10 w-full rounded-md" />
@@ -207,10 +207,10 @@ export default function RegisterPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Ro'yxatdan o'tish" description="ASLZAR platformasida ro'yxatdan o'ting va mijozimizga aylaning" iconImage="/icons/paper.png" />
+			<Header title="Ro'yxatdan o'tish" description="ASLZAR platformasida ro'yxatdan o'ting va mijozimizga aylaning" iconImage="/icons/paper.webp" />
 
 			{step === "share_phone" && (
-				<SectionCard iconImage="/icons/user.png" title="Ro'yxatdan o'tish">
+				<SectionCard iconImage="/icons/user.webp" title="Ro'yxatdan o'tish">
 					{contactLoading ? (
 						<div className="flex flex-col items-center py-6 gap-3">
 							<Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -238,7 +238,7 @@ export default function RegisterPage() {
 
 			{step === "form" && (
 				<form onSubmit={handleSubmit(onSubmit)}>
-					<SectionCard iconImage="/icons/user.png" title="Ro'yxatdan o'tish ma'lumotlari">
+					<SectionCard iconImage="/icons/user.webp" title="Ro'yxatdan o'tish ma'lumotlari">
 						<FieldGroup>
 							<FieldSet>
 								<FieldDescription>Iltimos, ism va familiyangizni kiriting</FieldDescription>
@@ -288,7 +288,7 @@ export default function RegisterPage() {
 			)}
 
 			{step === "verification_success" && (
-				<SectionCard iconImage="/icons/user.png" title="Hisobingiz tasdiqlandi">
+				<SectionCard iconImage="/icons/user.webp" title="Hisobingiz tasdiqlandi">
 					<div className="text-center">
 						<p className="text-muted-foreground text-sm mb-4">Endi platformaning barcha imkoniyatlaridan foydalanishingiz mumkin.</p>
 						<div className="flex justify-center">
@@ -302,7 +302,7 @@ export default function RegisterPage() {
 			)}
 
 			{step === "registration_success" && (
-				<SectionCard iconImage="/icons/user.png" title="Muvaffaqiyatli tasdiqlandi">
+				<SectionCard iconImage="/icons/user.webp" title="Muvaffaqiyatli tasdiqlandi">
 					<div className="text-center">
 						<p className="text-muted-foreground text-sm mb-4">
 							Siz muvaffaqiyatli tasdiqlandingiz! Xush kelibsiz! Endi platformaning barcha imkoniyatlaridan foydalanishingiz mumkin.

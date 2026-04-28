@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
+import useSWR from "swr";
 import type { CatalogProduct } from "@/lib/db";
 
 interface ProductsContextType {
@@ -10,19 +11,29 @@ interface ProductsContextType {
 
 const ProductsContext = createContext<ProductsContextType | null>(null);
 
+const productsFetcher = async (url: string): Promise<CatalogProduct[]> => {
+	const res = await fetch(url);
+	if (!res.ok) return [];
+	const data = await res.json();
+	return Array.isArray(data.products) ? data.products : [];
+};
+
 export function ProductsProvider({ children }: { children: ReactNode }) {
-	const [products, setProducts] = useState<CatalogProduct[]>([]);
-	const [loading, setLoading] = useState(true);
+	const { data, isLoading } = useSWR("/api/products", productsFetcher, {
+		revalidateOnFocus: false,
+		dedupingInterval: 60_000,
+		keepPreviousData: true
+	});
 
-	useEffect(() => {
-		fetch("/api/products")
-			.then((res) => res.json())
-			.then((data) => setProducts(Array.isArray(data.products) ? data.products : []))
-			.catch(() => setProducts([]))
-			.finally(() => setLoading(false));
-	}, []);
+	const value = useMemo<ProductsContextType>(
+		() => ({
+			products: data ?? [],
+			loading: isLoading && data === undefined
+		}),
+		[data, isLoading]
+	);
 
-	return <ProductsContext.Provider value={{ products, loading }}>{children}</ProductsContext.Provider>;
+	return <ProductsContext.Provider value={value}>{children}</ProductsContext.Provider>;
 }
 
 export function useProducts() {

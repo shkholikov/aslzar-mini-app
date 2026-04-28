@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useMemo } from "react";
+import useSWR from "swr";
 import { useTelegram } from "./useTelegram";
 
 interface UserContextType {
@@ -12,73 +13,38 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | null>(null);
 
-interface UserProviderProps {
-	children: ReactNode;
-}
+const userFetcher = async (url: string) => {
+	const response = await fetch(url);
+	if (response.status === 404) return null;
+	if (!response.ok) throw new Error(`Failed to fetch user data: ${response.status}`);
+	return response.json();
+};
 
-export function UserProvider({ children }: UserProviderProps) {
+export function UserProvider({ children }: { children: ReactNode }) {
 	const tg = useTelegram();
-	const [data, setData] = useState<any | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const userId = tg?.initDataUnsafe?.user?.id?.toString();
+	const swrKey = userId ? `/api/users?userId=${userId}` : null;
 
-	const fetchUserData = async () => {
-		if (!tg) {
-			setLoading(false);
-			return;
-		}
+	const { data, error, isLoading, mutate } = useSWR(swrKey, userFetcher, {
+		revalidateOnFocus: false,
+		dedupingInterval: 60_000,
+		keepPreviousData: true,
+		errorRetryCount: 2
+	});
 
-		try {
-			setLoading(true);
-			setError(null);
-
-			const userData = tg.initDataUnsafe?.user;
-			const userId = userData?.id?.toString();
-
-			if (!userId) {
-				setLoading(false);
-				return;
+	const value = useMemo<UserContextType>(
+		() => ({
+			data: data ?? null,
+			loading: !tg || (swrKey !== null && isLoading && data === undefined),
+			error: error ? (error instanceof Error ? error.message : String(error)) : null,
+			refreshUserData: async () => {
+				await mutate();
 			}
-
-			const response = await fetch(`/api/users?userId=${userId}`);
-			if (!response.ok) {
-				// 404 = user not registered yet (no phone in session) — treat as no data, not an error
-				if (response.status === 404) {
-					setData(null);
-					return;
-				}
-				throw new Error(`Failed to fetch user data: ${response.status}`);
-			}
-
-			const responseData = await response.json();
-			setData(responseData);
-		} catch (err) {
-			console.error("Error fetching 1C user data:", err);
-			setError(err instanceof Error ? err.message : "Failed to fetch user data");
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		if (tg) {
-			fetchUserData();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [tg]);
-
-	return (
-		<UserContext.Provider
-			value={{
-				data,
-				loading,
-				error,
-				refreshUserData: fetchUserData
-			}}
-		>
-			{children}
-		</UserContext.Provider>
+		}),
+		[tg, swrKey, data, isLoading, error, mutate]
 	);
+
+	return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {
