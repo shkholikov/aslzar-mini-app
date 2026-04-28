@@ -4,8 +4,8 @@ import { Separator } from "../ui/separator";
 import type { ElementType } from "react";
 import Image from "next/image";
 
-// Use Next.js Image Optimization so text-bg is served as WebP/AVIF and cached
-const TEXT_BG_OPTIMIZED = "/_next/image?url=" + encodeURIComponent("/images/text-bg.png") + "&w=828&q=75";
+// Pre-optimized WebP — already 828px wide, no Next.js Image Optimizer roundtrip needed.
+const TEXT_BG_OPTIMIZED = "/images/text-bg.webp";
 
 interface HeaderProps {
 	title: string;
