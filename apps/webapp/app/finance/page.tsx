@@ -15,11 +15,11 @@ export default function FinancePage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz" iconImage="/icons/briefcase.png" />
+			<Header title="Moliyaviy" description="Moliyaviy faoliyatingiz va shartnomalaringiz" iconImage="/icons/briefcase.webp" />
 			<div>
 				{loading ? (
 					<>
-						<SectionCard iconImage="/icons/statistics.png" title="Moliyaviy Statistika">
+						<SectionCard iconImage="/icons/statistics.webp" title="Moliyaviy Statistika">
 							<div className="flex flex-wrap gap-2">
 								{[0, 1, 2, 3, 4].map((i) => (
 									<div key={i} className="flex-1 min-w-[calc(50%-0.5rem)] rounded-4xl border-2 px-4 py-3 flex flex-col items-center gap-2">
@@ -30,7 +30,7 @@ export default function FinancePage() {
 								))}
 							</div>
 						</SectionCard>
-						<SectionCard iconImage="/icons/contract.png" title="Shartnomalar">
+						<SectionCard iconImage="/icons/contract.webp" title="Shartnomalar">
 							<div className="flex flex-col gap-2 mt-2">
 								{[0, 1, 2].map((i) => (
 									<div key={i} className="flex gap-4">

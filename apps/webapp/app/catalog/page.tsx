@@ -71,8 +71,8 @@ export default function CatalogPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.png" />
-			<SectionCard iconImage="/icons/book.png" title="Mahsulotlar" bare>
+			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.webp" />
+			<SectionCard iconImage="/icons/book.webp" title="Mahsulotlar" bare>
 				<div className="flex justify-end mb-2 gap-1">
 					<button
 						onClick={() => {

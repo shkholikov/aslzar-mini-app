@@ -29,7 +29,7 @@ interface ContractsProps {
 
 export function Contracts({ contracts }: ContractsProps) {
 	return (
-		<SectionCard iconImage="/icons/contract.png" title="Shartnomalar">
+		<SectionCard iconImage="/icons/contract.webp" title="Shartnomalar">
 			<div className="mt-2">
 				<Table>
 					<TableCaption>Sizning hamma aktiv shartnomalaringiz.</TableCaption>

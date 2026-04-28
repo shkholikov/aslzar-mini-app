@@ -17,7 +17,7 @@ export function RegisterPromptCard() {
 	};
 
 	return (
-		<SectionCard iconImage="/icons/user.png" title="Ro'yxatdan o'tish">
+		<SectionCard iconImage="/icons/user.webp" title="Ro'yxatdan o'tish">
 			<p className="text-muted-foreground text-sm mb-4">Siz hali ASLZAR mijozi emassiz. Ro&apos;yxatdan o&apos;ting va Aslzar mijoziga aylaning!</p>
 			<RippleButton variant="outline" size="default" className={`w-full sm:w-auto ${goldButtonClass}`} onClick={handleRegister}>
 				<UserPlus className="size-4 shrink-0" />

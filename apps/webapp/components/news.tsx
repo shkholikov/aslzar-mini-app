@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -20,6 +20,13 @@ interface NewsItem {
 	buttonText?: string | null;
 }
 
+const newsFetcher = async (url: string): Promise<NewsItem[]> => {
+	const res = await fetch(url);
+	if (!res.ok) return [];
+	const data = await res.json();
+	return Array.isArray(data.items) ? data.items : [];
+};
+
 function formatNewsDate(dateStr: string): string {
 	if (!dateStr) return "";
 	try {
@@ -37,27 +44,13 @@ function formatNewsDate(dateStr: string): string {
 
 export function News() {
 	const tg = useTelegram();
-	const [items, setItems] = useState<NewsItem[]>([]);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		let cancelled = false;
-		fetch("/api/news")
-			.then((res) => res.json())
-			.then((data) => {
-				if (cancelled) return;
-				setItems(Array.isArray(data.items) ? data.items : []);
-			})
-			.catch(() => {
-				if (!cancelled) setItems([]);
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, []);
+	const { data, isLoading } = useSWR("/api/news", newsFetcher, {
+		revalidateOnFocus: false,
+		dedupingInterval: 60_000,
+		keepPreviousData: true
+	});
+	const items = data ?? [];
+	const loading = isLoading && data === undefined;
 
 	const openPost = (url: string) => {
 		tg?.HapticFeedback?.impactOccurred("light");
@@ -71,7 +64,7 @@ export function News() {
 	};
 
 	return (
-		<SectionCard iconImage="/icons/news.png" title="Yangiliklar" bare>
+		<SectionCard iconImage="/icons/news.webp" title="Yangiliklar" bare>
 			{loading ? (
 				<div className="flex flex-col gap-4">
 					{[0, 1, 2].map((i) => (

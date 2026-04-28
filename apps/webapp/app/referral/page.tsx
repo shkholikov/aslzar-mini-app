@@ -1,12 +1,13 @@
 "use client";
 
+import useSWR from "swr";
 import { Header } from "@/components/common/header";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { ReferralQRCode } from "./components/referral-qr-code";
 import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BonusInfo } from "./components/bonus-info";
@@ -24,54 +25,41 @@ interface IReferral {
 	contractDate: string;
 }
 
+const referralsFetcher = async (url: string): Promise<IReferral[]> => {
+	const res = await fetch(url);
+	if (!res.ok) throw new Error(`Failed to fetch referrals: ${res.status}`);
+	const json = await res.json();
+	return json?.list ?? [];
+};
+
+const preparedMessageFetcher = async (url: string): Promise<string | null> => {
+	const res = await fetch(url);
+	if (!res.ok) return null;
+	const json = await res.json();
+	return json.preparedMessageId ?? null;
+};
+
 export default function ReferralPage() {
 	const tg = useTelegram();
 	const { data, loading } = useUser();
-	const [preparedMessageId, setPreparedMessageId] = useState<string | null>(null);
-	const [referrals, setReferrals] = useState<IReferral[]>([]);
-	const [referralsLoading, setReferralsLoading] = useState(false);
-	const fetchUserReferrals = useCallback(async () => {
-		if (!data) return;
-		try {
-			setReferralsLoading(true);
-			const clientId = data.clientId;
+	const clientId = data?.clientId;
+	const userId = tg?.initDataUnsafe?.user?.id;
 
-			const response = await fetch(`/api/referral?clientId=${clientId}`);
-			if (!response.ok) {
-				throw new Error(`Failed to fetch referrals data: ${response.status}`);
-			}
+	const {
+		data: referralsData,
+		isLoading: referralsLoading,
+		mutate: refreshReferrals
+	} = useSWR(clientId ? `/api/referral?clientId=${clientId}` : null, referralsFetcher, {
+		revalidateOnFocus: false,
+		dedupingInterval: 60_000,
+		keepPreviousData: true
+	});
+	const referrals = referralsData ?? [];
 
-			const referralsData = await response.json();
-			console.log(referralsData);
-
-			setReferrals(referralsData?.list);
-		} catch (error) {
-			console.error("Error fetching user's referrals data from 1C:", error);
-		} finally {
-			setReferralsLoading(false);
-		}
-	}, [data]);
-
-	useEffect(() => {
-		fetchUserReferrals();
-	}, [fetchUserReferrals]);
-
-	useEffect(() => {
-		if (!tg) return;
-
-		const userId = tg.initDataUnsafe?.user?.id;
-		if (!userId) return;
-
-		// Always generate a fresh prepared message
-		const generate = async () => {
-			const res = await fetch(`/api/referral/link?userId=${userId}`);
-			const data = await res.json();
-
-			setPreparedMessageId(data.preparedMessageId);
-		};
-
-		generate();
-	}, [tg]);
+	const { data: preparedMessageId } = useSWR(userId ? `/api/referral/link?userId=${userId}` : null, preparedMessageFetcher, {
+		revalidateOnFocus: false,
+		dedupingInterval: 60_000
+	});
 
 	// Memoize referral link for stable reference
 	const botLink = process.env.NEXT_PUBLIC_BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
@@ -98,11 +86,11 @@ export default function ReferralPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Referral" description="Sizning referal ma'lumotlaringiz" iconImage="/icons/user.png" />
+			<Header title="Referral" description="Sizning referal ma'lumotlaringiz" iconImage="/icons/user.webp" />
 
 			{loading ? (
 				<>
-					<SectionCard iconImage="/icons/crown.png" title="Bonus ma'lumotlari">
+					<SectionCard iconImage="/icons/crown.webp" title="Bonus ma'lumotlari">
 						<div className="flex flex-wrap gap-2">
 							{[0, 1].map((i) => (
 								<div key={i} className="flex-1 min-w-[calc(50%-0.5rem)] rounded-4xl border-2 px-4 py-3 flex flex-col items-center gap-2">
@@ -113,7 +101,7 @@ export default function ReferralPage() {
 							))}
 						</div>
 					</SectionCard>
-					<SectionCard iconImage="/icons/user.png" title="Referral havolangiz">
+					<SectionCard iconImage="/icons/user.webp" title="Referral havolangiz">
 						<Skeleton className="w-full aspect-square rounded-2xl mb-3" />
 						<Skeleton className="h-9 w-full rounded-md mb-2" />
 						<Skeleton className="h-9 w-full rounded-md" />
@@ -122,13 +110,18 @@ export default function ReferralPage() {
 			) : data && data.code === 0 ? (
 				<>
 					<BonusInfo data={data} />
-					<ReferralQRCode referralLink={referralLink} preparedMessageId={preparedMessageId} onCopy={handleCopy} onShare={handleShare} />
+					<ReferralQRCode
+						referralLink={referralLink}
+						preparedMessageId={preparedMessageId ?? null}
+						onCopy={handleCopy}
+						onShare={handleShare}
+					/>
 					<ProductCarousel />
 					<ReferralsList
 						referrals={referrals}
 						loading={referralsLoading}
 						onReload={() => {
-							fetchUserReferrals();
+							refreshReferrals();
 							tg?.HapticFeedback?.impactOccurred("heavy");
 						}}
 					/>

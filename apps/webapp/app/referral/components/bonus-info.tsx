@@ -21,17 +21,17 @@ export function BonusInfo({ data }: BonusInfoProps) {
 	const remainingBonus = data.bonusOstatok || 0;
 
 	return (
-		<SectionCard iconImage="/icons/oxup.png" title="Bonus ma'lumotlari" bare>
+		<SectionCard iconImage="/icons/oxup.webp" title="Bonus ma'lumotlari" bare>
 			<div className="flex flex-wrap gap-2">
 				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
-					<Image src="/icons/crown.png" alt="Level" width={50} height={50} className="object-contain" />
+					<Image src="/icons/crown.webp" alt="Level" width={50} height={50} sizes="50px" className="object-contain" />
 					<div className="text-xs font-semibold text-center">Level</div>
 					<Badge variant="default" className="bg-[#be9941] text-white">
 						{level}
 					</Badge>
 				</div>
 				<div className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1">
-					<Image src="/icons/bonus.png" alt="Bonus" width={50} height={50} className="object-contain" />
+					<Image src="/icons/bonus.webp" alt="Bonus" width={50} height={50} sizes="50px" className="object-contain" />
 					<div className="text-xs font-semibold text-center">Bonus</div>
 					<Badge variant="default" className="bg-[#be9941] text-white">
 						{remainingBonus.toLocaleString("uz-UZ")} so&apos;m

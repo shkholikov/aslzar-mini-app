@@ -9,7 +9,7 @@ export function UserInfo() {
 	if (!data || data.code !== 0) return null;
 
 	return (
-		<SectionCard iconImage="/icons/user-info.png" title="Asosiy Maʼlumotlar">
+		<SectionCard iconImage="/icons/user-info.webp" title="Asosiy Maʼlumotlar">
 			<p>
 				<strong>FIO:</strong> {data.familiya} {data.imya} {data.otchestvo}
 			</p>

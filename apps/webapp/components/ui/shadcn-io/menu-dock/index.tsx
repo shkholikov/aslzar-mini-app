@@ -24,10 +24,10 @@ export interface MenuDockProps {
 }
 
 const defaultItems: MenuDockItem[] = [
-	{ label: "asosiy", iconImage: "/icons/bank.png" },
-	{ label: "moliyaviy", iconImage: "/icons/briefcase.png" },
-	{ label: "referral", iconImage: "/icons/user.png" },
-	{ label: "boshqa", iconImage: "/icons/box.png" }
+	{ label: "asosiy", iconImage: "/icons/bank.webp" },
+	{ label: "moliyaviy", iconImage: "/icons/briefcase.webp" },
+	{ label: "referral", iconImage: "/icons/user.webp" },
+	{ label: "boshqa", iconImage: "/icons/box.webp" }
 ];
 
 export const MenuDock: React.FC<MenuDockProps> = ({
@@ -171,6 +171,8 @@ export const MenuDock: React.FC<MenuDockProps> = ({
 									alt={item.label}
 									width={24}
 									height={24}
+									priority
+									sizes="24px"
 									className={cn(styles.icon, "object-contain transition-opacity duration-200", !isActive && "opacity-60")}
 								/>
 							) : IconComponent ? (

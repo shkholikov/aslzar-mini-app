@@ -80,7 +80,7 @@ export function Profile() {
 
 							<div className="grid grid-cols-3 gap-2 w-full">
 								<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
-									<Image src="/icons/crown.png" alt="Level" width={64} height={64} className="object-contain" />
+									<Image src="/icons/crown.webp" alt="Level" width={64} height={64} className="object-contain" priority sizes="64px" />
 									<div className="text-sm font-semibold text-center">Level</div>
 									{loading ? (
 										<Skeleton className="h-5 w-14 rounded-full" />
@@ -91,7 +91,15 @@ export function Profile() {
 									)}
 								</div>
 								<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
-									<Image src="/icons/contract.png" alt="Shartnomalar" width={64} height={64} className="object-contain" />
+									<Image
+										src="/icons/contract.webp"
+										alt="Shartnomalar"
+										width={64}
+										height={64}
+										className="object-contain"
+										priority
+										sizes="64px"
+									/>
 									<div className="text-sm font-semibold text-center">Shartnoma</div>
 									{loading ? (
 										<Skeleton className="h-5 w-8 rounded-full" />
@@ -102,7 +110,7 @@ export function Profile() {
 									)}
 								</div>
 								<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
-									<Image src="/icons/bonus.png" alt="Bonus" width={64} height={64} className="object-contain" />
+									<Image src="/icons/bonus.webp" alt="Bonus" width={64} height={64} className="object-contain" priority sizes="64px" />
 									<div className="text-sm font-semibold text-center">Bonus</div>
 									{loading ? (
 										<Skeleton className="h-5 w-20 rounded-full" />

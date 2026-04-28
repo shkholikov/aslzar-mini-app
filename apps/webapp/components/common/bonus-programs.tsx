@@ -77,7 +77,7 @@ export function BonusPrograms() {
 
 	if (loading) {
 		return (
-			<SectionCard iconImage="/icons/crown.png" title="Bonus darajalari haqida">
+			<SectionCard iconImage="/icons/crown.webp" title="Bonus darajalari haqida">
 				<div className="flex gap-2 mb-4">
 					<Skeleton className="h-8 w-20 rounded-md" />
 					<Skeleton className="h-8 w-20 rounded-md" />
@@ -94,7 +94,7 @@ export function BonusPrograms() {
 	if (!bonusProgramList || bonusProgramList.length === 0) return null;
 
 	return (
-		<SectionCard iconImage="/icons/crown.png" title="Bonus darajalari haqida">
+		<SectionCard iconImage="/icons/crown.webp" title="Bonus darajalari haqida">
 			<Tabs defaultValue={bonusProgramList[0]?.uroven} className="w-full items-center">
 				<TabsList>
 					{bonusProgramList.map((program) => (

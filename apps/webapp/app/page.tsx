@@ -34,7 +34,7 @@ export default function HomePage() {
 				<Profile />
 				<div className="w-full overflow-hidden">
 					{loading ? (
-						<SectionCard iconImage="/icons/user-info.png" title="Asosiy Ma'lumotlar">
+						<SectionCard iconImage="/icons/user-info.webp" title="Asosiy Ma'lumotlar">
 							<div className="flex flex-col gap-2">
 								<Skeleton className="h-4 w-3/4" />
 								<Skeleton className="h-4 w-1/2" />

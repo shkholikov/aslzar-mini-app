@@ -34,13 +34,13 @@ const faqItems = [
 export default function OtherPage() {
 	return (
 		<div className="pt-12">
-			<Header title="Boshqa" description="Platformadagi boshqa imkoniyatlar" iconImage="/icons/box.png" />
-			<Link title="Filiallar va manzillar" href="/branches" iconImage="/icons/location.png" />
-			<Link title="Taklif va shikoyatlar" href="/suggestions" iconImage="/icons/discussion.png" />
+			<Header title="Boshqa" description="Platformadagi boshqa imkoniyatlar" iconImage="/icons/box.webp" />
+			<Link title="Filiallar va manzillar" href="/branches" iconImage="/icons/location.webp" />
+			<Link title="Taklif va shikoyatlar" href="/suggestions" iconImage="/icons/discussion.webp" />
 			<Link title="ASLZAR Instagram rasmiy sahifasi" href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
 			<Link title="ASLZAR Telegram rasmiy kanali" href="https://t.me/ASLZAR_tilla" icon={Gem} />
 			<ProductCarousel />
-			<SectionCard iconImage="/icons/faq.png" title="Ko'p so'raladigan savollar">
+			<SectionCard iconImage="/icons/faq.webp" title="Ko'p so'raladigan savollar">
 				<FAQ items={faqItems} />
 			</SectionCard>
 		</div>

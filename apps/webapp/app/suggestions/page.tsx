@@ -9,7 +9,7 @@ export default function SuggestionsPage() {
 			<Header
 				title="Taklif va shikoyatlar"
 				description="Taklif yoki shikoyatlaringizni yuborish sahifasi"
-				iconImage="/icons/discussion.png"
+				iconImage="/icons/discussion.webp"
 			/>
 			<SuggestionsForm />
 		</div>

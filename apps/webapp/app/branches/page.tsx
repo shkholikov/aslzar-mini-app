@@ -1,53 +1,41 @@
 "use client";
 
+import useSWR from "swr";
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { useTelegram } from "@/hooks/useTelegram";
 import { Copy, Map, Phone, Send } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface Branch {
+	id: string;
+	name: string;
+	address: string;
+	phone1?: string;
+	phone2?: string;
+	worktime?: string;
+	yandexMaps?: string;
+	googleMaps?: string;
+	orientir?: string;
+}
+
+const branchesFetcher = async (url: string): Promise<Branch[]> => {
+	const res = await fetch(url);
+	if (!res.ok) throw new Error(`Failed to fetch branches: ${res.status}`);
+	return res.json();
+};
+
 export default function BranchesPage() {
 	const tg = useTelegram();
-	const [loading, setLoading] = useState(true);
-	const [branches, setBranches] = useState<
-		{
-			id: string;
-			name: string;
-			address: string;
-			phone1?: string;
-			phone2?: string;
-			worktime?: string;
-			yandexMaps?: string;
-			googleMaps?: string;
-			orientir?: string;
-		}[]
-	>([]);
-
-	const fetchBranchData = async () => {
-		try {
-			setLoading(true);
-			const response = await fetch("/api/branches");
-			console.log(response);
-
-			if (!response.ok) {
-				throw new Error(`Failed to fetch branch data: ${response.status}`);
-			}
-
-			const responseData = await response.json();
-			setBranches(responseData);
-		} catch (error) {
-			console.error("Error fetching branch data:", error);
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchBranchData();
-	}, []);
+	const { data, isLoading } = useSWR("/api/branches", branchesFetcher, {
+		revalidateOnFocus: false,
+		dedupingInterval: 60_000,
+		keepPreviousData: true
+	});
+	const branches = data ?? [];
+	const loading = isLoading && data === undefined;
 
 	function buildBranchShareText(branch: {
 		name: string;
@@ -131,9 +119,9 @@ export default function BranchesPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.png" />
+			<Header title="Filiallar" description="Filiallar va manzillar ro'yhati" iconImage="/icons/location.webp" />
 			{loading ? (
-				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar" bare>
+				<SectionCard iconImage="/icons/bank.webp" title="Bizning Filiallar" bare>
 					<div className="flex flex-col gap-3">
 						{[0, 1, 2].map((i) => (
 							<div key={i} className="border-2 rounded-3xl px-4 py-3 flex flex-col gap-2">
@@ -155,7 +143,7 @@ export default function BranchesPage() {
 					</div>
 				</SectionCard>
 			) : (
-				<SectionCard iconImage="/icons/bank.png" title="Bizning Filiallar" bare>
+				<SectionCard iconImage="/icons/bank.webp" title="Bizning Filiallar" bare>
 					<div className="flex flex-col gap-3">
 						{branches?.map((branch) => {
 							const primaryPhone = branch.phone1 || branch.phone2;
