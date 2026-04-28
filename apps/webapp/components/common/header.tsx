@@ -4,8 +4,8 @@ import { Separator } from "../ui/separator";
 import type { ElementType } from "react";
 import Image from "next/image";
 
-// Pre-optimized WebP — already 828px wide, no Next.js Image Optimizer roundtrip needed.
-const TEXT_BG_OPTIMIZED = "/images/text-bg.webp";
+// Use Next.js Image Optimization so text-bg is served as WebP/AVIF and cached
+const TEXT_BG_OPTIMIZED = "/_next/image?url=" + encodeURIComponent("/images/text-bg.png") + "&w=828&q=100";
 
 interface HeaderProps {
 	title: string;
@@ -21,7 +21,7 @@ export function Header({ title, description, icon: Icon, iconImage }: HeaderProp
 		<div>
 			<div className="flex flex-items justify-center pb-4">
 				{iconImage ? (
-					<Image src={iconImage} alt={title} width={110} height={110} className="object-contain" />
+					<Image src={iconImage} alt={title} width={110} height={110} className="object-contain" priority sizes="110px" />
 				) : Icon ? (
 					<Icon className="w-14 h-14 text-primary" strokeWidth={3} />
 				) : null}

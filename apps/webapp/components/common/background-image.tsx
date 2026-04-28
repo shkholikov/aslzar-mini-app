@@ -8,7 +8,7 @@ import Image from "next/image";
 export function BackgroundImage() {
 	return (
 		<div className="fixed inset-0 -z-[100]" aria-hidden>
-			<Image src="/images/bg.webp" alt="" fill priority sizes="100vw" className="object-cover opacity-20" />
+			<Image src="/images/bg.png" alt="" fill priority sizes="100vw" className="object-cover opacity-20" quality={100} />
 		</div>
 	);
 }

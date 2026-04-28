@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ASLZAR is a Telegram Mini App loyalty platform built as a pnpm monorepo with Turborepo. It consists of three main applications sharing a common MongoDB database.
 
+## Production URLs
+
+- **Webapp** (Telegram Mini App): `https://app.aslzarbot.uz`
+- **Admin panel**: `https://admin.aslzarbot.uz`
+- **API** (external `/v1/external/*` + future internal `/v1/internal/*`): `https://api.aslzarbot.uz`
+
 ## Common Commands
 
 ```bash

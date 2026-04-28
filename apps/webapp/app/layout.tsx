@@ -58,6 +58,22 @@ export default function RootLayout({
 			<head>
 				<link rel="preconnect" href="https://telegram.org" crossOrigin="" />
 				<link rel="dns-prefetch" href="https://telegram.org" />
+				{/* Preload bottom dock icons (visible on every page) */}
+				<link rel="preload" as="image" href="/icons/bank.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/briefcase.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/user.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/box.webp" type="image/webp" />
+				{/* Preload home-page above-fold icons */}
+				<link rel="preload" as="image" href="/icons/user-info.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/info.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/news.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/discussion.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/crown.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/contract.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/bonus.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/location.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/paper.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/ring.webp" type="image/webp" />
 				<Script src="https://telegram.org/js/telegram-web-app.js?59" strategy="beforeInteractive" />
 				<Script src="/scripts/disableZoom.js" strategy="afterInteractive" />
 			</head>
