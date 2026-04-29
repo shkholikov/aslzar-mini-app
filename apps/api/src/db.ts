@@ -11,9 +11,11 @@ export type ApiKeyDoc = {
 };
 
 /**
- * Minimal shape of a grammY MongoDBAdapter session doc.
- * We only read `key` (= Telegram ID as string) and `value.phone_number` + `value.id`.
- * Full shape lives in apps/webapp/lib/db.ts.
+ * Shape of a grammY MongoDBAdapter session doc.
+ * The bot owns writes to this collection. The API:
+ *   - reads `key`, `value.phone_number`, `value.id`, `value.first_name`, etc.
+ *   - writes only `value.user1CData`, `value.user1CDataUpdatedAt`, `value.isVerified`,
+ *     `value.isChannelMember` — fields that mirror state already in the user-facing flow.
  */
 export type UserSessionDoc = {
 	_id: ObjectId;
@@ -24,7 +26,44 @@ export type UserSessionDoc = {
 		first_name?: string;
 		last_name?: string;
 		username?: string;
+		isVerified?: boolean;
+		isChannelMember?: boolean;
+		user1CData?: Record<string, unknown>;
+		user1CDataUpdatedAt?: Date | { $date: string };
 	};
+};
+
+export type ProductDoc = {
+	_id?: ObjectId;
+	title: string;
+	description: string;
+	price?: number;
+	url?: string;
+	imageUrl?: string;
+	badgeLabel?: string;
+	createdAt?: Date;
+};
+
+export type NewsItemDoc = {
+	_id?: ObjectId;
+	title: string;
+	description: string;
+	mediaUrl?: string;
+	mediaType?: "photo" | "video";
+	buttonText?: string;
+	buttonUrl?: string;
+	isActive?: boolean;
+	createdAt: Date;
+};
+
+export type SuggestionDoc = {
+	_id?: ObjectId;
+	text: string;
+	userId?: string;
+	firstName?: string;
+	lastName?: string;
+	username?: string;
+	createdAt: Date;
 };
 
 export type ApiCallStatus = "sent" | "user_not_registered" | "telegram_error" | "rate_limited" | "invalid_request";
@@ -93,6 +132,51 @@ export async function findTelegramIdByPhone(phone: string): Promise<number | nul
 	if (!doc?.value) return null;
 	const id = doc.value.id ?? Number(doc.key);
 	return Number.isFinite(id) ? id : null;
+}
+
+/** Reads a user session by Telegram ID (session key). */
+export async function getUserSession(userId: string): Promise<UserSessionDoc["value"] | null> {
+	const col = await getUsersCollection();
+	const doc = await col.findOne({ key: userId });
+	return doc?.value ?? null;
+}
+
+/** Mirrors apps/webapp/lib/db.ts:updateUserSession1CData behaviour. */
+export async function updateUserSession1CData(userId: string, user1CData: Record<string, unknown>, isVerified: boolean): Promise<boolean> {
+	const col = await getUsersCollection();
+	const result = await col.updateOne(
+		{ key: userId },
+		{
+			$set: {
+				"value.user1CData": user1CData,
+				"value.isVerified": isVerified,
+				"value.user1CDataUpdatedAt": new Date()
+			}
+		}
+	);
+	return result.matchedCount > 0;
+}
+
+/** Mirrors apps/webapp/lib/db.ts:updateUserChannelMember behaviour. */
+export async function updateUserChannelMember(userId: string, isChannelMember: boolean): Promise<boolean> {
+	const col = await getUsersCollection();
+	const result = await col.updateOne({ key: userId }, { $set: { "value.isChannelMember": isChannelMember } });
+	return result.matchedCount > 0;
+}
+
+export async function getProductsCollection(): Promise<Collection<ProductDoc>> {
+	const db = await getDb();
+	return db.collection<ProductDoc>(config.MONGO_DB_COLLECTION_PRODUCTS);
+}
+
+export async function getNewsCollection(): Promise<Collection<NewsItemDoc>> {
+	const db = await getDb();
+	return db.collection<NewsItemDoc>(config.MONGO_DB_COLLECTION_NEWS);
+}
+
+export async function getSuggestionsCollection(): Promise<Collection<SuggestionDoc>> {
+	const db = await getDb();
+	return db.collection<SuggestionDoc>(config.MONGO_DB_COLLECTION_SUGGESTIONS);
 }
 
 export async function getApiCallsCollection(): Promise<Collection<ApiCallDoc>> {
