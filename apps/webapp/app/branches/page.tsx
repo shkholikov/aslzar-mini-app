@@ -122,7 +122,7 @@ export default function BranchesPage() {
 				<SectionCard iconImage="/icons/bank.webp" title="Bizning Filiallar" bare>
 					<div className="flex flex-col gap-3">
 						{[0, 1, 2].map((i) => (
-							<div key={i} className="border-2 rounded-3xl px-4 py-3 flex flex-col gap-2">
+							<div key={i} className="border-2 backdrop-blur-[10px] bg-muted/50 shadow-md rounded-3xl px-4 py-3 flex flex-col gap-2">
 								<div className="flex items-center justify-between">
 									<Skeleton className="h-4 w-1/2" />
 									<div className="flex gap-2">
