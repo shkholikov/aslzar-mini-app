@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTelegram } from "@/hooks/useTelegram";
+import { apiRequest } from "@/lib/api-client";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { ExternalLink } from "lucide-react";
 import { goldButtonClass } from "@/components/common/button-variants";
@@ -20,11 +21,13 @@ interface NewsItem {
 	buttonText?: string | null;
 }
 
-const newsFetcher = async (url: string): Promise<NewsItem[]> => {
-	const res = await fetch(url);
-	if (!res.ok) return [];
-	const data = await res.json();
-	return Array.isArray(data.items) ? data.items : [];
+const newsFetcher = async (path: string): Promise<NewsItem[]> => {
+	try {
+		const data = await apiRequest<{ items?: NewsItem[] }>(path);
+		return Array.isArray(data?.items) ? data.items : [];
+	} catch {
+		return [];
+	}
 };
 
 function formatNewsDate(dateStr: string): string {
@@ -44,7 +47,8 @@ function formatNewsDate(dateStr: string): string {
 
 export function News() {
 	const tg = useTelegram();
-	const { data, isLoading } = useSWR("/api/news", newsFetcher, {
+	const swrKey = tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData ? "/v1/news" : null;
+	const { data, isLoading } = useSWR(swrKey, newsFetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 60_000,
 		keepPreviousData: true

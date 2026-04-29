@@ -3,6 +3,7 @@
 import { SectionCard } from "@/components/common/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTelegram } from "@/hooks/useTelegram";
+import { apiRequest } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 
@@ -55,15 +56,9 @@ export function BonusPrograms() {
 	useEffect(() => {
 		const fetchBonusProgramData = async () => {
 			try {
-				const response = await fetch("/api/bonus");
-
-				if (!response.ok) {
-					throw new Error(`Failed to fetch bonus programs data: ${response.status}`);
-				}
-
-				const responseData = await response.json();
+				const responseData = await apiRequest<IBonusProgram[]>("/v1/bonus-programs");
 				const order = ["Silver", "Gold", "Diamond"];
-				const sorted = responseData.sort((a: IBonusProgram, b: IBonusProgram) => order.indexOf(a.uroven) - order.indexOf(b.uroven));
+				const sorted = [...responseData].sort((a, b) => order.indexOf(a.uroven) - order.indexOf(b.uroven));
 				setBonusProgramList(sorted);
 			} catch (error) {
 				console.error("Error fetching bonus programs data from 1C:", error);

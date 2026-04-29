@@ -3,6 +3,7 @@
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { useTelegram } from "@/hooks/useTelegram";
+import { apiRequest, ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { SendHorizontal } from "lucide-react";
 import { goldButtonClass } from "@/components/common/button-variants";
@@ -34,32 +35,16 @@ export function SuggestionsForm() {
 		tg?.HapticFeedback?.impactOccurred("heavy");
 
 		try {
-			const user = tg?.initDataUnsafe?.user;
-			const payload: { text: string; userId?: string; firstName?: string; lastName?: string; username?: string } = {
-				text: formData.text.trim()
-			};
-			if (user?.id) payload.userId = user.id.toString();
-			if (user?.first_name) payload.firstName = user.first_name;
-			if (user?.last_name) payload.lastName = user.last_name;
-			if (user?.username) payload.username = user.username;
-
-			const response = await fetch("/api/suggestions", {
+			await apiRequest("/v1/suggestions", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload)
+				body: { text: formData.text.trim() }
 			});
-
-			if (!response.ok) {
-				const errorData = await response.json();
-				toast.error(errorData.error || "Yuborishda xatolik yuz berdi");
-				return;
-			}
-
 			toast.success("Taklifingiz yoki shikoyatingiz qabul qilindi. Rahmat!");
 			reset();
 		} catch (error) {
 			console.error("Suggestions submit error:", error);
-			toast.error("Yuborishda xatolik yuz berdi");
+			const message = error instanceof ApiError ? error.message : "Yuborishda xatolik yuz berdi";
+			toast.error(message);
 		}
 	};
 

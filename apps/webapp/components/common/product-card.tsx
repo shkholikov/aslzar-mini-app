@@ -5,6 +5,7 @@ import Image from "next/image";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { Badge } from "@/components/ui/badge";
 import { useTelegram } from "@/hooks/useTelegram";
+import { apiRequest } from "@/lib/api-client";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { ShoppingCart } from "lucide-react";
 import {
@@ -46,31 +47,21 @@ export function ProductCard({ id, title, description, price, url, badgeLabel, me
 	const handleBuy = async () => {
 		setSending(true);
 		try {
-			const userId = tg?.initDataUnsafe?.user?.id?.toString();
-			if (!userId) {
-				tg?.HapticFeedback?.notificationOccurred("error");
-				return;
-			}
 			tg?.HapticFeedback?.impactOccurred("medium");
-			const res = await fetch("/api/product-interest", {
+			await apiRequest("/v1/product-interest", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					userId,
+				body: {
 					productId: id,
 					productTitle: title,
 					productDescription: description,
 					productPrice: hasPrice ? price : undefined,
 					productUrl: url
-				})
+				}
 			});
-			if (!res.ok) {
-				await res.json().catch(() => ({}));
-				tg?.HapticFeedback?.notificationOccurred("error");
-				return;
-			}
 			setInterestDialogOpen(true);
 			tg?.HapticFeedback?.notificationOccurred("success");
+		} catch {
+			tg?.HapticFeedback?.notificationOccurred("error");
 		} finally {
 			setSending(false);
 		}

@@ -5,6 +5,7 @@ import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { useTelegram } from "@/hooks/useTelegram";
+import { apiRequest } from "@/lib/api-client";
 import { Copy, Map, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,21 +22,18 @@ interface Branch {
 	orientir?: string;
 }
 
-const branchesFetcher = async (url: string): Promise<Branch[]> => {
-	const res = await fetch(url);
-	if (!res.ok) throw new Error(`Failed to fetch branches: ${res.status}`);
-	return res.json();
-};
+const branchesFetcher = (path: string): Promise<Branch[]> => apiRequest<Branch[]>(path);
 
 export default function BranchesPage() {
 	const tg = useTelegram();
-	const { data, isLoading } = useSWR("/api/branches", branchesFetcher, {
+	const swrKey = tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData ? "/v1/branches" : null;
+	const { data, isLoading } = useSWR(swrKey, branchesFetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 60_000,
 		keepPreviousData: true
 	});
 	const branches = data ?? [];
-	const loading = isLoading && data === undefined;
+	const loading = swrKey !== null && isLoading && data === undefined;
 
 	function buildBranchShareText(branch: {
 		name: string;

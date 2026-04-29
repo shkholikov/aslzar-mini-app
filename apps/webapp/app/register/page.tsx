@@ -15,6 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
+import { apiRequest, ApiError } from "@/lib/api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import confetti from "canvas-confetti";
@@ -62,10 +63,7 @@ export default function RegisterPage() {
 	} | null> => {
 		if (!userId) return null;
 		try {
-			const response = await fetch(`/api/users?userId=${userId}`);
-			if (!response.ok) return null;
-			const data = await response.json();
-			return data;
+			return await apiRequest<{ code?: number; tgData?: { phone_number?: string } }>("/v1/users/me");
 		} catch {
 			return null;
 		}
@@ -164,23 +162,16 @@ export default function RegisterPage() {
 	const onSubmit = async (formData: RegisterSchema) => {
 		setIsSubmitting(true);
 		try {
-			const response = await fetch("/api/users", {
+			await apiRequest("/v1/users/register", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ ...formData, ...(userId && { userId }) })
+				body: { firstName: formData.firstName, lastName: formData.lastName, phone: formData.phone }
 			});
-
-			if (!response.ok) {
-				const errorData = await response.json();
-				toast.error(errorData.error || "Ro'yxatdan o'tishda xatolik yuz berdi");
-				return;
-			}
-
 			await refreshUserData();
 			setStep("registration_success");
 		} catch (error) {
 			console.error("Registration error:", error);
-			toast.error("Ro'yxatdan o'tishda xatolik yuz berdi");
+			const message = error instanceof ApiError ? error.message : "Ro'yxatdan o'tishda xatolik yuz berdi";
+			toast.error(message);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -207,7 +198,11 @@ export default function RegisterPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Ro'yxatdan o'tish" description="ASLZAR platformasida ro'yxatdan o'ting va mijozimizga aylaning" iconImage="/icons/paper.webp" />
+			<Header
+				title="Ro'yxatdan o'tish"
+				description="ASLZAR platformasida ro'yxatdan o'ting va mijozimizga aylaning"
+				iconImage="/icons/paper.webp"
+			/>
 
 			{step === "share_phone" && (
 				<SectionCard iconImage="/icons/user.webp" title="Ro'yxatdan o'tish">
