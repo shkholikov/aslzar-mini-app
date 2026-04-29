@@ -15,12 +15,11 @@ const nextConfig: NextConfig = {
 		]
 	},
 	async headers() {
-		// Don't mark raw source assets as `immutable` — that prevents browsers and
-		// the Image Optimizer from revalidating when we replace a file with the
-		// same name (e.g. re-exported icons). Give them a short-ish cache with
-		// revalidation. Vercel's Image Optimizer still caches the *optimized*
-		// outputs for a year via `images.minimumCacheTTL`.
-		const sourceAssetCache = "public, max-age=3600, must-revalidate";
+		// Cache raw source assets aggressively at Cloudflare edge + browser. To
+		// invalidate after replacing a file, either rename it (e.g. `crown.webp`
+		// → `crown-v2.webp`) or purge Cloudflare cache from the dashboard. The
+		// `immutable` directive tells caches to skip revalidation entirely.
+		const sourceAssetCache = "public, max-age=31536000, immutable";
 		return [
 			{ source: "/images/:path*", headers: [{ key: "Cache-Control", value: sourceAssetCache }] },
 			{ source: "/icons/:path*", headers: [{ key: "Cache-Control", value: sourceAssetCache }] }
