@@ -2,6 +2,7 @@
 
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import useSWR from "swr";
+import { apiRequest, ApiError } from "@/lib/api-client";
 import { useTelegram } from "./useTelegram";
 
 interface UserContextType {
@@ -13,17 +14,19 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | null>(null);
 
-const userFetcher = async (url: string) => {
-	const response = await fetch(url);
-	if (response.status === 404) return null;
-	if (!response.ok) throw new Error(`Failed to fetch user data: ${response.status}`);
-	return response.json();
+const userFetcher = async (path: string) => {
+	try {
+		return await apiRequest(path);
+	} catch (err) {
+		if (err instanceof ApiError && err.status === 404) return null;
+		throw err;
+	}
 };
 
 export function UserProvider({ children }: { children: ReactNode }) {
 	const tg = useTelegram();
-	const userId = tg?.initDataUnsafe?.user?.id?.toString();
-	const swrKey = userId ? `/api/users?userId=${userId}` : null;
+	// Only fetch once Telegram WebApp is ready and we have initData (the API requires it).
+	const swrKey = tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData ? "/v1/users/me" : null;
 
 	const { data, error, isLoading, mutate } = useSWR(swrKey, userFetcher, {
 		revalidateOnFocus: false,

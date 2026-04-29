@@ -5,7 +5,7 @@ import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCard, type ProductCardProps } from "@/components/common/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { CatalogProduct } from "@/lib/db";
+import { useProducts, type CatalogProduct } from "@/hooks/useProducts";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -28,33 +28,12 @@ function productToCardProps(p: CatalogProduct): ProductCardProps {
 }
 
 export default function CatalogPage() {
-	const [products, setProducts] = React.useState<ProductCardProps[]>([]);
-	const [loading, setLoading] = React.useState(true);
-	const [error, setError] = React.useState<string | null>(null);
+	const { products: rawProducts, loading } = useProducts();
+	const products = React.useMemo(() => rawProducts.map(productToCardProps), [rawProducts]);
+	const error: string | null = null;
 	const [page, setPage] = React.useState(1);
 	const [compact, setCompact] = React.useState(true);
 	const tg = useTelegram();
-
-	React.useEffect(() => {
-		let cancelled = false;
-		(async () => {
-			try {
-				const res = await fetch("/api/products");
-				if (!res.ok) throw new Error("Yuklab bo'lmadi");
-				const data = await res.json();
-				if (!cancelled && Array.isArray(data.products)) {
-					setProducts(data.products.map(productToCardProps));
-				}
-			} catch (e) {
-				if (!cancelled) setError(e instanceof Error ? e.message : "Xatolik yuz berdi");
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
 
 	const totalPages = Math.ceil(products.length / PAGE_SIZE);
 	const paginated = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

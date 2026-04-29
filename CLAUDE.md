@@ -10,7 +10,7 @@ ASLZAR is a Telegram Mini App loyalty platform built as a pnpm monorepo with Tur
 
 - **Webapp** (Telegram Mini App): `https://app.aslzarbot.uz`
 - **Admin panel**: `https://admin.aslzarbot.uz`
-- **API** (external `/v1/external/*` + future internal `/v1/internal/*`): `https://api.aslzarbot.uz`
+- **API** (partner-facing `/v1/external/*` + webapp-only `/v1/*`): `https://api.aslzarbot.uz`
 
 ## Common Commands
 
@@ -43,8 +43,9 @@ pnpm --filter admin lint
 ### Data Flow
 
 1. **Bot** creates user sessions in MongoDB when users interact via Telegram
-2. **Webapp** reads/updates user sessions and integrates with external 1C API for customer verification
-3. **Admin** manages users, products, broadcasts, employees, and suggestions
+2. **Webapp** is a thin client — it talks to `apps/api` (`api.aslzarbot.uz`) for every data operation. It does **not** touch MongoDB or 1C directly. Authentication is via Telegram WebApp `initData` (HMAC-verified by the API).
+3. **API** owns all integrations (1C, AmoCRM, Telegram Bot API, MongoDB) for the webapp. External partners use `/v1/external/*` (API-key auth, OpenAPI-documented). The webapp uses other `/v1/*` routes (initData HMAC auth, intentionally undocumented — never added to `apps/api/src/openapi.ts`).
+4. **Admin** manages users, products, broadcasts, employees, and suggestions
 
 ### Key Shared Collections (MongoDB)
 
@@ -58,11 +59,13 @@ pnpm --filter admin lint
 ### Webapp Provider Hierarchy
 
 ```
-TelegramProvider → TelegramGuard → UserProvider → children
+TelegramProvider → TelegramGuard → UserProvider → ProductsProvider → children
 ```
 
 - `useTelegram()` - Access Telegram WebApp SDK
-- `useUser()` - Access 1C user data (fetched via `/api/users`)
+- `useUser()` - Access 1C user data (fetched via `apps/api` `/v1/users/me`, SWR-cached)
+- `useProducts()` - Catalog products (fetched via `/v1/products`, SWR-cached)
+- `lib/api-client.ts` — typed wrapper that attaches `Authorization: tma <initData>` to every request
 
 ### Bot Session Structure
 

@@ -2,7 +2,18 @@
 
 import { createContext, ReactNode, useContext, useMemo } from "react";
 import useSWR from "swr";
-import type { CatalogProduct } from "@/lib/db";
+import { apiRequest } from "@/lib/api-client";
+import { useTelegram } from "./useTelegram";
+
+/** Product record for catalog (same shape as admin ProductDoc; field is `url`). */
+export interface CatalogProduct {
+	id: string;
+	title: string;
+	description: string;
+	price?: number;
+	url: string;
+	badgeLabel?: string;
+}
 
 interface ProductsContextType {
 	products: CatalogProduct[];
@@ -11,15 +22,16 @@ interface ProductsContextType {
 
 const ProductsContext = createContext<ProductsContextType | null>(null);
 
-const productsFetcher = async (url: string): Promise<CatalogProduct[]> => {
-	const res = await fetch(url);
-	if (!res.ok) return [];
-	const data = await res.json();
-	return Array.isArray(data.products) ? data.products : [];
+const productsFetcher = async (path: string): Promise<CatalogProduct[]> => {
+	const res = await apiRequest<{ products?: CatalogProduct[] }>(path);
+	return Array.isArray(res?.products) ? res.products : [];
 };
 
 export function ProductsProvider({ children }: { children: ReactNode }) {
-	const { data, isLoading } = useSWR("/api/products", productsFetcher, {
+	const tg = useTelegram();
+	const swrKey = tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData ? "/v1/products" : null;
+
+	const { data, isLoading } = useSWR(swrKey, productsFetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 60_000,
 		keepPreviousData: true
@@ -28,9 +40,9 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 	const value = useMemo<ProductsContextType>(
 		() => ({
 			products: data ?? [],
-			loading: isLoading && data === undefined
+			loading: swrKey !== null && isLoading && data === undefined
 		}),
-		[data, isLoading]
+		[swrKey, data, isLoading]
 	);
 
 	return <ProductsContext.Provider value={value}>{children}</ProductsContext.Provider>;

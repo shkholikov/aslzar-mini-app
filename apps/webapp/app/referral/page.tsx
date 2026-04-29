@@ -7,6 +7,7 @@ import { ReferralQRCode } from "./components/referral-qr-code";
 import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
+import { apiRequest } from "@/lib/api-client";
 import { useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,18 +26,18 @@ interface IReferral {
 	contractDate: string;
 }
 
-const referralsFetcher = async (url: string): Promise<IReferral[]> => {
-	const res = await fetch(url);
-	if (!res.ok) throw new Error(`Failed to fetch referrals: ${res.status}`);
-	const json = await res.json();
+const referralsFetcher = async (path: string): Promise<IReferral[]> => {
+	const json = await apiRequest<{ list?: IReferral[] }>(path);
 	return json?.list ?? [];
 };
 
-const preparedMessageFetcher = async (url: string): Promise<string | null> => {
-	const res = await fetch(url);
-	if (!res.ok) return null;
-	const json = await res.json();
-	return json.preparedMessageId ?? null;
+const preparedMessageFetcher = async (path: string): Promise<string | null> => {
+	try {
+		const json = await apiRequest<{ preparedMessageId?: string }>(path, { method: "POST" });
+		return json.preparedMessageId ?? null;
+	} catch {
+		return null;
+	}
 };
 
 export default function ReferralPage() {
@@ -49,14 +50,14 @@ export default function ReferralPage() {
 		data: referralsData,
 		isLoading: referralsLoading,
 		mutate: refreshReferrals
-	} = useSWR(clientId ? `/api/referral?clientId=${clientId}` : null, referralsFetcher, {
+	} = useSWR(clientId ? `/v1/referrals?clientId=${clientId}` : null, referralsFetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 60_000,
 		keepPreviousData: true
 	});
 	const referrals = referralsData ?? [];
 
-	const { data: preparedMessageId } = useSWR(userId ? `/api/referral/link?userId=${userId}` : null, preparedMessageFetcher, {
+	const { data: preparedMessageId } = useSWR(userId ? "/v1/referrals/link" : null, preparedMessageFetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 60_000
 	});

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTelegram } from "@/hooks/useTelegram";
+import { apiRequest } from "@/lib/api-client";
 import { SectionCard } from "@/components/common/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
@@ -28,9 +29,8 @@ export function ChannelSubscribeCard() {
 
 		let cancelled = false;
 
-		fetch(`/api/channel-member?userId=${userId}`)
-			.then((res) => res.json())
-			.then((data: { isMember?: boolean }) => {
+		apiRequest<{ isMember?: boolean }>("/v1/channel-membership")
+			.then((data) => {
 				if (!cancelled) setIsMember(data.isMember ?? false);
 			})
 			.catch(() => {
@@ -53,8 +53,7 @@ export function ChannelSubscribeCard() {
 		setCheckLoading(true);
 		setCheckMessage(null);
 		try {
-			const res = await fetch(`/api/channel-member?userId=${userId}`);
-			const data = (await res.json()) as { isMember?: boolean };
+			const data = await apiRequest<{ isMember?: boolean }>("/v1/channel-membership");
 			const member = data.isMember ?? false;
 			if (member) {
 				tg?.HapticFeedback?.notificationOccurred("success");
