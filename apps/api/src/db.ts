@@ -66,6 +66,59 @@ export type SuggestionDoc = {
 	createdAt: Date;
 };
 
+/**
+ * AI sales chat — one active document per Telegram user.
+ *
+ * `recentMessages` keeps the last ~10 turns verbatim for re-feeding to the model.
+ * Older turns are folded into `summary` + `extractedFacts` by an async summarizer.
+ * The full history is what the user sees in the UI; the model only ever sees
+ * `summary + extractedFacts + recentMessages` (so prompt size stays bounded).
+ */
+export type ChatRole = "user" | "assistant" | "tool";
+
+export type ChatToolCall = {
+	id: string;
+	name: "recommend_products" | "create_lead";
+	input: Record<string, unknown>;
+	output?: Record<string, unknown>;
+};
+
+export type ChatMessage = {
+	id: string;
+	role: ChatRole;
+	content: string;
+	toolCalls?: ChatToolCall[];
+	createdAt: Date;
+};
+
+export type ChatExtractedFacts = {
+	interestedProducts: string[];
+	budget?: string;
+	objections: string[];
+	readiness: "cold" | "warm" | "hot";
+	preferredContactTime?: string;
+};
+
+export type ChatSessionDoc = {
+	_id?: ObjectId;
+	telegramId: string;
+	status: "active" | "archived";
+	language: "uz" | "ru";
+	summary: string;
+	recentMessages: ChatMessage[];
+	allMessages: ChatMessage[];
+	extractedFacts: ChatExtractedFacts;
+	leadStatus: "none" | "created";
+	amoLeadId?: number;
+	dailyCount: number;
+	dailyResetAt: Date;
+	hourlyCount: number;
+	hourlyResetAt: Date;
+	createdAt: Date;
+	updatedAt: Date;
+	archivedAt?: Date;
+};
+
 export type ApiCallStatus = "sent" | "user_not_registered" | "telegram_error" | "rate_limited" | "invalid_request";
 
 export type ApiCallDoc = {
@@ -83,6 +136,8 @@ export type ApiCallDoc = {
 let client: MongoClient | undefined;
 let apiKeysIndexEnsured = false;
 let apiCallsIndexEnsured = false;
+let chatSessionsIndexEnsured = false;
+let chatArchivesIndexEnsured = false;
 
 async function getClient(): Promise<MongoClient> {
 	if (!client) {
@@ -190,11 +245,35 @@ export async function getApiCallsCollection(): Promise<Collection<ApiCallDoc>> {
 	return col;
 }
 
+export async function getChatSessionsCollection(): Promise<Collection<ChatSessionDoc>> {
+	const db = await getDb();
+	const col = db.collection<ChatSessionDoc>(config.MONGO_DB_COLLECTION_CHAT_SESSIONS);
+	if (!chatSessionsIndexEnsured) {
+		// Only one active session per user; archived sessions are stored separately.
+		await col.createIndex({ telegramId: 1, status: 1 });
+		await col.createIndex({ updatedAt: -1 });
+		chatSessionsIndexEnsured = true;
+	}
+	return col;
+}
+
+export async function getChatArchivesCollection(): Promise<Collection<ChatSessionDoc>> {
+	const db = await getDb();
+	const col = db.collection<ChatSessionDoc>(config.MONGO_DB_COLLECTION_CHAT_ARCHIVES);
+	if (!chatArchivesIndexEnsured) {
+		await col.createIndex({ telegramId: 1, archivedAt: -1 });
+		chatArchivesIndexEnsured = true;
+	}
+	return col;
+}
+
 export async function closeDb(): Promise<void> {
 	if (client) {
 		await client.close();
 		client = undefined;
 		apiKeysIndexEnsured = false;
 		apiCallsIndexEnsured = false;
+		chatSessionsIndexEnsured = false;
+		chatArchivesIndexEnsured = false;
 	}
 }

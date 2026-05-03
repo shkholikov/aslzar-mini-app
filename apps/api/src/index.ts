@@ -18,6 +18,8 @@ import { getChannelMembershipHandler } from "./routes/internal/channel-membershi
 import { productInterestHandler } from "./routes/internal/product-interest";
 import { createSuggestionHandler } from "./routes/internal/suggestions";
 import { sendSubscribeRequestHandler } from "./routes/internal/subscribe-request";
+import { chatHandler } from "./routes/internal/chat";
+import { getChatSessionHandler, resetChatSessionHandler } from "./routes/internal/chat-session";
 
 const app = express();
 
@@ -81,6 +83,12 @@ app.get("/v1/channel-membership", requireMiniAppAuth, getChannelMembershipHandle
 app.post("/v1/product-interest", requireMiniAppAuth, productInterestHandler);
 app.post("/v1/suggestions", requireMiniAppAuth, createSuggestionHandler);
 app.post("/v1/subscribe-request", requireMiniAppAuth, sendSubscribeRequestHandler);
+
+// AI sales chat — streaming endpoint + session management.
+// Intentionally undocumented in /docs (consumed only by the webapp).
+app.post("/v1/chat", requireMiniAppAuth, chatHandler);
+app.get("/v1/chat/session", requireMiniAppAuth, getChatSessionHandler);
+app.post("/v1/chat/session/reset", requireMiniAppAuth, resetChatSessionHandler);
 
 app.use((_req, res) => {
 	res.status(404).json({
