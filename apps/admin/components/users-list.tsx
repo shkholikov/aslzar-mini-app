@@ -403,7 +403,7 @@ export function UsersList() {
 			}
 			const empCode = val.referredByEmployeeCode;
 			const emp = empCode ? employeesByCode[empCode] : undefined;
-			const xodim = emp ? `${emp.name} ${emp.surname}`.trim() : empCode ?? "";
+			const xodim = emp ? `${emp.name} ${emp.surname}`.trim() : (empCode ?? "");
 
 			return {
 				ID: val.id ?? "",
@@ -509,8 +509,11 @@ export function UsersList() {
 			<div className="flex items-center justify-end space-x-2 py-4">
 				<span className="text-muted-foreground text-sm">
 					{table.getRowModel().rows.length === 0 ? 0 : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
-					{Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} /{" "}
-					{table.getFilteredRowModel().rows.length}
+					{Math.min(
+						(table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+						table.getFilteredRowModel().rows.length
+					)}{" "}
+					/ {table.getFilteredRowModel().rows.length}
 				</span>
 				<Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
 					Oldingi

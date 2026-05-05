@@ -18,6 +18,10 @@ import { getChannelMembershipHandler } from "./routes/internal/channel-membershi
 import { productInterestHandler } from "./routes/internal/product-interest";
 import { createSuggestionHandler } from "./routes/internal/suggestions";
 import { sendSubscribeRequestHandler } from "./routes/internal/subscribe-request";
+// Admin-triggered users sync (server-to-server with API key)
+import { syncUsersHandler, listSyncsHandler } from "./routes/users-sync";
+import { startSync1CCron } from "./sync-1c-cron";
+import { recoverStuckSyncJobs } from "./sync-1c";
 
 const app = express();
 
@@ -82,6 +86,11 @@ app.post("/v1/product-interest", requireMiniAppAuth, productInterestHandler);
 app.post("/v1/suggestions", requireMiniAppAuth, createSuggestionHandler);
 app.post("/v1/subscribe-request", requireMiniAppAuth, sendSubscribeRequestHandler);
 
+// Admin-triggered 1C sync — server-to-server with API key (admin Next.js app proxies these).
+// Not in /docs; not for partners.
+app.post("/v1/users/sync", requireApiKey, syncUsersHandler);
+app.get("/v1/users/syncs", requireApiKey, listSyncsHandler);
+
 app.use((_req, res) => {
 	res.status(404).json({
 		ok: false,
@@ -91,4 +100,7 @@ app.use((_req, res) => {
 
 app.listen(config.PORT, () => {
 	console.log(`🚀 API listening on :${config.PORT}`);
+	// Recover any sync jobs left "processing" from a previous crash, then start the daily cron.
+	recoverStuckSyncJobs().catch((err) => console.error("[Sync1C] recoverStuckSyncJobs failed:", err));
+	startSync1CCron();
 });

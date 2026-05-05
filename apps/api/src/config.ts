@@ -49,6 +49,7 @@ export const config = {
 	MONGO_DB_COLLECTION_PRODUCTS: process.env.MONGO_DB_COLLECTION_PRODUCTS || "products",
 	MONGO_DB_COLLECTION_NEWS: process.env.MONGO_DB_COLLECTION_NEWS || "news_items",
 	MONGO_DB_COLLECTION_SUGGESTIONS: process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions",
+	MONGO_DB_COLLECTION_SYNC_1C_JOBS: process.env.MONGO_DB_COLLECTION_SYNC_1C_JOBS || "sync_1c_jobs",
 	BOT_TOKEN: required("BOT_TOKEN"),
 	CHANNEL_ID: process.env.CHANNEL_ID || "@ASLZAR_tilla",
 	BOT_TELEGRAM_LINK: process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzaruzbot",

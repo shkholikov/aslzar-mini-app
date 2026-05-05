@@ -66,6 +66,23 @@ export type SuggestionDoc = {
 	createdAt: Date;
 };
 
+export type Sync1CJobStatus = "processing" | "completed" | "failed";
+
+export type Sync1CJobDoc = {
+	_id?: ObjectId;
+	status: Sync1CJobStatus;
+	triggeredBy: "cron" | "admin";
+	createdAt: Date;
+	startedAt: Date;
+	completedAt?: Date;
+	totalUsers?: number;
+	/** Snapshot at sync end: how many users in the DB now have value.user1CData set. */
+	usersWith1CDataCount?: number;
+	syncedCount?: number;
+	errorCount?: number;
+	error?: string;
+};
+
 export type ApiCallStatus = "sent" | "user_not_registered" | "telegram_error" | "rate_limited" | "invalid_request";
 
 export type ApiCallDoc = {
@@ -188,6 +205,11 @@ export async function getApiCallsCollection(): Promise<Collection<ApiCallDoc>> {
 		apiCallsIndexEnsured = true;
 	}
 	return col;
+}
+
+export async function getSync1CJobsCollection(): Promise<Collection<Sync1CJobDoc>> {
+	const db = await getDb();
+	return db.collection<Sync1CJobDoc>(config.MONGO_DB_COLLECTION_SYNC_1C_JOBS);
 }
 
 export async function closeDb(): Promise<void> {

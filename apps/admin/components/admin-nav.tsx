@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper, UserCog, User, Menu } from "lucide-react";
+import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper, UserCog, User, Menu, Plug } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminContext } from "@/components/common/admin-context";
 import { ALL_PERMISSIONS, type AdminPermission } from "@/lib/auth-utils";
@@ -20,7 +20,8 @@ const tabs: { href: string; label: string; icon: React.ElementType; permission: 
 	{ href: "/news", label: "Yangiliklar", icon: Newspaper, permission: "news" },
 	{ href: "/suggestions", label: "Takliflar", icon: MessageSquare, permission: "suggestions" },
 	{ href: "/products", label: "Mahsulotlar", icon: Package, permission: "products" },
-	{ href: "/admin-users", label: "Adminlar", icon: UserCog, permission: null, superadminOnly: true }
+	{ href: "/admin-users", label: "Adminlar", icon: UserCog, permission: null, superadminOnly: true },
+	{ href: "/integrations", label: "Integratsiyalar", icon: Plug, permission: null, superadminOnly: true }
 ];
 
 export function AdminNav() {
