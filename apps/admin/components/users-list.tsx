@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import {
 	flexRender,
 	getCoreRowModel,
+	getFacetedRowModel,
+	getFacetedUniqueValues,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
@@ -23,6 +25,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserDocument } from "@/lib/db";
+import { ColumnFilterHeader } from "./common/column-filter-header";
 import { Loading } from "./common/loading";
 
 export type User = UserDocument;
@@ -113,27 +116,70 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			cell: ({ row }) => <div>{row.original.value.phone_number || "-"}</div>
 		},
 		{
-			accessorFn: (row) => row.value.isVerified,
+			accessorFn: (row) => row.value.isVerified === true,
 			id: "isVerified",
-			header: "Tasdiqlangan",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Tasdiqlangan"
+					options={[
+						{ value: true, label: "Ha" },
+						{ value: false, label: "Yo'q" }
+					]}
+				/>
+			),
 			cell: ({ row }) => <div className="capitalize">{row.original.value.isVerified ? "Ha" : "Yo'q"}</div>
 		},
 		{
-			accessorFn: (row) => row.value.isChannelMember,
+			accessorFn: (row) => row.value.isChannelMember === true,
 			id: "isChannelMember",
-			header: "Kanal a'zosi",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Kanal a'zosi"
+					options={[
+						{ value: true, label: "Ha" },
+						{ value: false, label: "Yo'q" }
+					]}
+				/>
+			),
 			cell: ({ row }) => <div className="capitalize">{row.original.value.isChannelMember ? "Ha" : "Yo'q"}</div>
 		},
 		{
-			accessorFn: (row) => row.value.user1CData,
+			accessorFn: (row) => !!row.value.user1CData,
 			id: "user1CData",
-			header: "1C Ma'lumotlari",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="1C Ma'lumotlari"
+					options={[
+						{ value: true, label: "Mavjud" },
+						{ value: false, label: "Mavjud emas" }
+					]}
+				/>
+			),
 			cell: ({ row }) => <div>{row.original.value.user1CData ? "Mavjud" : "Mavjud emas"}</div>
 		},
 		{
-			accessorFn: (row) => row.value.referredByEmployeeCode ?? null,
+			accessorFn: (row) => row.value.referredByEmployeeCode ?? "",
 			id: "referredByEmployeeCode",
-			header: "Xodim(referral)",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Xodim(referral)"
+					useFacetedOptions
+					formatFacetedLabel={(code) => {
+						const c = String(code);
+						if (!c) return "—";
+						const emp = employeesByCode[c];
+						return emp ? `${emp.name} ${emp.surname}`.trim() : c;
+					}}
+				/>
+			),
 			cell: ({ row }) => {
 				const code = row.original.value.referredByEmployeeCode;
 				if (!code) return <div>-</div>;
@@ -143,9 +189,25 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			}
 		},
 		{
-			accessorFn: (row) => row.value.user1CData?.status ?? null,
+			accessorFn: (row) => {
+				const s = row.value.user1CData?.status;
+				if (s === true) return "aktiv";
+				if (s === false) return "aktiv_emas";
+				return "none";
+			},
 			id: "status",
-			header: "Status",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Status"
+					options={[
+						{ value: "aktiv", label: "Aktiv" },
+						{ value: "aktiv_emas", label: "Aktiv emas" },
+						{ value: "none", label: "—" }
+					]}
+				/>
+			),
 			cell: ({ row }) => {
 				const user1CData = row.original.value.user1CData;
 				if (!user1CData) return <div>-</div>;
@@ -159,18 +221,46 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			}
 		},
 		{
-			accessorFn: (row) => row.value.user1CData?.bonusInfo?.uroven ?? null,
+			accessorFn: (row) => row.value.user1CData?.bonusInfo?.uroven ?? "none",
 			id: "uroven",
-			header: "Level",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Level"
+					options={[
+						{ value: "Silver", label: "Silver" },
+						{ value: "Gold", label: "Gold" },
+						{ value: "Diamond", label: "Diamond" },
+						{ value: "none", label: "—" }
+					]}
+				/>
+			),
 			cell: ({ row }) => {
 				const uroven = row.original.value.user1CData?.bonusInfo?.uroven;
 				return <div>{uroven ?? "-"}</div>;
 			}
 		},
 		{
-			accessorFn: (row) => row.value.user1CData?.lastVisit ?? null,
+			accessorFn: (row) => {
+				const v = row.value.user1CData?.lastVisit;
+				if (v === true) return "ha";
+				if (v === false) return "yoq";
+				return "none";
+			},
 			id: "lastVisit",
-			header: "Последний визит",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Последний визит"
+					options={[
+						{ value: "ha", label: "Ha" },
+						{ value: "yoq", label: "Yo'q" },
+						{ value: "none", label: "—" }
+					]}
+				/>
+			),
 			cell: ({ row }) => {
 				const user1CData = row.original.value.user1CData;
 				if (!user1CData) return <div>-</div>;
@@ -178,9 +268,25 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			}
 		},
 		{
-			accessorFn: (row) => row.value.user1CData?.contractFirst ?? null,
+			accessorFn: (row) => {
+				const v = row.value.user1CData?.contractFirst;
+				if (v === true) return "ha";
+				if (v === false) return "yoq";
+				return "none";
+			},
 			id: "contractFirst",
-			header: "Xarid qilgan",
+			filterFn: "arrIncludesSome",
+			header: ({ column }) => (
+				<ColumnFilterHeader
+					column={column}
+					title="Xarid qilgan"
+					options={[
+						{ value: "ha", label: "Ha" },
+						{ value: "yoq", label: "Yo'q" },
+						{ value: "none", label: "—" }
+					]}
+				/>
+			),
 			cell: ({ row }) => {
 				const user1CData = row.original.value.user1CData;
 				if (!user1CData) return <div>-</div>;
@@ -358,6 +464,8 @@ export function UsersList() {
 		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		getFacetedRowModel: getFacetedRowModel(),
+		getFacetedUniqueValues: getFacetedUniqueValues(),
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
 		state: {
