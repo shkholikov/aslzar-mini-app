@@ -13,6 +13,7 @@ import {
 	useReactTable,
 	type ColumnDef,
 	type ColumnFiltersState,
+	type FilterFn,
 	type SortingState,
 	type VisibilityState
 } from "@tanstack/react-table";
@@ -34,6 +35,17 @@ type EmployeeSummary = {
 	referralCode: string;
 	name: string;
 	surname: string;
+};
+
+/**
+ * Filter fn for multi-select column filters: keeps the row if its cell value
+ * is one of the selected filter values. Works for any cell type (boolean,
+ * string, null). Does NOT use TanStack's `arrIncludesSome`, which assumes the
+ * cell value is itself an array and silently fails for booleans.
+ */
+const arrIncludesValueFn: FilterFn<User> = (row, columnId, filterValue) => {
+	if (!Array.isArray(filterValue) || filterValue.length === 0) return true;
+	return filterValue.includes(row.getValue(columnId));
 };
 
 function createColumns(employeesByCode: Record<string, EmployeeSummary>): ColumnDef<User>[] {
@@ -118,7 +130,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.isVerified === true,
 			id: "isVerified",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -134,7 +146,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.isChannelMember === true,
 			id: "isChannelMember",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -150,7 +162,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => !!row.value.user1CData,
 			id: "user1CData",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -166,7 +178,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.referredByEmployeeCode ?? "",
 			id: "referredByEmployeeCode",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -196,7 +208,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 				return "none";
 			},
 			id: "status",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -223,7 +235,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 		{
 			accessorFn: (row) => row.value.user1CData?.bonusInfo?.uroven ?? "none",
 			id: "uroven",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -249,7 +261,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 				return "none";
 			},
 			id: "lastVisit",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
@@ -275,7 +287,7 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 				return "none";
 			},
 			id: "contractFirst",
-			filterFn: "arrIncludesSome",
+			filterFn: arrIncludesValueFn,
 			header: ({ column }) => (
 				<ColumnFilterHeader
 					column={column}
