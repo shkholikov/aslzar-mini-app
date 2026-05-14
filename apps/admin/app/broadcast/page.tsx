@@ -10,6 +10,7 @@ import { exportToExcel } from "@/lib/export";
 import type { BroadcastJobDoc, BroadcastAudienceFilters, BroadcastMedia } from "@/lib/db";
 import { Loading } from "@/components/common/loading";
 import { AdminGuard } from "@/components/common/admin-guard";
+import imageCompression from "browser-image-compression";
 
 type FilterOption = { key: keyof BroadcastAudienceFilters; label: string };
 type FilterGroup = { type: "radio"; label: string; options: FilterOption[] } | { type: "checkbox"; label: string; options: FilterOption[] };
@@ -62,6 +63,8 @@ const PAGE_SIZE = 10;
 const CAPTION_LIMIT = 1024;
 const MAX_MEDIA = 5;
 const MAX_VIDEO_SIZE = 20 * 1024 * 1024;
+const IMAGE_COMPRESS_THRESHOLD = 4 * 1024 * 1024;
+const IMAGE_COMPRESS_OPTIONS = { maxSizeMB: 4, maxWidthOrHeight: 2048, useWebWorker: true, initialQuality: 0.85 } as const;
 
 interface UploadedMedia extends BroadcastMedia {
 	previewUrl: string;
@@ -101,13 +104,23 @@ export default function BroadcastPage() {
 			throw new Error(`"${file.name}": video maksimal 20 MB bo'lishi kerak.`);
 		}
 
+		// Compress images above the threshold so Telegram's sendMediaGroup (5MB cap via URL) never rejects them.
+		let toUpload: File = file;
+		if (isImage && file.size > IMAGE_COMPRESS_THRESHOLD) {
+			try {
+				toUpload = await imageCompression(file, IMAGE_COMPRESS_OPTIONS);
+			} catch (err) {
+				console.warn("Image compression failed, falling back to original file:", err);
+			}
+		}
+
 		const res = await fetch("/api/upload", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				filename: file.name,
-				contentType: file.type,
-				size: file.size,
+				filename: toUpload.name,
+				contentType: toUpload.type,
+				size: toUpload.size,
 				prefix: "broadcasts"
 			})
 		});
@@ -116,15 +129,15 @@ export default function BroadcastPage() {
 
 		const putRes = await fetch(data.uploadUrl, {
 			method: "PUT",
-			headers: { "Content-Type": file.type },
-			body: file
+			headers: { "Content-Type": toUpload.type },
+			body: toUpload
 		});
 		if (!putRes.ok) throw new Error("R2 ga yuklashda xatolik");
 
 		return {
 			url: data.publicUrl,
 			type: isImage ? "photo" : "video",
-			previewUrl: URL.createObjectURL(file)
+			previewUrl: URL.createObjectURL(toUpload)
 		};
 	}
 
@@ -539,8 +552,8 @@ export default function BroadcastPage() {
 								)}
 							</div>
 							<p className="text-xs text-muted-foreground mt-2">
-								Maksimal {MAX_MEDIA} ta. Video: faqat MP4, har biri ≤ 20 MB. 2+ media albom sifatida yuboriladi — Telegram bunda tugmani
-								qo&apos;llab-quvvatlamaydi.
+								Maksimal {MAX_MEDIA} ta. Rasm 4 MB dan katta bo&apos;lsa avtomatik siqiladi. Video: faqat MP4, har biri ≤ 20 MB. 2+ media
+								albom sifatida yuboriladi — Telegram bunda tugmani qo&apos;llab-quvvatlamaydi.
 							</p>
 						</div>
 
