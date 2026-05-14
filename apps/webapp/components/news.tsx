@@ -56,6 +56,8 @@ export function News() {
 	const items = data ?? [];
 	const loading = isLoading && data === undefined;
 
+	if (!loading && items.length === 0) return null;
+
 	const openPost = (url: string) => {
 		tg?.HapticFeedback?.impactOccurred("light");
 		if (url.includes("t.me/") && tg?.openTelegramLink) {
@@ -82,8 +84,6 @@ export function News() {
 						</div>
 					))}
 				</div>
-			) : items.length === 0 ? (
-				<p className="text-sm text-muted-foreground">Yangiliklar yo&apos;q.</p>
 			) : (
 				<div className="flex flex-col gap-4">
 					{items.map((item) => (

@@ -5,11 +5,13 @@ import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCard, type ProductCardProps } from "@/components/common/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { useProducts, type CatalogProduct } from "@/hooks/useProducts";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
 import { LayoutGrid, List } from "lucide-react";
+import Image from "next/image";
 
 const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|m4v)(\?|$)/i;
 const PAGE_SIZE = 6;
@@ -95,7 +97,15 @@ export default function CatalogPage() {
 						))}
 					{!loading && error && <p className="text-sm text-red-600 py-4 col-span-2">{error}</p>}
 					{!loading && !error && products.length === 0 && (
-						<p className="text-sm text-gray-500 py-4 col-span-2">Hozircha mahsulotlar yo&apos;q.</p>
+						<Item variant="outline" className="col-span-2 flex-col gap-3 py-10 rounded-4xl border-dashed text-center">
+							<ItemMedia className="size-20 opacity-70 relative">
+								<Image src="/icons/ring.webp" alt="" fill className="object-contain" />
+							</ItemMedia>
+							<ItemContent className="items-center gap-1">
+								<ItemTitle>Hozircha mahsulotlar yo&apos;q</ItemTitle>
+								<ItemDescription>Tez orada yangi mahsulotlar qo&apos;shiladi</ItemDescription>
+							</ItemContent>
+						</Item>
 					)}
 					{!loading && !error && paginated.map((product) => <ProductCard key={product.id} {...product} compact={compact} />)}
 				</div>
