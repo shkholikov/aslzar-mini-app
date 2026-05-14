@@ -7,8 +7,9 @@
 import cron from "node-cron";
 import type { Filter } from "mongodb";
 import type { Api } from "grammy";
+import type { InputMediaPhoto, InputMediaVideo } from "grammy/types";
 import { users, broadcastJobs } from "./db";
-import type { BroadcastJob } from "./types";
+import type { BroadcastJob, BroadcastMedia } from "./types";
 
 /**
  * Atomically claim a pending job (set to "processing"). Returns true only if we were the one who claimed it,
@@ -86,6 +87,10 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 	const reply_markup = job.buttonText && job.buttonUrl ? { inline_keyboard: [[{ text: job.buttonText, url: job.buttonUrl }]] } : undefined;
 	const caption = job.message || undefined;
 
+	// Resolve media items: prefer new media[] array, fall back to legacy single-media fields for jobs created before the array existed.
+	const items: BroadcastMedia[] =
+		job.media && job.media.length > 0 ? job.media : job.mediaUrl && job.mediaType ? [{ url: job.mediaUrl, type: job.mediaType }] : [];
+
 	for (let i = 0; i < keys.length; i++) {
 		const telegramUserId = keys[i];
 		if (i > 0 && i % CHECK_CANCEL_EVERY === 0) {
@@ -106,21 +111,23 @@ async function processBroadcastJob(api: Api, job: BroadcastJob): Promise<void> {
 			}
 		}
 		try {
-			if (job.mediaUrl && job.mediaType === "photo") {
-				await api.sendPhoto(telegramUserId, job.mediaUrl, {
-					caption,
-					reply_markup
-				});
-			} else if (job.mediaUrl && job.mediaType === "video") {
-				await api.sendVideo(telegramUserId, job.mediaUrl, {
-					caption,
-					supports_streaming: true,
-					reply_markup
-				});
+			if (items.length >= 2) {
+				// Telegram media group: caption goes on first item, no reply_markup support.
+				const groupMedia: (InputMediaPhoto | InputMediaVideo)[] = items.map((m, idx) =>
+					m.type === "video"
+						? ({ type: "video", media: m.url, supports_streaming: true, caption: idx === 0 ? caption : undefined } as InputMediaVideo)
+						: ({ type: "photo", media: m.url, caption: idx === 0 ? caption : undefined } as InputMediaPhoto)
+				);
+				await api.sendMediaGroup(telegramUserId, groupMedia);
+			} else if (items.length === 1) {
+				const m = items[0];
+				if (m.type === "photo") {
+					await api.sendPhoto(telegramUserId, m.url, { caption, reply_markup });
+				} else {
+					await api.sendVideo(telegramUserId, m.url, { caption, supports_streaming: true, reply_markup });
+				}
 			} else {
-				await api.sendMessage(telegramUserId, job.message, {
-					reply_markup
-				});
+				await api.sendMessage(telegramUserId, job.message, { reply_markup });
 			}
 			sentCount++;
 		} catch (err) {

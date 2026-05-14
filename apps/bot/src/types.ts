@@ -121,12 +121,22 @@ export interface BroadcastAudienceFilters {
 	contractFirstNo?: boolean; // user1CData.contractFirst === false
 }
 
+/** Single media attachment (photo or video URL stored in R2) */
+export interface BroadcastMedia {
+	url: string;
+	type: "photo" | "video";
+}
+
 /** Broadcast job created by admin; processed by bot */
 export interface BroadcastJob {
 	_id?: unknown;
 	message: string;
+	/** @deprecated Legacy single-media field. New jobs use `media`. Read both for backward compat. */
 	mediaUrl?: string;
+	/** @deprecated Legacy single-media field. New jobs use `media`. Read both for backward compat. */
 	mediaType?: "photo" | "video";
+	/** Up to 5 attachments. When length >= 2 the bot sends a media group (no inline button supported). */
+	media?: BroadcastMedia[];
 	buttonText?: string;
 	buttonUrl?: string;
 	audience?: BroadcastAudience;

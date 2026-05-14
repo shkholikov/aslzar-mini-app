@@ -71,12 +71,22 @@ export interface BroadcastAudienceFilters {
 	contractFirstNo?: boolean; // user1CData.contractFirst === false
 }
 
+/** Single media attachment (photo or video URL stored in R2) */
+export interface BroadcastMedia {
+	url: string;
+	type: "photo" | "video";
+}
+
 /** Broadcast job (same shape as bot's BroadcastJob) */
 export interface BroadcastJobDoc {
 	_id?: string | ObjectId;
 	message: string;
+	/** @deprecated Kept for legacy jobs created before media[] was added. New jobs use `media`. */
 	mediaUrl?: string;
+	/** @deprecated Kept for legacy jobs created before media[] was added. New jobs use `media`. */
 	mediaType?: "photo" | "video";
+	/** Up to 5 attachments. When length >= 2, bot sends as a media group (no inline button supported by Telegram). */
+	media?: BroadcastMedia[];
 	buttonText?: string;
 	buttonUrl?: string;
 	audience?: BroadcastAudience;
@@ -343,7 +353,7 @@ export async function getMonthlyUserGrowth(): Promise<MonthlyGrowthPoint[]> {
 export async function createBroadcastJob(
 	message: string,
 	audienceFilters?: BroadcastAudienceFilters,
-	media?: { mediaUrl: string; mediaType: "photo" | "video" },
+	media?: BroadcastMedia[],
 	button?: { buttonText: string; buttonUrl: string }
 ): Promise<BroadcastJobDoc> {
 	let client: MongoClient | null = null;
@@ -355,7 +365,7 @@ export async function createBroadcastJob(
 		const coll = db.collection<BroadcastJobDoc>(broadcastJobsCollection);
 		const doc: BroadcastJobDoc = {
 			message,
-			...(media && { mediaUrl: media.mediaUrl, mediaType: media.mediaType }),
+			...(media && media.length > 0 && { media }),
 			...(button && {
 				buttonText: button.buttonText,
 				buttonUrl: button.buttonUrl
@@ -544,7 +554,11 @@ async function getNextEmployeeReferralCode(): Promise<string> {
 		await client.connect();
 		const db = client.db(dbName);
 		const counters = db.collection<CounterDoc>(countersCollection);
-		const result = await counters.findOneAndUpdate({ _id: "employee_referral" }, { $inc: { seq: 1 } }, { upsert: true, returnDocument: "after" });
+		const result = await counters.findOneAndUpdate(
+			{ _id: "employee_referral" },
+			{ $inc: { seq: 1 } },
+			{ upsert: true, returnDocument: "after" }
+		);
 		const seq = result?.seq ?? 1;
 		return `emp${seq}`;
 	} finally {

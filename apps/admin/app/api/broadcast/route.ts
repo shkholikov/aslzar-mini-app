@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createBroadcastJob, getBroadcastJobs, type BroadcastAudienceFilters } from "@/lib/db";
 import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
+import { parseMediaBody, parseButtonBody, checkAlbumButtonConflict } from "@/lib/broadcast-validation";
 
 /**
  * GET /api/broadcast
@@ -44,12 +45,14 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
-		const body = await request.json();
-		const message = typeof body?.message === "string" ? body.message.trim() : "";
+		const body = (await request.json()) as unknown;
+		const b = (body ?? {}) as Record<string, unknown>;
+		const message = typeof b.message === "string" ? b.message.trim() : "";
 		if (!message) {
 			return NextResponse.json({ error: "message is required and must be a non-empty string" }, { status: 400 });
 		}
-		const raw = body?.audienceFilters;
+
+		const raw = b.audienceFilters as Record<string, unknown> | undefined;
 		const hasAny =
 			raw &&
 			typeof raw === "object" &&
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
 				raw.contractFirst === true ||
 				raw.contractFirstNo === true);
 		const audienceFilters: BroadcastAudienceFilters | undefined =
-			hasAny && raw && typeof raw === "object"
+			hasAny && raw
 				? {
 						...(raw.verified === true && { verified: true }),
 						...(raw.nonVerified === true && { nonVerified: true }),
@@ -80,19 +83,23 @@ export async function POST(request: NextRequest) {
 						...(raw.contractFirstNo === true && { contractFirstNo: true })
 					}
 				: undefined;
-		const mediaUrl = typeof body?.mediaUrl === "string" ? body.mediaUrl.trim() : undefined;
-		const mediaType = body?.mediaType === "photo" || body?.mediaType === "video" ? body.mediaType : undefined;
-		if ((mediaUrl && !mediaType) || (!mediaUrl && mediaType)) {
-			return NextResponse.json({ error: "mediaUrl and mediaType must both be provided" }, { status: 400 });
-		}
-		const media = mediaUrl && mediaType ? { mediaUrl, mediaType } : undefined;
 
-		const buttonText = typeof body?.buttonText === "string" ? body.buttonText.trim() : undefined;
-		const buttonUrl = typeof body?.buttonUrl === "string" ? body.buttonUrl.trim() : undefined;
-		if ((buttonText && !buttonUrl) || (!buttonText && buttonUrl)) {
-			return NextResponse.json({ error: "buttonText and buttonUrl must both be provided" }, { status: 400 });
+		const mediaResult = parseMediaBody(b);
+		if (!mediaResult.ok) {
+			return NextResponse.json({ error: mediaResult.error }, { status: 400 });
 		}
-		const button = buttonText && buttonUrl ? { buttonText, buttonUrl } : undefined;
+		const media = mediaResult.value;
+
+		const buttonResult = parseButtonBody(b);
+		if (!buttonResult.ok) {
+			return NextResponse.json({ error: buttonResult.error }, { status: 400 });
+		}
+		const button = buttonResult.value;
+
+		const conflict = checkAlbumButtonConflict(media, button);
+		if (conflict) {
+			return NextResponse.json({ error: conflict }, { status: 400 });
+		}
 
 		const job = await createBroadcastJob(message, audienceFilters, media, button);
 		return NextResponse.json({ job }, { status: 201 });
