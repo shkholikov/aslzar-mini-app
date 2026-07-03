@@ -34,7 +34,7 @@ export function ReferralsList({ referrals, loading, onReload }: ReferralsListPro
 				) : (
 					<>
 						<Table>
-							<TableCaption>Sizning taklif qilingan referralaringiz.</TableCaption>
+							<TableCaption>Sizning taklif qilingan referallaringiz.</TableCaption>
 							<TableHeader>
 								<TableRow>
 									<TableHead className="w-[100px]">Raqam</TableHead>

@@ -16,7 +16,7 @@ interface ReferralQRCodeProps {
 
 export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShare }: ReferralQRCodeProps) {
 	return (
-		<SectionCard iconImage="/icons/qr.webp" title="Sizning referral QR kodingiz">
+		<SectionCard iconImage="/icons/qr.webp" title="Sizning referal QR kodingiz">
 			<p className="mb-2">
 				<strong>Doʻstlaringizni taklif qilish uchun ushbu QR kodni skaner qiling</strong>
 			</p>
@@ -38,7 +38,7 @@ export function ReferralQRCode({ referralLink, preparedMessageId, onCopy, onShar
 					className={goldButtonClass}
 					onClick={onShare}
 					disabled={!preparedMessageId}
-					title={!preparedMessageId ? "Ulashish uchun hozircha referral tayyorlangan emas" : undefined}
+					title={!preparedMessageId ? "Ulashish uchun hozircha referal tayyorlangan emas" : undefined}
 				>
 					<Forward className="size-4" /> Ulashish
 				</RippleButton>
