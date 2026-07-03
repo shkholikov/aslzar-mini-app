@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { Header } from "@/components/common/header";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
+import { ReferralLockedCard } from "@/components/common/referral-locked-card";
 import { ReferralQRCode } from "./components/referral-qr-code";
 import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -73,13 +74,13 @@ export default function ReferralPage() {
 		tg?.HapticFeedback?.impactOccurred("heavy");
 		const referralMsg = `ASLZAR💎 platformasiga qo'shiling!\n\n🔗 Mening taklif havolam orqali ro'yxatdan o'tishingiz mumkin:\n\n${referralLink}`;
 		navigator.clipboard.writeText(referralMsg);
-		toast.success("Referral link nusxasi olindi!");
+		toast.success("Referal link nusxasi olindi!");
 	}, [referralLink, tg]);
 
 	const handleShare = useCallback(() => {
 		tg?.HapticFeedback?.impactOccurred("heavy");
 		if (!preparedMessageId) {
-			toast.error("Referral ulashish uchun hozircha tayyorlangan link topilmadi.");
+			toast.error("Referal ulashish uchun hozircha tayyorlangan link topilmadi.");
 			return;
 		}
 		tg?.shareMessage(preparedMessageId);
@@ -87,7 +88,7 @@ export default function ReferralPage() {
 
 	return (
 		<div className="pt-12">
-			<Header title="Referral" description="Sizning referal ma'lumotlaringiz" iconImage="/icons/user.webp" />
+			<Header title="Referal" description="Sizning referal ma'lumotlaringiz" iconImage="/icons/user.webp" />
 
 			{loading ? (
 				<>
@@ -102,11 +103,17 @@ export default function ReferralPage() {
 							))}
 						</div>
 					</SectionCard>
-					<SectionCard iconImage="/icons/user.webp" title="Referral havolangiz">
+					<SectionCard iconImage="/icons/user.webp" title="Referal havolangiz">
 						<Skeleton className="w-full aspect-square rounded-2xl mb-3" />
 						<Skeleton className="h-9 w-full rounded-md mb-2" />
 						<Skeleton className="h-9 w-full rounded-md" />
 					</SectionCard>
+				</>
+			) : data && data.code === 0 && data.contractFirst !== true ? (
+				// Registered in 1C but has never purchased — referral program is for ASLZAR customers only
+				<>
+					<ReferralLockedCard />
+					<ProductCarousel />
 				</>
 			) : data && data.code === 0 ? (
 				<>

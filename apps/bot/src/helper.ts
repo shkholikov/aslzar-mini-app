@@ -1,11 +1,24 @@
 import { InlineKeyboard } from "grammy";
-import { infoText } from "./messages";
-import { ISessionData, MyContext } from "./types";
+import { infoText, referralAddedText } from "./messages";
+import { I1CUserData, ISessionData, MyContext } from "./types";
 import { users, employees } from "./db";
 import { addReferral } from "./api";
 
 const WEBAPP_URL = process.env.WEBAPP_URL || "https://app.aslzarbot.uz";
 const BOT_TELEGRAM_LINK = process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
+
+/**
+ * ASLZAR mijozi check — same source of truth as the admin dashboard's "Xarid qilgan":
+ * 1C sets contractFirst=true once the user has made at least one purchase.
+ */
+export function isAslzarCustomer(user1CData: Partial<I1CUserData> | undefined): boolean {
+	return user1CData?.contractFirst === true;
+}
+
+/** Escapes user-provided text for Telegram MarkdownV2. */
+function escapeMarkdownV2(text: string): string {
+	return text.replace(/[_*[\]()~`>#+\-=|{}.!\\]/g, "\\$&");
+}
 
 export function initializeSession(ctx: MyContext): void {
 	if (!ctx.from) return;
@@ -95,6 +108,14 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 		return;
 	}
 
+	// The invited user must NOT already be an ASLZAR customer — only new
+	// (non-purchased) people can be added as referrals. Their 1C data is fresh
+	// here: loaded on :contact / refreshed on stale /start before this call.
+	if (isAslzarCustomer(ctx.session.user1CData)) {
+		console.log(`User ${currentUserId} is already an ASLZAR customer, skipping referral`);
+		return;
+	}
+
 	try {
 		// Get referrer's session data from database
 		const referrerSession = await users.findOne({ key: referrerId.toString() });
@@ -111,6 +132,12 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 			return;
 		}
 
+		// The referral program is only for ASLZAR customers — the inviter must have purchased
+		if (!isAslzarCustomer(referrer1CData)) {
+			console.log(`Referrer ${referrerId} is not an ASLZAR customer (contractFirst !== true), skipping referral`);
+			return;
+		}
+
 		// Get referred user's phone number, first name, and last name
 		const referredUserPhone = ctx.session.phone_number;
 		const referredUserFirstName = ctx.from?.first_name || ctx.session.first_name || "";
@@ -120,6 +147,16 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 		const success = await addReferral(referrer1CData.clientId, referredUserPhone, referredUserFirstName, referredUserLastName);
 		if (success) {
 			console.log(`Referral registered: User ${referredUserPhone} was referred by ${referrerId}`);
+
+			// Notify the inviter (must never fail the flow — e.g. inviter blocked the bot)
+			try {
+				const invitedName = escapeMarkdownV2(`${referredUserFirstName} ${referredUserLastName}`.trim() || "Yangi mijoz");
+				await ctx.api.sendMessage(referrerId, referralAddedText.replace("{name}", invitedName), {
+					parse_mode: "MarkdownV2"
+				});
+			} catch (notifyError) {
+				console.error(`Failed to notify referrer ${referrerId}:`, notifyError);
+			}
 		} else {
 			console.error(`Failed to register referral for user ${referredUserPhone}`);
 		}

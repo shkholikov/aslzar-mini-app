@@ -38,3 +38,15 @@ export const paymentReminderItem = `
 📅 To'lov sanasi: {date}
 🧾 Miqdor: {sum}
 `;
+
+// ——— Referral added notification (sent to the inviter, MarkdownV2). Placeholder: {name} — pre-escaped invited user's name ———
+
+export const referralAddedText = `
+🎉 *ASLZAR💎 — Yangi referal\\!*
+
+👤 Siz taklif qilgan *{name}* referal sifatida ro'yxatga olindi\\.
+
+⏳ Agar u *10 kun ichida* xarid qilsa — xarid summasidan sizga *bonus* beriladi\\.
+
+📱 Referallaringiz holatini ilovadagi *Referal* bo'limida kuzatishingiz mumkin\\.
+`;
