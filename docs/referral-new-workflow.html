@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ASLZAR — Yangi referal tizimi / Новая реферальная система</title>
+<style>
+  :root { --gold: #C8A24B; --ink: #1c1c1e; --muted: #6b6b70; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); margin: 0; padding: 40px; background: #fff; line-height: 1.5;
+  }
+  header { border-bottom: 3px solid var(--gold); padding-bottom: 16px; margin-bottom: 24px; }
+  h1 { margin: 0 0 4px; font-size: 26px; }
+  h2 { font-size: 20px; margin: 36px 0 8px; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .card { border: 1px solid #e6e6ea; border-radius: 14px; padding: 24px; margin: 16px 0 28px; background: #fcfcfd; }
+  .note { background: #fff8e8; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 8px; font-size: 14px; margin: 12px 0; }
+  .ask { background: #eef6ff; border-left: 4px solid #4a90d9; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin: 12px 0; }
+  .mermaid { text-align: center; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px; }
+  th, td { border: 1px solid #e6e6ea; padding: 8px 12px; text-align: left; }
+  th { background: #f6f1e5; }
+  ul { padding-left: 20px; }
+  li { margin: 4px 0; }
+  .langbar { display: flex; gap: 8px; margin-bottom: 8px; }
+  .langbtn {
+    border: 1px solid var(--gold); background: #fff; color: var(--ink); border-radius: 999px;
+    padding: 6px 18px; font-size: 14px; cursor: pointer; font-weight: 600;
+  }
+  .langbtn.active { background: var(--gold); color: #fff; }
+  .lang { display: none; }
+  .lang.active { display: block; }
+  @media print {
+    body { padding: 0; }
+    .langbar { display: none; }
+    .lang { display: block !important; }
+    .card { break-inside: avoid; page-break-inside: avoid; }
+    h2 { page-break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ASLZAR 💎 — Yangi referal tizimi / Новая реферальная система</h1>
+  <div class="sub">Namuna: <b>Aziz</b> — taklif qiluvchi (ASLZAR mijozi), <b>Bobur</b> — taklif qilingan (yangi, hali mijoz emas) · Пример: <b>Азиз</b> — пригласивший (клиент ASLZAR), <b>Бобур</b> — приглашённый (новый, ещё не клиент)</div>
+</header>
+
+<div class="langbar">
+  <button class="langbtn active" data-lang="uz">O‘zbekcha</button>
+  <button class="langbtn" data-lang="ru">Русский</button>
+</div>
+
+<!-- ==================== UZBEK ==================== -->
+<div class="lang active" id="uz">
+
+  <div class="note">
+    <b>Qisqacha:</b> Referal dasturi <b>faqat ASLZAR mijozlari</b> (xarid qilganlar) uchun. Agar foydalanuvchi
+    hali xarid qilmagan bo‘lsa — dasturdan foydalana olmaydi, unga tegishli xabar ko‘rsatiladi.
+    <b>Aziz</b> (ASLZAR mijozi) faqat ASLZAR mijozi <b>BO‘LMAGAN</b> (yangi) odamni taklif qila oladi.
+    <b>Bobur</b> taklif qilinsa — referal qo‘shiladi va <b>10 kunlik oyna</b> ochiladi. Bobur 10 kun ichida xarid qilsa —
+    u ASLZAR mijoziga aylanadi va <b>Aziz</b> (taklif qilgan) xariddan <b>foiz</b> oladi. Xarid bo‘lmasa — 1C referalni avtomatik o‘chiradi.
+    <b>10 000 so‘m bekor qilindi</b> — hech kimga berilmaydi. Bot faqat referalni qo‘shadi.
+  </div>
+
+  <h2>Asosiy oqim</h2>
+  <div class="card">
+    <div class="mermaid">
+flowchart TD
+    START(["Aziz referal dasturini ochadi / havolani ulashmoqchi"]) --> ELIG{"Aziz ASLZAR mijozimi? (xarid qilgan)"}
+    ELIG -->|"Yo'q"| BLOCK(["Referal dasturi taqiqlanadi — 'faqat ASLZAR mijozlari uchun' xabari ko'rsatiladi"])
+    ELIG -->|"Ha"| SHARE["Aziz referal havolasini ulashadi"]
+    SHARE --> JOIN(["Bobur havolani bosadi → qo'shiladi → kontakt, 1C'da tekshiriladi"])
+    JOIN --> CHK{"Bobur ASLZAR mijozi EMASmi? (xarid tarixi yo'q)"}
+    CHK -->|"Yo'q — Bobur allaqachon mijoz"| STOP(["Referal qo'shilmaydi"])
+    CHK -->|"Ha — Bobur yangi"| ADD["Bot referalni qo'shadi: Aziz → Bobur (bot tomonida)"]
+    ADD --> WIN{{"10 kunlik oyna ochiladi"}}
+    WIN --> BUY{"Bobur 10 kun ichida xarid qildimi?"}
+    BUY -->|"Ha"| REWARD["Bobur ASLZAR mijoziga aylanadi → 1C xariddan foizni Aziz (taklif qilgan) ga beradi"]
+    BUY -->|"Yo'q"| DELETE["1C 10 kundan keyin referalni avtomatik o'chiradi"]
+    </div>
+  </div>
+
+  <h2>Asosiy qoidalar</h2>
+  <div class="card">
+    <ul>
+      <li>Referal dasturi <b>faqat ASLZAR mijozlari</b> (xarid qilganlar) uchun.</li>
+      <li>Agar foydalanuvchi hali xarid qilmagan bo‘lsa (mijoz emas) → referal dasturidan <b>foydalana olmaydi</b>, unga xabar ko‘rsatiladi.</li>
+      <li>Taklif qiluvchi <b>Aziz</b> — ASLZAR mijozi bo‘lishi shart.</li>
+      <li>Taklif qilinadigan <b>Bobur</b> — ASLZAR mijozi <b>BO‘LMASLIGI</b> kerak (yangi odam).</li>
+      <li>Referal qo‘shishdan oldin bot Bobur mijoz emasligini tekshiradi; agar allaqachon mijoz bo‘lsa → <b>referal qo‘shilmaydi</b>.</li>
+      <li>Bobur mijoz bo‘lmasa → referal qo‘shiladi va <b>10 kunlik oyna</b> ochiladi.</li>
+      <li>Bobur 10 kun ichida xarid qilsa → xariddan <b>foiz Aziz (taklif qilgan)</b> ga beriladi.</li>
+      <li>Xarid bo‘lmasa → 1C 10 kundan keyin referalni <b>avtomatik o‘chiradi</b>.</li>
+      <li><b>10 000 so‘m butunlay olib tashlandi</b> — hech kimga berilmaydi.</li>
+      <li><b>Bot faqat referalni qo‘shadi.</b> Foiz va o‘chirish — 1C tomonida.</li>
+    </ul>
+  </div>
+
+  <h2>Kim nima qiladi</h2>
+  <div class="card">
+    <table>
+      <tr><th>Amal</th><th>Bot</th><th>1C</th></tr>
+      <tr><td>Mijozlikni tekshirish (Aziz va Bobur)</td><td>✅</td><td>—</td></tr>
+      <tr><td>Referalni qo‘shish (biriktirish)</td><td>✅ avtomatik</td><td>—</td></tr>
+      <tr><td>10 kunlik oyna / tekshiruv</td><td>—</td><td>✅</td></tr>
+      <tr><td>Xariddan foiz bonus</td><td>—</td><td>✅</td></tr>
+      <tr><td>Referalni avtomatik o‘chirish (10 kundan keyin)</td><td>—</td><td>✅</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Muhim:</b> xariddan <b>foiz taklif qilgan Aziz</b> ga beriladi — u yangi mijoz olib kelgani uchun.
+  </div>
+</div>
+
+<!-- ==================== RUSSIAN ==================== -->
+<div class="lang" id="ru">
+
+  <div class="note">
+    <b>Кратко:</b> Реферальная программа <b>только для клиентов ASLZAR</b> (кто покупал). Если пользователь
+    ещё не покупал — он не может пользоваться программой, ему показывается соответствующее сообщение.
+    <b>Азиз</b> (клиент ASLZAR) может пригласить только человека, который <b>НЕ</b> клиент ASLZAR (нового).
+    Когда <b>Бобур</b> приглашён — реферал добавляется и открывается <b>окно 10 дней</b>. Если Бобур совершит покупку
+    за 10 дней — он становится клиентом ASLZAR, и <b>Азиз</b> (пригласивший) получает <b>процент</b> от покупки. Если покупки нет — 1C авто-удаляет реферал.
+    <b>10 000 сум отменены</b> — никому не начисляются. Бот только добавляет реферал.
+  </div>
+
+  <h2>Основной поток</h2>
+  <div class="card">
+    <div class="mermaid">
+flowchart TD
+    START(["Азиз открывает реферальную программу / хочет поделиться ссылкой"]) --> ELIG{"Азиз — клиент ASLZAR? (покупал)"}
+    ELIG -->|"Нет"| BLOCK(["Программа заблокирована — сообщение 'только для клиентов ASLZAR'"])
+    ELIG -->|"Да"| SHARE["Азиз делится реферальной ссылкой"]
+    SHARE --> JOIN(["Бобур нажимает ссылку → присоединяется → контакт, проверка в 1C"])
+    JOIN --> CHK{"Бобур НЕ клиент ASLZAR? (нет истории покупок)"}
+    CHK -->|"Нет — Бобур уже клиент"| STOP(["Реферал не создаётся"])
+    CHK -->|"Да — Бобур новый"| ADD["Бот добавляет реферал: Азиз → Бобур (на стороне бота)"]
+    ADD --> WIN{{"Открывается окно 10 дней"}}
+    WIN --> BUY{"Бобур совершил покупку за 10 дней?"}
+    BUY -->|"Да"| REWARD["Бобур становится клиентом ASLZAR → 1C начисляет % от покупки Азизу (пригласившему)"]
+    BUY -->|"Нет"| DELETE["1C автоматически удаляет реферал после 10 дней"]
+    </div>
+  </div>
+
+  <h2>Основные правила</h2>
+  <div class="card">
+    <ul>
+      <li>Реферальная программа <b>только для клиентов ASLZAR</b> (кто покупал).</li>
+      <li>Если пользователь ещё не покупал (не клиент) → <b>не может</b> пользоваться программой, ему показывается сообщение.</li>
+      <li>Приглашающий <b>Азиз</b> должен быть клиентом ASLZAR.</li>
+      <li>Приглашаемый <b>Бобур</b> должен быть <b>НЕ</b> клиентом ASLZAR (новый человек).</li>
+      <li>Перед добавлением реферала бот проверяет, что Бобур не клиент; если уже клиент → <b>реферал не создаётся</b>.</li>
+      <li>Если Бобур не клиент → реферал добавляется и открывается <b>окно 10 дней</b>.</li>
+      <li>Если Бобур покупает за 10 дней → <b>процент</b> от покупки получает <b>Азиз (пригласивший)</b>.</li>
+      <li>Если покупки нет → 1C <b>авто-удаляет</b> реферал после 10 дней.</li>
+      <li><b>10 000 сум полностью убраны</b> — никому не начисляются.</li>
+      <li><b>Бот только добавляет реферал.</b> Процент и удаление — на стороне 1C.</li>
+    </ul>
+  </div>
+
+  <h2>Кто что делает</h2>
+  <div class="card">
+    <table>
+      <tr><th>Действие</th><th>Бот</th><th>1C</th></tr>
+      <tr><td>Проверка статуса клиента (Азиз и Бобур)</td><td>✅</td><td>—</td></tr>
+      <tr><td>Добавление реферала (привязка)</td><td>✅ авто</td><td>—</td></tr>
+      <tr><td>Окно 10 дней / проверка</td><td>—</td><td>✅</td></tr>
+      <tr><td>Процент от покупки</td><td>—</td><td>✅</td></tr>
+      <tr><td>Авто-удаление реферала (через 10 дней)</td><td>—</td><td>✅</td></tr>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Важно:</b> процент от покупки получает <b>пригласивший Азиз</b> — за приведённого нового клиента.
+  </div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#f6f1e5', primaryBorderColor: '#C8A24B', primaryTextColor: '#1c1c1e',
+      lineColor: '#8a8a90', fontFamily: '-apple-system, Segoe UI, Roboto, sans-serif'
+    },
+    flowchart: { curve: 'basis', nodeSpacing: 40, rankSpacing: 50 }
+  });
+
+  // Render BOTH language diagrams while visible, then apply the toggle.
+  document.querySelectorAll('.lang').forEach(el => el.classList.add('active'));
+  await mermaid.run({ querySelector: '.mermaid' });
+  document.getElementById('ru').classList.remove('active');
+
+  document.querySelectorAll('.langbtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      document.querySelectorAll('.langbtn').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.lang').forEach(el => el.classList.toggle('active', el.id === lang));
+    });
+  });
+</script>
+</body>
+</html>
