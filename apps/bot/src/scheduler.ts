@@ -11,9 +11,14 @@ import { users, reminderLogs } from "./db";
 import { paymentReminderItem, paymentReminderText } from "./messages";
 import type { I1CUserData, ReminderLogEntry } from "./types";
 import { format1CDate } from "./format1cDate";
+import { searchUserByPhone } from "./api";
 
 const TZ = "Asia/Tashkent";
 const REMINDER_DAYS = new Set([0, 3, 5]);
+// Delay between live 1C re-verification calls, matching the API sync's throttle.
+const DELAY_BETWEEN_1C_CALLS_MS = 200;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // ——— Types ———
 
@@ -26,6 +31,7 @@ interface UpcomingPayment {
 }
 
 interface SessionWith1C {
+	phone_number?: string;
 	user1CData?: Partial<I1CUserData>;
 }
 
@@ -137,7 +143,40 @@ async function runDailyJob(api: Api): Promise<void> {
 
 		if (await alreadySentReminderToday(key)) continue;
 
-		const payments = getUpcomingPayments(value);
+		// Pre-select from the cached snapshot: only users who *look* due in 0/3/5 days.
+		// Users with nothing upcoming are skipped without any 1C call.
+		const cachedPayments = getUpcomingPayments(value);
+		if (cachedPayments.length === 0) continue;
+
+		// Confirm against live 1C before sending — avoids reminding about installments
+		// paid since the last cache refresh (the reported false-positive).
+		let payments = cachedPayments;
+		const phone = value.phone_number;
+		if (phone) {
+			const fresh = await searchUserByPhone(phone);
+			if (fresh) {
+				payments = getUpcomingPayments({ user1CData: fresh });
+				// Keep the session cache warm (mirrors apps/api updateUserSession1CData).
+				try {
+					await users.updateOne(
+						{ key },
+						{
+							$set: {
+								"value.user1CData": fresh,
+								"value.isVerified": true,
+								"value.user1CDataUpdatedAt": new Date()
+							}
+						}
+					);
+				} catch (err) {
+					console.error(`[Payment reminder] cache write failed for user ${key}:`, err);
+				}
+			}
+			// fresh === null (1C error / not found) → fall back to cachedPayments.
+			await sleep(DELAY_BETWEEN_1C_CALLS_MS);
+		}
+
+		// Fresh 1C may show everything already paid → nothing to remind about.
 		if (payments.length === 0) continue;
 
 		const messageText = buildReminderMessage(payments);
