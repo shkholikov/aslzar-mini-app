@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AdminNav } from "@/components/admin-nav";
+import { AdminShell } from "@/components/admin-shell";
 import { AdminContextProvider } from "@/components/common/admin-context";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import pkg from "../package.json";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -40,15 +39,9 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 				<AdminContextProvider>
-					<div className="flex min-h-screen flex-col">
-						<AdminNav />
-						<div className="flex flex-1 w-full">
-							<TooltipProvider>{children}</TooltipProvider>
-						</div>
-						<footer className="border-t border-border py-3 text-center text-xs text-muted-foreground">
-							v{pkg.version}
-						</footer>
-					</div>
+					<TooltipProvider>
+						<AdminShell>{children}</AdminShell>
+					</TooltipProvider>
 				</AdminContextProvider>
 			</body>
 		</html>

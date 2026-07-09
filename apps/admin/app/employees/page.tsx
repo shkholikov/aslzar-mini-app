@@ -309,7 +309,14 @@ export default function EmployeesPage() {
 
 							<div className="flex items-center justify-between mb-3">
 								<h2 className="text-lg font-medium text-gray-800">Xodimlar ro'yxati</h2>
-								<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={employees.length === 0} className="shrink-0">
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={handleExport}
+									disabled={employees.length === 0}
+									className="shrink-0"
+								>
 									<Download className="mr-2 h-4 w-4" />
 									Excel
 								</Button>
@@ -392,7 +399,12 @@ export default function EmployeesPage() {
 								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
 									Oldingi
 								</Button>
-								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+									disabled={page === totalPages}
+								>
 									Keyingi
 								</Button>
 							</div>

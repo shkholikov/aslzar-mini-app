@@ -273,7 +273,13 @@ export default function NewsPage() {
 										disabled={submitting || uploading}
 										className="hidden"
 									/>
-									<Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={submitting || uploading}>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => fileInputRef.current?.click()}
+										disabled={submitting || uploading}
+									>
 										{uploading ? (
 											<>
 												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -333,7 +339,9 @@ export default function NewsPage() {
 									disabled={submitting}
 								/>
 							</div>
-							<p className="text-xs text-muted-foreground mt-1">Webapp da yangilik ostida tugma ko'rinadi. Ikkalasi ham to'ldirilishi kerak.</p>
+							<p className="text-xs text-muted-foreground mt-1">
+								Webapp da yangilik ostida tugma ko'rinadi. Ikkalasi ham to'ldirilishi kerak.
+							</p>
 						</div>
 
 						{error && <p className="text-sm text-destructive">{error}</p>}
@@ -429,7 +437,12 @@ export default function NewsPage() {
 									<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
 										Oldingi
 									</Button>
-									<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+									<Button
+										variant="outline"
+										size="sm"
+										onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+										disabled={page === totalPages}
+									>
 										Keyingi
 									</Button>
 								</div>

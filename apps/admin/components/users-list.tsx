@@ -489,7 +489,7 @@ export function UsersList() {
 	});
 
 	React.useEffect(() => {
-		table.setPageSize(10);
+		table.setPageSize(20);
 	}, [table]);
 
 	if (loading) return <Loading />;
@@ -546,7 +546,7 @@ export function UsersList() {
 	}
 
 	return (
-		<div className="w-full">
+		<div className="w-full min-w-0">
 			<div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 py-4">
 				<Input
 					placeholder="Foydalanuvchi nomi, telefon yoki ism bo'yicha qidirish..."

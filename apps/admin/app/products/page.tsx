@@ -325,7 +325,12 @@ export default function ProductsPage() {
 								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
 									Oldingi
 								</Button>
-								<Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+									disabled={page === totalPages}
+								>
 									Keyingi
 								</Button>
 							</div>

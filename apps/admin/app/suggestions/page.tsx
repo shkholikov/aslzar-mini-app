@@ -178,7 +178,14 @@ export default function SuggestionsPage() {
 						<div className="space-y-4">
 							<div className="flex items-center justify-between mb-3">
 								<h2 className="text-lg font-medium text-gray-800">Takliflar ro'yxati</h2>
-								<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={suggestions.length === 0} className="shrink-0">
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={handleExport}
+									disabled={suggestions.length === 0}
+									className="shrink-0"
+								>
 									<Download className="mr-2 h-4 w-4" />
 									Excel
 								</Button>
@@ -233,7 +240,10 @@ export default function SuggestionsPage() {
 							</div>
 							<div className="flex items-center justify-end space-x-2 py-2">
 								<span className="text-muted-foreground text-sm">
-									{table.getRowModel().rows.length === 0 ? 0 : table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}-
+									{table.getRowModel().rows.length === 0
+										? 0
+										: table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}
+									-
 									{Math.min(
 										(table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
 										table.getFilteredRowModel().rows.length
