@@ -148,18 +148,7 @@ async function computeStateAggregates(db: Db): Promise<StateAggregates> {
 					inactiveStatus: [{ $match: { "value.user1CData.status": false } }, { $count: "n" }],
 					channelMembers: [{ $match: { "value.isChannelMember": true } }, { $count: "n" }],
 					referred: [{ $match: { "value.referredByEmployeeCode": { $type: "string" } } }, { $count: "n" }],
-					overdueCount: [{ $match: { $expr: { $gt: [money("latePayment"), 0] } } }, { $count: "n" }],
-					money: [
-						{
-							$group: {
-								_id: null,
-								receivables: { $sum: money("remain") },
-								overdue: { $sum: money("latePayment") },
-								bonusLiability: { $sum: money("bonusOstatok") },
-								activeContracts: { $sum: money("contract.active") }
-							}
-						}
-					],
+					money: [{ $group: { _id: null, bonusLiability: { $sum: money("bonusOstatok") } } }],
 					tiers: [{ $group: { _id: "$value.user1CData.bonusInfo.uroven", n: { $sum: 1 } } }]
 				}
 			}
@@ -176,11 +165,14 @@ async function computeStateAggregates(db: Db): Promise<StateAggregates> {
 	return {
 		customers: n(res?.customers),
 		verified: n(res?.verified),
-		receivables: Math.round(m.receivables ?? 0),
-		overdue: Math.round(m.overdue ?? 0),
-		overdueCount: n(res?.overdueCount),
+		// receivables / overdue / overdueCount / activeContracts are computed from the
+		// contract schedule (see computeContracts) — the 1C top-level remain/latePayment/
+		// contract.active fields are not populated. Placeholders here, filled by computeState().
+		receivables: 0,
+		overdue: 0,
+		overdueCount: 0,
 		bonusLiability: Math.round(m.bonusLiability ?? 0),
-		activeContracts: Math.round(m.activeContracts ?? 0),
+		activeContracts: 0,
 		lastVisitTrue: n(res?.lastVisitTrue),
 		contractFirstFalse: n(res?.contractFirstFalse),
 		activeStatus: n(res?.activeStatus),
@@ -257,40 +249,122 @@ async function computeSales(db: Db): Promise<{
 	return { thisMonth: pick(res?.thisMonth), lastMonth: pick(res?.lastMonth), monthly };
 }
 
-async function computeUpcomingDue(db: Db): Promise<{ due7: { amount: number; count: number }; due30: { amount: number; count: number } }> {
+interface ContractMetrics {
+	receivables: number;
+	overdue: number;
+	overdueCount: number;
+	activeContracts: number;
+	due7: { amount: number; count: number };
+	due30: { amount: number; count: number };
+}
+
+/**
+ * Contract-derived money metrics computed from the installment `schedule[]` (the 1C
+ * top-level remain/latePayment/contract.active fields are not populated in real data):
+ * - receivables      = Σ unpaid installments (sumToPay − sumPayed) across all schedules
+ * - overdue          = Σ unpaid installments whose due date is already past; count = distinct customers
+ * - activeContracts  = contracts that still carry an unpaid balance
+ * - due7 / due30      = unpaid installments due in the next 7 / 30 days
+ */
+async function computeContracts(db: Db): Promise<ContractMetrics> {
 	const today = todayTashkent();
 	const up7 = addDaysStr(today, 7);
 	const up30 = addDaysStr(today, 30);
-	const dueExpr = { $subtract: ["$sumToPay", "$sumPayed"] };
-	const group = { _id: null, amount: { $sum: dueExpr }, count: { $sum: 1 } };
+	const sched = "$value.user1CData.contract.ids.schedule";
+	const dbl = (input: string) => ({ $convert: { input, to: "double", onError: 0, onNull: 0 } });
+	const due = { $subtract: [dbl(`${sched}.sumToPay`), dbl(`${sched}.sumPayed`)] };
+	const inWindow = (from: string, to: string) => ({ $and: [{ $gte: ["$date", from] }, { $lt: ["$date", to] }] });
 
-	const base = "$value.user1CData.contract.ids.schedule";
 	const [res] = await db
 		.collection(usersCollection)
 		.aggregate([
 			{ $match: { "value.user1CData.contract.ids": { $type: "array" } } },
 			{ $unwind: "$value.user1CData.contract.ids" },
-			{ $unwind: "$value.user1CData.contract.ids.schedule" },
-			{
-				$project: {
-					date: `${base}.date`,
-					status: `${base}.status`,
-					sumToPay: { $convert: { input: `${base}.sumToPay`, to: "double", onError: 0, onNull: 0 } },
-					sumPayed: { $convert: { input: `${base}.sumPayed`, to: "double", onError: 0, onNull: 0 } }
-				}
-			},
-			{ $match: { status: { $ne: false }, date: { $type: "string" }, $expr: { $lt: ["$sumPayed", "$sumToPay"] } } },
 			{
 				$facet: {
-					due7: [{ $match: { date: { $gte: today, $lt: up7 } } }, { $group: group }],
-					due30: [{ $match: { date: { $gte: today, $lt: up30 } } }, { $group: group }]
+					// Active contracts = contracts still carrying an unpaid balance.
+					contracts: [
+						{
+							$project: {
+								outstanding: {
+									$reduce: {
+										input: { $ifNull: ["$value.user1CData.contract.ids.schedule", []] },
+										initialValue: 0,
+										in: {
+											$add: [
+												"$$value",
+												{
+													$cond: [
+														{ $and: [{ $ne: ["$$this.status", false] }, { $lt: [dbl("$$this.sumPayed"), dbl("$$this.sumToPay")] }] },
+														{ $subtract: [dbl("$$this.sumToPay"), dbl("$$this.sumPayed")] },
+														0
+													]
+												}
+											]
+										}
+									}
+								}
+							}
+						},
+						{ $group: { _id: null, active: { $sum: { $cond: [{ $gt: ["$outstanding", 0] }, 1, 0] } } } }
+					],
+					// Amounts across all unpaid installments.
+					schedule: [
+						{ $unwind: "$value.user1CData.contract.ids.schedule" },
+						{ $project: { date: `${sched}.date`, status: `${sched}.status`, due } },
+						{ $match: { status: { $ne: false }, date: { $type: "string" }, $expr: { $gt: ["$due", 0] } } },
+						{
+							$group: {
+								_id: null,
+								receivables: { $sum: "$due" },
+								overdue: { $sum: { $cond: [{ $lt: ["$date", today] }, "$due", 0] } },
+								due7Amount: { $sum: { $cond: [inWindow(today, up7), "$due", 0] } },
+								due7Count: { $sum: { $cond: [inWindow(today, up7), 1, 0] } },
+								due30Amount: { $sum: { $cond: [inWindow(today, up30), "$due", 0] } },
+								due30Count: { $sum: { $cond: [inWindow(today, up30), 1, 0] } }
+							}
+						}
+					],
+					// Distinct customers with any overdue unpaid installment.
+					overdueUsers: [
+						{ $unwind: "$value.user1CData.contract.ids.schedule" },
+						{ $project: { key: "$key", date: `${sched}.date`, status: `${sched}.status`, due } },
+						{
+							$match: {
+								status: { $ne: false },
+								date: { $type: "string" },
+								$expr: { $and: [{ $gt: ["$due", 0] }, { $lt: ["$date", today] }] }
+							}
+						},
+						{ $group: { _id: "$key" } },
+						{ $count: "n" }
+					]
 				}
 			}
 		])
 		.toArray();
 
-	const pick = (arr: Document[] | undefined) => ({ amount: Math.round(arr?.[0]?.amount ?? 0), count: arr?.[0]?.count ?? 0 });
-	return { due7: pick(res?.due7), due30: pick(res?.due30) };
+	const s = res?.schedule?.[0] ?? {};
+	return {
+		receivables: Math.round(s.receivables ?? 0),
+		overdue: Math.round(s.overdue ?? 0),
+		overdueCount: res?.overdueUsers?.[0]?.n ?? 0,
+		activeContracts: res?.contracts?.[0]?.active ?? 0,
+		due7: { amount: Math.round(s.due7Amount ?? 0), count: s.due7Count ?? 0 },
+		due30: { amount: Math.round(s.due30Amount ?? 0), count: s.due30Count ?? 0 }
+	};
+}
+
+/** Full current-state totals = counts/tiers + contract-derived money, merged. */
+async function computeState(db: Db): Promise<StateAggregates> {
+	const [core, contracts] = await Promise.all([computeStateAggregates(db), computeContracts(db)]);
+	return {
+		...core,
+		receivables: contracts.receivables,
+		overdue: contracts.overdue,
+		overdueCount: contracts.overdueCount,
+		activeContracts: contracts.activeContracts
+	};
 }
 
 async function computeReminderHealth(db: Db): Promise<{ sent: number; failed: number }> {
@@ -346,7 +420,7 @@ async function computeReferralLeaderboard(
 /** Computes current state totals and upserts today's snapshot row (idempotent per Tashkent day). */
 export async function storeDailySnapshot(): Promise<{ date: string }> {
 	return withDb(async (db) => {
-		const state = await computeStateAggregates(db);
+		const state = await computeState(db);
 		const date = todayTashkent();
 		await db.collection(snapshotsCollection).updateOne({ date }, { $set: { date, createdAt: new Date(), ...state } }, { upsert: true });
 		return { date };
@@ -368,16 +442,25 @@ async function getBaselineSnapshot(db: Db, daysAgo: number): Promise<Document | 
 
 async function computeDashboardData(): Promise<DashboardData> {
 	return withDb(async (db) => {
-		const [state, newUsers, sales, upcoming, reminders, funnel, referrals, baseline] = await Promise.all([
+		const [core, contracts, newUsers, sales, reminders, funnel, referrals, baseline] = await Promise.all([
 			computeStateAggregates(db),
+			computeContracts(db),
 			computeNewUsers(db),
 			computeSales(db),
-			computeUpcomingDue(db),
 			computeReminderHealth(db),
 			computeFunnel(db),
 			computeReferralLeaderboard(db),
 			getBaselineSnapshot(db, 30)
 		]);
+
+		const state: StateAggregates = {
+			...core,
+			receivables: contracts.receivables,
+			overdue: contracts.overdue,
+			overdueCount: contracts.overdueCount,
+			activeContracts: contracts.activeContracts
+		};
+		const upcoming = { due7: contracts.due7, due30: contracts.due30 };
 
 		const b = baseline as (StateAggregates & { date?: string; createdAt?: Date }) | null;
 

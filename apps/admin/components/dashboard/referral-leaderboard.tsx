@@ -12,7 +12,7 @@ export function ReferralLeaderboard({ referrals, loading }: { referrals?: Dashbo
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Referral kanali</CardTitle>
+				<CardTitle>Xodimlar referral kanali</CardTitle>
 				<CardDescription>
 					{referrals ? `${num(referrals.totalReferred)} mijoz · ${referrals.ratePct}%` : "Xodimlar bo'yicha jalb qilingan mijozlar"}
 				</CardDescription>
