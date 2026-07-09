@@ -47,3 +47,6 @@ temp/
 package-lock.json
 yarn.lock
 
+# Playwright MCP screenshot output
+.playwright-mcp/
+

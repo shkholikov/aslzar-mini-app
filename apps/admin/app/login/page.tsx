@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
 					<Shield className="w-12 h-12 text-gray-800" />
 				</div>
 				<div>
-					<h1 className="text-2xl text-center text-gray-800 font-semibold">Admin paneliga kirish</h1>
+					<h1 className="text-2xl text-center text-gray-800 font-semibold">ASLZAR Bot Admin paneliga kirish</h1>
 					<p className="text-center mt-2 text-gray-600">Aslzar admin boshqaruv paneliga kirish uchun login va parolni kiriting.</p>
 					<Separator className="mt-2" />
 				</div>

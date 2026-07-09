@@ -30,7 +30,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
 							<Link href="/">
 								<Image src="/images/aslzar-logo.png" alt="ASLZAR" width={24} height={24} className="size-6 rounded-sm object-contain" />
-								<span className="text-base font-semibold">ASLZAR Admin</span>
+								<span className="text-base font-semibold">ASLZAR Bot Admin</span>
 							</Link>
 						</SidebarMenuButton>
 					</SidebarMenuItem>
