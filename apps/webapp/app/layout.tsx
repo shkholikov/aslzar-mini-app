@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
+import { SettingsButton } from "@/components/common/settings-button";
 import { BackgroundImage } from "@/components/common/background-image";
 import { TelegramProvider } from "@/hooks/useTelegram";
 import { UserProvider } from "@/hooks/useUser";
@@ -92,6 +93,7 @@ export default function RootLayout({
 						<UserProvider>
 							<ProductsProvider>
 								<AnimatedPage>{children}</AnimatedPage>
+								<SettingsButton />
 								<div className="flex justify-center">
 									<Menu />
 									<Toaster

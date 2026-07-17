@@ -9,6 +9,7 @@ import { useTelegram } from "@/hooks/useTelegram";
 const SUB_ROUTE_PARENTS: Record<string, string> = {
 	"/branches": "/other",
 	"/suggestions": "/other",
+	"/settings": "/other",
 	"/register": "/"
 };
 
