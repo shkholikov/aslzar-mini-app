@@ -22,12 +22,14 @@ const faqItems = [
 	{
 		id: "faq-3",
 		question: "Ma'lumotlarim xavfsizmi?",
-		answer: "Ha, barcha ma'lumotlaringiz shifrlangan va xavfsiz saqlanadi. Biz sizning shaxsiy ma'lumotlaringizni uchinchi shaxslarga o'tkazmaymiz."
+		answer:
+			"Ha, barcha ma'lumotlaringiz shifrlangan va xavfsiz saqlanadi. Biz sizning shaxsiy ma'lumotlaringizni uchinchi shaxslarga o'tkazmaymiz."
 	},
 	{
 		id: "faq-4",
 		question: "Qanday qilib yordam olishim mumkin?",
-		answer: "Agar savollaringiz bo'lsa, bizning qo'llab-quvvatlash xizmatimizga murojaat qiling yoki FAQ bo'limida javob topishga harakat qiling."
+		answer:
+			"Agar savollaringiz bo'lsa, bizning qo'llab-quvvatlash xizmatimizga murojaat qiling yoki FAQ bo'limida javob topishga harakat qiling."
 	}
 ];
 
@@ -35,6 +37,7 @@ export default function OtherPage() {
 	return (
 		<div className="pt-12">
 			<Header title="Boshqa" description="Platformadagi boshqa imkoniyatlar" iconImage="/icons/box.webp" />
+			<Link title="Shaxsiy ma'lumotlar" href="/settings" iconImage="/icons/user-info.webp" />
 			<Link title="Filiallar va manzillar" href="/branches" iconImage="/icons/location.webp" />
 			<Link title="Taklif va shikoyatlar" href="/suggestions" iconImage="/icons/discussion.webp" />
 			<Link title="ASLZAR Instagram rasmiy sahifasi" href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
