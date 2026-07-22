@@ -4,7 +4,9 @@ import type { MiniAppAuthedRequest } from "../../auth-miniapp";
 import { getUserSession, updateUserSession1CData } from "../../db";
 import { OneCError, createUser, searchUserByPhone } from "../../integrations/aslzar1c";
 
-const ONE_HOUR_MS = 60 * 60 * 1000;
+// bonusOstatok changes in 1C at any time, so keep the cache window short —
+// the app shows cached data instantly and revalidates within a minute.
+const CACHE_TTL_MS = 60 * 1000;
 
 /**
  * GET /v1/users/me
@@ -25,7 +27,7 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 
 	const rawUpdatedAt = tgSessionData.user1CDataUpdatedAt;
 	const updatedAt = rawUpdatedAt instanceof Date ? rawUpdatedAt : rawUpdatedAt ? new Date((rawUpdatedAt as { $date: string }).$date) : null;
-	const isStale = !updatedAt || Date.now() - updatedAt.getTime() > ONE_HOUR_MS;
+	const isStale = !updatedAt || Date.now() - updatedAt.getTime() > CACHE_TTL_MS;
 
 	if (!isStale && tgSessionData.user1CData) {
 		res.status(200).json({ ...tgSessionData.user1CData, tgData: tgSessionData });
