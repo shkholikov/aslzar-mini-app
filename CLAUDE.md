@@ -6,6 +6,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ASLZAR is a Telegram Mini App loyalty platform built as a pnpm monorepo with Turborepo. It consists of three main applications sharing a common MongoDB database.
 
+## Versioning & Changelog (REQUIRED)
+
+This project uses a **single platform version** and a **single changelog**:
+
+- The canonical version lives in the **root `package.json`** (`version` field). Per-app `package.json` versions are not the source of truth.
+- The changelog is **`CHANGELOG.md`** at the repo root, in [Keep a Changelog](https://keepachangelog.com/) format.
+
+On **every** change that gets committed or deployed:
+
+1. **Bump the platform version** in root `package.json` following SemVer:
+   - **PATCH** (`x.y.Z`) — bug fixes, config/tweaks (e.g. cache TTL change)
+   - **MINOR** (`x.Y.0`) — new backwards-compatible features
+   - **MAJOR** (`X.0.0`) — breaking changes / major releases
+2. **Add a dated entry** to `CHANGELOG.md` under a new version heading, grouped by `Added` / `Changed` / `Fixed` / `Removed`, described in plain language.
+3. Do this in the **same commit** as the change. Never commit a functional change without a version bump + changelog entry.
+
 ## Production URLs
 
 - **Webapp** (Telegram Mini App): `https://app.aslzarbot.uz`
