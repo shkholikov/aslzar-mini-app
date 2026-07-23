@@ -7,6 +7,8 @@ import { handleEmployeeReferralCode, handleReferralCode, initializeSession, send
 import { searchUserByPhone } from "./api";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
+import { besalesEnabled, buildContact, sendInbound } from "./besales";
+import { startBesalesCallbackServer } from "./callback-server";
 
 // Get bot token and webapp url from environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -129,6 +131,43 @@ async function bootstrap() {
 		// No reply: contact was shared from webapp; user continues in webapp
 	});
 
+	// AI fallback: any free text not consumed by the flows above goes to Besales.
+	// Registered after start/contact so known flows always win (fallback semantics).
+	bot.on("message:text", async (ctx) => {
+		if (!besalesEnabled) return;
+		if (ctx.message.text.startsWith("/")) return; // defensive: unknown commands stay silent
+		await ctx.replyWithChatAction("typing").catch(() => {});
+		await sendInbound({
+			externalUserId: String(ctx.from.id),
+			externalMessageId: String(ctx.message.message_id),
+			externalChatId: String(ctx.chat.id),
+			sourceChannel: "telegram",
+			text: ctx.message.text,
+			contact: buildContact(ctx),
+			timestamp: ctx.message.date
+		});
+	});
+
+	// AI button taps. The bot has no inline buttons of its own today; if any are added later,
+	// namespace their callback_data (e.g. "app:") and early-return here so they aren't forwarded.
+	bot.on("callback_query:data", async (ctx) => {
+		await ctx.answerCallbackQuery().catch(() => {}); // always clear the client spinner first
+		if (!besalesEnabled) return;
+		const data = ctx.callbackQuery.data;
+		const label = ctx.callbackQuery.message?.reply_markup?.inline_keyboard
+			?.flat()
+			.find((b) => "callback_data" in b && b.callback_data === data)?.text;
+		await sendInbound({
+			externalUserId: String(ctx.from.id),
+			externalMessageId: `cbq:${ctx.callbackQuery.id}`,
+			externalChatId: String(ctx.chat?.id ?? ctx.from.id),
+			sourceChannel: "telegram",
+			buttonPayload: data,
+			text: label,
+			contact: buildContact(ctx)
+		});
+	});
+
 	// Error Handler
 	bot.catch((err) => {
 		const ctx = err.ctx;
@@ -148,6 +187,9 @@ async function bootstrap() {
 
 	// Broadcast: process pending jobs from admin every minute
 	startBroadcastScheduler(bot.api);
+
+	// Besales AI callback receiver (no-op unless BESALES_ENABLED=true). Must start before bot.start().
+	startBesalesCallbackServer(bot.api);
 
 	// Start the bot
 	bot.start();

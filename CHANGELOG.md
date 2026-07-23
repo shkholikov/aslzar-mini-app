@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-07-23
+
+### Added
+
+- Besales AI dialog integration in the bot (`apps/bot`). Free-text messages and inline-button taps that aren't handled by existing flows (start, contact, referral) are forwarded to the Besales AI, which replies asynchronously via an HMAC-verified callback the bot receives on its own HTTP server (`/webhooks/besales`) and delivers back to the user (text, buttons, media). Callbacks are deduplicated via a `besales_deliveries` collection with a 7-day TTL. Entirely behind the default-off `BESALES_ENABLED` switch — no behavior change until enabled with real Besales credentials. Adds `apps/bot/.env.example`.
+
 ## [2.4.0] - 2026-07-22
 
 ### Added
