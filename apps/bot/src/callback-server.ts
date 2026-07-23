@@ -4,6 +4,7 @@ import type { Api } from "grammy";
 import { besalesEnabled, verifyWebhookSignature, type BesalesWebhookPayload } from "./besales";
 import { besalesDeliveries } from "./db";
 import { deliverBesalesMessages } from "./besales-delivery";
+import { openApiSpec, swaggerHtml } from "./besales-docs";
 
 const CALLBACK_PATH = process.env.BESALES_CALLBACK_PATH || "/webhooks/besales";
 const SIGNATURE_HEADER = "x-besales-webhook-signature"; // Node lowercases header names
@@ -76,7 +77,9 @@ async function handleCallback(api: Api, req: http.IncomingMessage, res: http.Ser
 
 	const chatId = Number(payload.data.externalUserId);
 	console.log(`[besales] webhook ${payload.id} event=${payload.event} messages=${payload.data.messages?.length ?? 0} -> chat ${chatId}`);
-	void deliverBesalesMessages(api, chatId, payload.data.messages ?? []).catch((e) => console.error(`[besales] delivery failed for webhook ${payload.id}:`, e));
+	void deliverBesalesMessages(api, chatId, payload.data.messages ?? []).catch((e) =>
+		console.error(`[besales] delivery failed for webhook ${payload.id}:`, e)
+	);
 }
 
 /**
@@ -103,6 +106,16 @@ export function startBesalesCallbackServer(api: Api): void {
 				if (req.method === "GET" && req.url === "/health") {
 					res.writeHead(200, { "Content-Type": "text/plain" });
 					res.end("ok");
+					return;
+				}
+				if (req.method === "GET" && req.url === "/docs") {
+					res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+					res.end(swaggerHtml);
+					return;
+				}
+				if (req.method === "GET" && req.url === "/openapi.json") {
+					res.writeHead(200, { "Content-Type": "application/json" });
+					res.end(JSON.stringify(openApiSpec));
 					return;
 				}
 				if (req.method === "POST" && req.url === CALLBACK_PATH) {

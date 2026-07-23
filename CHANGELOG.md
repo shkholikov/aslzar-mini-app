@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-07-24
+
+### Added
+
+- Swagger / OpenAPI docs for the bot's Besales webhook surface, served by the callback server at `GET /docs` (Swagger UI) and `GET /openapi.json` (OpenAPI 3.1 spec). Documents `/health` and `/webhooks/besales` — signature scheme, request payload (text/buttons/media), and response codes — so the Besales team can view the contract at `https://dev-bot.aslzarbot.uz/docs`. Swagger UI assets are pinned (`swagger-ui-dist@5.32.11`) with Subresource Integrity hashes.
+
 ## [2.5.0] - 2026-07-23
 
 ### Added
