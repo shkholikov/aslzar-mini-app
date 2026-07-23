@@ -21,11 +21,27 @@ export const openApiSpec = {
 		"/health": {
 			get: {
 				summary: "Liveness probe",
-				description: "Returns 200 with the plain-text body `ok` when the callback server is running.",
+				description: "Cheap check that the process is up. No dependencies — always 200 while running.",
 				responses: {
 					"200": {
-						description: "Server is up",
-						content: { "text/plain": { schema: { type: "string", example: "ok" } } }
+						description: "Process is alive",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/HealthReport" } } }
+					}
+				}
+			}
+		},
+		"/health/ready": {
+			get: {
+				summary: "Readiness probe",
+				description: "Checks dependencies (MongoDB). 200 when ready to serve, 503 when a dependency is unreachable.",
+				responses: {
+					"200": {
+						description: "Ready",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/HealthReport" } } }
+					},
+					"503": {
+						description: "Not ready (a dependency check failed)",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/HealthReport" } } }
 					}
 				}
 			}
@@ -62,6 +78,21 @@ export const openApiSpec = {
 			}
 		},
 		schemas: {
+			HealthReport: {
+				type: "object",
+				required: ["status", "version", "uptime", "timestamp"],
+				properties: {
+					status: { type: "string", enum: ["ok", "error"] },
+					version: { type: "string", description: "Platform version", example: "2.7.0" },
+					uptime: { type: "integer", description: "Seconds since process start" },
+					timestamp: { type: "string", format: "date-time" },
+					checks: {
+						type: "object",
+						description: "Per-dependency status (readiness only)",
+						additionalProperties: { type: "string", enum: ["ok", "error"] }
+					}
+				}
+			},
 			Button: {
 				type: "object",
 				required: ["label", "value"],

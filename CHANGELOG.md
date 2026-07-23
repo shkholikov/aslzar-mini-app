@@ -10,6 +10,16 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-07-24
+
+### Changed
+
+- Improved the bot's health check. `GET /health` now returns structured JSON (status, version, uptime, timestamp) instead of plain `ok`, and stays dependency-free so a transient DB blip can't trigger a container restart.
+
+### Added
+
+- `GET /health/ready` readiness probe that pings MongoDB — returns 200 when ready, 503 when a dependency is unreachable. Both probes are documented in the OpenAPI spec / Swagger UI.
+
 ## [2.6.0] - 2026-07-24
 
 ### Added

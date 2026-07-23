@@ -5,6 +5,7 @@ import { besalesEnabled, verifyWebhookSignature, type BesalesWebhookPayload } fr
 import { besalesDeliveries } from "./db";
 import { deliverBesalesMessages } from "./besales-delivery";
 import { openApiSpec, swaggerHtml } from "./besales-docs";
+import { liveness, readiness } from "./health";
 
 const CALLBACK_PATH = process.env.BESALES_CALLBACK_PATH || "/webhooks/besales";
 const SIGNATURE_HEADER = "x-besales-webhook-signature"; // Node lowercases header names
@@ -104,8 +105,14 @@ export function startBesalesCallbackServer(api: Api): void {
 		void (async () => {
 			try {
 				if (req.method === "GET" && req.url === "/health") {
-					res.writeHead(200, { "Content-Type": "text/plain" });
-					res.end("ok");
+					res.writeHead(200, { "Content-Type": "application/json" });
+					res.end(JSON.stringify(liveness()));
+					return;
+				}
+				if (req.method === "GET" && req.url === "/health/ready") {
+					const { report, healthy } = await readiness();
+					res.writeHead(healthy ? 200 : 503, { "Content-Type": "application/json" });
+					res.end(JSON.stringify(report));
 					return;
 				}
 				if (req.method === "GET" && req.url === "/docs") {
