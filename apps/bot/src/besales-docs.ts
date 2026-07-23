@@ -30,22 +30,6 @@ export const openApiSpec = {
 				}
 			}
 		},
-		"/health/ready": {
-			get: {
-				summary: "Readiness probe",
-				description: "Checks dependencies (MongoDB). 200 when ready to serve, 503 when a dependency is unreachable.",
-				responses: {
-					"200": {
-						description: "Ready",
-						content: { "application/json": { schema: { $ref: "#/components/schemas/HealthReport" } } }
-					},
-					"503": {
-						description: "Not ready (a dependency check failed)",
-						content: { "application/json": { schema: { $ref: "#/components/schemas/HealthReport" } } }
-					}
-				}
-			}
-		},
 		[CALLBACK_PATH]: {
 			post: {
 				summary: "Besales callback receiver",
@@ -82,15 +66,10 @@ export const openApiSpec = {
 				type: "object",
 				required: ["status", "version", "uptime", "timestamp"],
 				properties: {
-					status: { type: "string", enum: ["ok", "error"] },
+					status: { type: "string", enum: ["ok"] },
 					version: { type: "string", description: "Platform version", example: "2.7.0" },
 					uptime: { type: "integer", description: "Seconds since process start" },
-					timestamp: { type: "string", format: "date-time" },
-					checks: {
-						type: "object",
-						description: "Per-dependency status (readiness only)",
-						additionalProperties: { type: "string", enum: ["ok", "error"] }
-					}
+					timestamp: { type: "string", format: "date-time" }
 				}
 			},
 			Button: {

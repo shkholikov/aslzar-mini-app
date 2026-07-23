@@ -37,17 +37,6 @@ export let broadcastJobs: Collection<BroadcastJob>;
 export let employees: Collection<EmployeeDoc>;
 export let besalesDeliveries: Collection<BesalesDeliveryDoc>;
 
-/** Lightweight readiness check: is MongoDB reachable right now? */
-export const pingDb = async (): Promise<boolean> => {
-	try {
-		if (!client) return false;
-		await client.db(dbName).command({ ping: 1 });
-		return true;
-	} catch {
-		return false;
-	}
-};
-
 export const connectToDb = async () => {
 	try {
 		client = new MongoClient(dbUri);
