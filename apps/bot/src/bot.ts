@@ -9,6 +9,7 @@ import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
 import { besalesEnabled, buildContact, sendInbound } from "./besales";
 import { startBesalesCallbackServer } from "./callback-server";
+import { startTyping } from "./besales-typing";
 
 // Get bot token and webapp url from environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -136,7 +137,7 @@ async function bootstrap() {
 	bot.on("message:text", async (ctx) => {
 		if (!besalesEnabled) return;
 		if (ctx.message.text.startsWith("/")) return; // defensive: unknown commands stay silent
-		await ctx.replyWithChatAction("typing").catch(() => {});
+		startTyping(ctx.api, ctx.chat.id);
 		await sendInbound({
 			externalUserId: String(ctx.from.id),
 			externalMessageId: String(ctx.message.message_id),
@@ -153,6 +154,8 @@ async function bootstrap() {
 	bot.on("callback_query:data", async (ctx) => {
 		await ctx.answerCallbackQuery().catch(() => {}); // always clear the client spinner first
 		if (!besalesEnabled) return;
+		const chatId = ctx.chat?.id ?? ctx.from.id;
+		startTyping(ctx.api, chatId);
 		const data = ctx.callbackQuery.data;
 		const label = ctx.callbackQuery.message?.reply_markup?.inline_keyboard
 			?.flat()
@@ -160,7 +163,7 @@ async function bootstrap() {
 		await sendInbound({
 			externalUserId: String(ctx.from.id),
 			externalMessageId: `cbq:${ctx.callbackQuery.id}`,
-			externalChatId: String(ctx.chat?.id ?? ctx.from.id),
+			externalChatId: String(chatId),
 			sourceChannel: "telegram",
 			buttonPayload: data,
 			text: label,

@@ -6,6 +6,7 @@ import { besalesDeliveries } from "./db";
 import { deliverBesalesMessages } from "./besales-delivery";
 import { openApiSpec, swaggerHtml } from "./besales-docs";
 import { liveness } from "./health";
+import { stopTyping } from "./besales-typing";
 
 const CALLBACK_PATH = process.env.BESALES_CALLBACK_PATH || "/webhooks/besales";
 const SIGNATURE_HEADER = "x-besales-webhook-signature"; // Node lowercases header names
@@ -77,6 +78,7 @@ async function handleCallback(api: Api, req: http.IncomingMessage, res: http.Ser
 	res.end();
 
 	const chatId = Number(payload.data.externalUserId);
+	stopTyping(chatId); // reply/followup arrived — drop the "typing…" indicator
 	console.log(`[besales] webhook ${payload.id} event=${payload.event} messages=${payload.data.messages?.length ?? 0} -> chat ${chatId}`);
 	void deliverBesalesMessages(api, chatId, payload.data.messages ?? []).catch((e) =>
 		console.error(`[besales] delivery failed for webhook ${payload.id}:`, e)

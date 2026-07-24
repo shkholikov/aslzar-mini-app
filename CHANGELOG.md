@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.8.0] - 2026-07-25
+
+### Added
+
+- "Typing…" indicator for the async Besales dialog. After forwarding a message the bot waits `BESALES_TYPING_DELAY_MS` (default 10s — fast AI replies never flash a typing bubble), then loops the typing action until the callback arrives, capped at `BESALES_TYPING_MAX_MS` (default 30s) so a missing callback can't leave it spinning. Cleared the moment the reply/followup lands.
+
 ## [2.7.0] - 2026-07-24
 
 ### Changed
