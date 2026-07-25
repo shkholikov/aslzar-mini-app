@@ -117,3 +117,96 @@ For each item in `data.messages` (in order):
 - `apps/bot/src/bot.ts` (edit) — fallback `message:text` + `callback_query:data` handlers; start callback server in `bootstrap()`.
 - `apps/bot/.env.example` / `.env.*.local` (edit) — Besales env vars.
 - `apps/bot/package.json` — no new deps (Node `http`/`crypto`).
+
+---
+
+# Decision log — phone numbers & the "share contact" button (2026-07-26)
+
+Besales asked for two things: a `requestContact: true` button and a delayed/looping typing
+indicator. The typing indicator shipped (v2.8.0). **The contact button was rejected**; this
+section records why and what replaces it.
+
+## How Besales gets a phone number today
+
+Every inbound we send carries a `contact` block built by `buildContact()`
+(`apps/bot/src/besales.ts:89-104`), called from both forwarders (`bot.ts:147`, `bot.ts:170`):
+
+```json
+"contact": { "firstName": "…", "lastName": "…", "username": "…", "phone": "+998901234567", "languageCode": "uz" }
+```
+
+- `phone` = `session.phone_number` (stored digits-only) with `+` prepended → E.164.
+- `firstName` / `lastName` prefer the **1C** record (`imya` / `familiya`); the Telegram profile
+  is only a fallback, so an unregistered user's `contact` may carry a nickname with emoji.
+  Mixed sources are possible (1C first name + Telegram last name) when a 1C field is empty.
+- **Unknown fields are omitted, not blanked.** `buildContact` strips `undefined` keys and
+  returns `undefined` if nothing is known, so a user with no phone produces a payload with
+  **no `phone` key at all** (not `""`, not `null`), and a fully unknown user produces no
+  `contact` object. Besales must test for *absence*, not for an empty string.
+
+`session.phone_number` has exactly **one writer in the whole monorepo**: `bot.ts:109`, inside
+`bot.on(":contact")`. That handler fires only when Telegram delivers a contact card, and today
+the only thing that causes that is the mini-app registration step calling `requestContact()`
+(`apps/webapp/app/register/page.tsx:132`). Everything else — api, admin, webapp, scheduler —
+only reads the field.
+
+Consequence: **no mini-app registration → no phone, ever**, no matter how many messages the
+user sends. Nothing parses phone numbers out of message text.
+
+## Why the `requestContact` button was rejected
+
+1. **It collides with registration.** The mini-app's `requestContact()` does not return the
+   phone to the webapp — the docs confirm the callback yields only a boolean, and the
+   `contactRequested` event only `status: "sent" | "cancelled"`. The webapp therefore polls
+   `GET /v1/users/me` for 60s (`register/page.tsx:72-103`), which 404s (`api .../internal/users.ts:23`)
+   until the **bot** writes the phone. Any design where a pending Besales marker *consumes* a
+   contact (skipping the session write) can silently hang registration.
+2. **Business rule.** ASLZAR registers clients in 1C only through the mini-app form, with a
+   real first/last name typed by the user (`POST /v1/users/register` → 1C `createUser`).
+   A phone captured by a chat button does not produce a valid client record.
+
+Note for future readers: the bot's `:contact` handler **never creates a 1C record** — it writes
+the session phone and does a read-only `searchUserByPhone`. And a stored phone does not hide the
+registration prompt (the mini-app gates it on `data.code !== 0`, `apps/webapp/app/page.tsx:33`).
+So "a contact reaching the bot" and "registering someone in 1C" are separate things.
+
+## Chosen solution — funnel through the mini-app
+
+Instead of capturing a phone in chat, **the Besales AI agent asks the user to register in the
+mini-app** when `contact.phone` is absent. After registration the phone and the real 1C name
+ride along on every subsequent inbound automatically. One action, two outcomes: Besales gets a
+verified number + real name, ASLZAR gets a client in 1C.
+
+Agreed with the Besales team on 2026-07-26 (message sent in Russian). Requires **no bot code
+change** — the mechanism already exists and only needs `BESALES_ENABLED=true`.
+
+## If the button is ever revisited
+
+The only safe shape is **additive, never consuming**:
+
+1. `:contact` always runs the existing onboarding block, unchanged — no flag, no early return.
+   Registration then cannot break by construction; the worst failure is "Besales misses one
+   phone".
+2. *Additionally* forward the number to Besales when a request is pending (timestamp + TTL,
+   not a boolean — a boolean never expires), fire-and-forget so the session write-back never
+   waits on their network.
+3. Add the missing `contact.user_id === ctx.from.id` guard.
+
+Item 3 is a **pre-existing hole, still unfixed**: neither flow checks that a shared contact card
+belongs to the sender, so attaching someone else's card writes their phone into your session and
+`/v1/users/me` will serve that other client's 1C data (contracts, debt, bonus). Worth fixing on
+its own merits, independently of Besales.
+
+## Open follow-ups
+
+- **`url` buttons are not rendered.** Besales's button contract is `value` | `url` |
+  `requestContact`, but `buildKeyboard` (`besales-delivery.ts:23-31`) only emits
+  `kb.text(label, value)` — a `url` button would become `callback_data` and a tap would come
+  back as a phantom callback instead of opening a link. ~5 lines. Required before asking the
+  agent to send a "Open the mini-app" button; until then the agent should give the link as text.
+- **No profile-update push.** The phone is attached per message at send time. A user who chats
+  first and registers afterwards is only revealed to Besales on their *next* message; if they
+  never write again, Besales never learns the number. Fix would be a lightweight inbound after
+  successful registration, or a contacts-update endpoint on their side.
+- `requestContact` remains unimplemented in `besales-docs.ts` / the OpenAPI spec — the wire
+  contract we publish still describes `{label, value}` buttons only.
