@@ -13,7 +13,7 @@ import { listProductsHandler } from "./routes/internal/products";
 import { listNewsHandler } from "./routes/internal/news";
 import { listBranchesHandler } from "./routes/internal/branches";
 import { listBonusProgramsHandler } from "./routes/internal/bonus-programs";
-import { listReferralsHandler, createReferralLinkHandler } from "./routes/internal/referrals";
+import { listReferralsHandler, createReferralLinkHandler, listUserReferralsHandler } from "./routes/internal/referrals";
 import { getChannelMembershipHandler } from "./routes/internal/channel-membership";
 import { productInterestHandler } from "./routes/internal/product-interest";
 import { createSuggestionHandler } from "./routes/internal/suggestions";
@@ -90,6 +90,8 @@ app.post("/v1/subscribe-request", requireMiniAppAuth, sendSubscribeRequestHandle
 // Not in /docs; not for partners.
 app.post("/v1/users/sync", requireApiKey, syncUsersHandler);
 app.get("/v1/users/syncs", requireApiKey, listSyncsHandler);
+// Admin user profile page — referrals of one user, resolved via their stored 1C clientId.
+app.get("/v1/users/:key/referrals", requireApiKey, listUserReferralsHandler);
 
 app.use((_req, res) => {
 	res.status(404).json({

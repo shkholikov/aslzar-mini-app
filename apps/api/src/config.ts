@@ -50,6 +50,7 @@ export const config = {
 	MONGO_DB_COLLECTION_NEWS: process.env.MONGO_DB_COLLECTION_NEWS || "news_items",
 	MONGO_DB_COLLECTION_SUGGESTIONS: process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions",
 	MONGO_DB_COLLECTION_SYNC_1C_JOBS: process.env.MONGO_DB_COLLECTION_SYNC_1C_JOBS || "sync_1c_jobs",
+	MONGO_DB_COLLECTION_SETTINGS: process.env.MONGO_DB_COLLECTION_SETTINGS || "settings",
 	BOT_TOKEN: required("BOT_TOKEN"),
 	CHANNEL_ID: process.env.CHANNEL_ID || "@ASLZAR_tilla",
 	BOT_TELEGRAM_LINK: process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzaruzbot",
@@ -70,3 +71,10 @@ export const config = {
 	]),
 	PORT: parseInt(process.env.PORT || "3001", 10)
 };
+
+/**
+ * Referral cap applied when a user has no explicit `referralLimit` (admin-managed, top-level
+ * field on the user document). Kept in sync with apps/bot and apps/admin by hand — `packages/shared`
+ * is not wired up, and one number does not justify introducing it.
+ */
+export const DEFAULT_REFERRAL_LIMIT = 5;

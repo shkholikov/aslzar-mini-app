@@ -1,6 +1,7 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import type { MiniAppAuthedRequest } from "../../auth-miniapp";
 import { config } from "../../config";
+import { getDefaultReferralLimit, getUserSessionDoc } from "../../db";
 import { OneCError, listReferrals } from "../../integrations/aslzar1c";
 
 /**
@@ -29,6 +30,45 @@ export async function listReferralsHandler(req: MiniAppAuthedRequest, res: Respo
 }
 
 /**
+ * GET /v1/users/:key/referrals  (API key auth — used by the admin app, not by partners)
+ *
+ * Resolves the user's 1C `clientId` from their stored session and proxies 1C `listReferals`,
+ * so apps/admin never has to hold 1C credentials.
+ */
+export async function listUserReferralsHandler(req: Request, res: Response): Promise<void> {
+	const key = String(req.params.key ?? "").trim();
+	if (!key) {
+		res.status(400).json({ error: "key parameter is required" });
+		return;
+	}
+
+	const userDoc = await getUserSessionDoc(key);
+	if (!userDoc) {
+		res.status(404).json({ error: "User not found" });
+		return;
+	}
+
+	const clientId = (userDoc.value?.user1CData as { clientId?: unknown } | undefined)?.clientId;
+	if (typeof clientId !== "string" || !clientId) {
+		// Not an error: the user simply isn't in 1C yet, so they cannot have referrals.
+		res.status(200).json({ list: [] });
+		return;
+	}
+
+	try {
+		const data = await listReferrals(clientId);
+		res.status(200).json(data);
+	} catch (err) {
+		console.error("[referrals] 1C call failed (admin)", err);
+		if (err instanceof OneCError) {
+			res.status(502).json({ error: "Failed to fetch user referrals from 1C API", details: err.bodyText });
+			return;
+		}
+		res.status(500).json({ error: "Internal server error", details: err instanceof Error ? err.message : "Unknown error" });
+	}
+}
+
+/**
  * POST /v1/referrals/link
  *
  * Calls Telegram `savePreparedInlineMessage` to mint a sharable referral message
@@ -36,6 +76,18 @@ export async function listReferralsHandler(req: MiniAppAuthedRequest, res: Respo
  */
 export async function createReferralLinkHandler(req: MiniAppAuthedRequest, res: Response): Promise<void> {
 	const userId = req.miniAppUser!.id;
+
+	// Refuse to mint a sharable message once the user is at their referral cap, so the miniapp's
+	// hidden share UI can't simply be called around. The cached `referalCount` is good enough here —
+	// the bot re-checks live against 1C before it actually attributes a referral.
+	const userDoc = await getUserSessionDoc(String(userId));
+	const limit = userDoc?.referralLimit ?? (await getDefaultReferralLimit());
+	const used = Number((userDoc?.value?.user1CData as { referalCount?: unknown } | undefined)?.referalCount ?? 0);
+	if (Number.isFinite(used) && used >= limit) {
+		res.status(403).json({ error: "referral_limit_reached" });
+		return;
+	}
+
 	const referralLink = `${config.BOT_TELEGRAM_LINK}?start=${userId}`;
 
 	const inlineResult = {

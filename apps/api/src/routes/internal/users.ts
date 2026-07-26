@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import { z } from "zod";
 import type { MiniAppAuthedRequest } from "../../auth-miniapp";
-import { getUserSession, updateUserSession1CData } from "../../db";
+import { getDefaultReferralLimit, getUserSessionDoc, updateUserSession1CData } from "../../db";
 import { OneCError, createUser, searchUserByPhone } from "../../integrations/aslzar1c";
 
 // bonusOstatok changes in 1C at any time, so keep the cache window short —
@@ -19,18 +19,23 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 	const user = req.miniAppUser!;
 	const userId = String(user.id);
 
-	const tgSessionData = await getUserSession(userId);
+	const userDoc = await getUserSessionDoc(userId);
+	const tgSessionData = userDoc?.value ?? null;
 	if (!tgSessionData?.phone_number) {
 		res.status(404).json({ error: "User not found or phone number not available" });
 		return;
 	}
+
+	// Our own referral cap (1C's `referalLimit` is intentionally ignored). Resolved here so the
+	// miniapp never has to know the default. The used count travels with the 1C data (`referalCount`).
+	const referralLimit = userDoc?.referralLimit ?? (await getDefaultReferralLimit());
 
 	const rawUpdatedAt = tgSessionData.user1CDataUpdatedAt;
 	const updatedAt = rawUpdatedAt instanceof Date ? rawUpdatedAt : rawUpdatedAt ? new Date((rawUpdatedAt as { $date: string }).$date) : null;
 	const isStale = !updatedAt || Date.now() - updatedAt.getTime() > CACHE_TTL_MS;
 
 	if (!isStale && tgSessionData.user1CData) {
-		res.status(200).json({ ...tgSessionData.user1CData, tgData: tgSessionData });
+		res.status(200).json({ ...tgSessionData.user1CData, referralLimit, tgData: tgSessionData });
 		return;
 	}
 
@@ -39,7 +44,7 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 		if (data?.code === 0) {
 			await updateUserSession1CData(userId, data, true);
 		}
-		res.status(200).json({ ...data, tgData: tgSessionData });
+		res.status(200).json({ ...data, referralLimit, tgData: tgSessionData });
 	} catch (err) {
 		console.error("[users/me] 1C search failed", err);
 		if (err instanceof OneCError) {

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper, UserCog, Plug, LayoutDashboard } from "lucide-react";
+import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper, UserCog, Plug, LayoutDashboard, Share2 } from "lucide-react";
 import type { AdminPermission, AdminRole } from "@/lib/auth-utils";
 
 export interface NavItem {
@@ -13,6 +13,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
 	{ href: "/", label: "Dashboard", icon: LayoutDashboard, permission: "users", superadminOnly: true },
 	{ href: "/users", label: "Foydalanuvchilar", icon: Shield, permission: "users", superadminOnly: true },
+	{ href: "/referral", label: "Referal", icon: Share2, permission: "users", superadminOnly: true },
 	{ href: "/employees", label: "Xodimlar", icon: Users, permission: "employees" },
 	{ href: "/broadcast", label: "Broadcast", icon: Megaphone, permission: "broadcast" },
 	{ href: "/news", label: "Yangiliklar", icon: Newspaper, permission: "news" },

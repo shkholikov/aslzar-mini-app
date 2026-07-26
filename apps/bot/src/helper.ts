@@ -1,8 +1,29 @@
 import { InlineKeyboard } from "grammy";
-import { infoText, referralAddedText } from "./messages";
+import { infoText, referralAddedText, referralLimitReachedText } from "./messages";
 import { I1CUserData, ISessionData, MyContext } from "./types";
-import { users, employees } from "./db";
-import { addReferral } from "./api";
+import { users, employees, settings } from "./db";
+import { addReferral, searchUserByPhone } from "./api";
+
+/**
+ * Fallback cap, used only when the admin `settings` document doesn't exist yet or can't be read.
+ * The live default is configured on the admin Referal page.
+ */
+export const FALLBACK_REFERRAL_LIMIT = 5;
+
+/**
+ * Platform-wide default referral cap, read fresh each time.
+ * Referral attributions are rare, so no cache — an admin's change takes effect immediately.
+ * Never throws: a settings problem must not block a referral.
+ */
+async function getDefaultReferralLimit(): Promise<number> {
+	try {
+		const doc = await settings.findOne({ _id: "referral" });
+		return typeof doc?.defaultReferralLimit === "number" ? doc.defaultReferralLimit : FALLBACK_REFERRAL_LIMIT;
+	} catch (error) {
+		console.error("Failed to read referral settings, using fallback limit:", error);
+		return FALLBACK_REFERRAL_LIMIT;
+	}
+}
 
 const WEBAPP_URL = process.env.WEBAPP_URL || "https://app.aslzarbot.uz";
 const BOT_TELEGRAM_LINK = process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
@@ -13,6 +34,22 @@ const BOT_TELEGRAM_LINK = process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzard
  */
 export function isAslzarCustomer(user1CData: Partial<I1CUserData> | undefined): boolean {
 	return user1CData?.contractFirst === true;
+}
+
+/**
+ * How many referrals the inviter already has, according to 1C.
+ *
+ * Prefers a live lookup because the session copy of `user1CData` is only refreshed on a stale
+ * `/start` (24h) or when the user opens the miniapp. Falls back to the cached count when the
+ * referrer has no phone on file or 1C is unreachable — never throws.
+ */
+async function countReferralsUsed(referrerSessionData: Partial<ISessionData>, cached1CData: Partial<I1CUserData>): Promise<number> {
+	const cachedCount = typeof cached1CData.referalCount === "number" ? cached1CData.referalCount : 0;
+	const phone = referrerSessionData.phone_number;
+	if (!phone) return cachedCount;
+
+	const fresh = await searchUserByPhone(phone);
+	return typeof fresh?.referalCount === "number" ? fresh.referalCount : cachedCount;
 }
 
 /** Escapes user-provided text for Telegram MarkdownV2. */
@@ -142,6 +179,26 @@ export async function handleReferralCode(ctx: MyContext, referralCode: string) {
 		const referredUserPhone = ctx.session.phone_number;
 		const referredUserFirstName = ctx.from?.first_name || ctx.session.first_name || "";
 		const referredUserLastName = ctx.from?.last_name || ctx.session.last_name || "";
+
+		// Referral limit — ours (top-level field, admin-managed), not 1C's `referalLimit`.
+		// The count is read live from 1C: the referrer's cached user1CData can be up to 24h old,
+		// which would let one extra referral slip through after the cap is reached.
+		const limit = referrerSession.referralLimit ?? (await getDefaultReferralLimit());
+		const used = await countReferralsUsed(referrerSessionData, referrer1CData);
+		if (used >= limit) {
+			console.log(`Referrer ${referrerId} reached the referral limit (${used}/${limit}), skipping referral`);
+
+			// Tell the inviter why nothing happened (never fails the flow — e.g. inviter blocked the bot)
+			try {
+				const invitedName = escapeMarkdownV2(`${referredUserFirstName} ${referredUserLastName}`.trim() || "Yangi mijoz");
+				await ctx.api.sendMessage(referrerId, referralLimitReachedText.replace("{name}", invitedName), {
+					parse_mode: "MarkdownV2"
+				});
+			} catch (notifyError) {
+				console.error(`Failed to notify referrer ${referrerId} about the referral limit:`, notifyError);
+			}
+			return;
+		}
 
 		// Add referral to 1C
 		const success = await addReferral(referrer1CData.clientId, referredUserPhone, referredUserFirstName, referredUserLastName);

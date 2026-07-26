@@ -50,3 +50,14 @@ export const referralAddedText = `
 
 📱 Referallaringiz holatini ilovadagi *Referal* bo'limida kuzatishingiz mumkin\\.
 `;
+
+// ——— Referral rejected: the inviter reached their referral limit (sent to the inviter, MarkdownV2).
+// Placeholder: {name} — pre-escaped invited user's name. Deliberately mentions no numbers. ———
+
+export const referralLimitReachedText = `
+⚠️ *ASLZAR💎 — Referal qo'shilmadi*
+
+Sizning referal limitingiz tugagan\\. Siz taklif qilgan *{name}* referal sifatida hisobga olinmadi\\.
+
+📞 Batafsil ma'lumot uchun ASLZAR bilan bog'laning\\.
+`;

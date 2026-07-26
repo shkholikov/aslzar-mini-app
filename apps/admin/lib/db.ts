@@ -1,4 +1,5 @@
 import { MongoClient, Document, ObjectId } from "mongodb";
+import { FALLBACK_REFERRAL_LIMIT, type ReferralSettings, type ReferralStats } from "./referral";
 
 // MongoDB configuration
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
@@ -10,6 +11,7 @@ const productsCollection = process.env.MONGO_DB_COLLECTION_PRODUCTS || "products
 const employeesCollection = process.env.MONGO_DB_COLLECTION_EMPLOYEES || "employees";
 const countersCollection = process.env.MONGO_DB_COLLECTION_COUNTERS || "counters";
 const newsItemsCollection = process.env.MONGO_DB_COLLECTION_NEWS || "news_items";
+const settingsCollection = process.env.MONGO_DB_COLLECTION_SETTINGS || "settings";
 
 /** Employee (xodim) – used for referral links and QR codes in admin */
 export interface EmployeeDoc extends Document {
@@ -108,6 +110,17 @@ export interface UserDocument extends Document {
 		$oid: string;
 	};
 	key: string; // Telegram user ID as string
+	/**
+	 * Max referrals this user may add, managed here in the admin panel.
+	 * Absent/null → DEFAULT_REFERRAL_LIMIT. 1C's own `referalLimit` is not used.
+	 *
+	 * Top-level on purpose: the bot's grammY session adapter writes `{ $set: { key, value } }`
+	 * on every interaction, replacing `value` wholesale — a field stored inside it would be
+	 * silently clobbered. Sibling top-level fields are never touched by the adapter.
+	 */
+	referralLimit?: number | null;
+	referralLimitUpdatedBy?: string;
+	referralLimitUpdatedAt?: { $date: string } | Date;
 	value: {
 		id: number;
 		username?: string | null;
@@ -226,6 +239,184 @@ export async function getAllUsers(): Promise<UserDocument[]> {
 		if (client) {
 			await client.close();
 		}
+	}
+}
+
+/**
+ * Gets one user by their session key (Telegram user ID as string).
+ * @returns The user document, or null when no user has that key
+ */
+export async function getUserByKey(key: string): Promise<UserDocument | null> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
+
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const db = client.db(dbName);
+		const users = db.collection<UserDocument>(usersCollection);
+
+		return await users.findOne({ key });
+	} catch (error) {
+		console.error("Error fetching user from database:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
+}
+
+/**
+ * Sets a user's referral limit.
+ *
+ * Only ever touches the three top-level fields — never `value`, which the bot's grammY session
+ * adapter overwrites wholesale on every interaction.
+ *
+ * @param limit New cap, or null to fall back to the platform default
+ * @param adminUsername Username of the admin making the change (audit trail)
+ * @returns true when a user with that key existed
+ */
+export async function updateUserReferralLimit(key: string, limit: number | null, adminUsername: string): Promise<boolean> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !usersCollection) {
+			throw new Error("MongoDB configuration is missing");
+		}
+
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const db = client.db(dbName);
+		const users = db.collection<UserDocument>(usersCollection);
+
+		const result = await users.updateOne(
+			{ key },
+			{
+				$set: {
+					referralLimit: limit,
+					referralLimitUpdatedBy: adminUsername,
+					referralLimitUpdatedAt: new Date()
+				}
+			}
+		);
+		return result.matchedCount === 1;
+	} catch (error) {
+		console.error("Error updating user referral limit:", error);
+		throw error;
+	} finally {
+		if (client) {
+			await client.close();
+		}
+	}
+}
+
+/**
+ * Reads platform-wide referral settings (single document, `_id: "referral"`).
+ * Returns the fallback when nothing has been saved yet, so the platform works before first use.
+ */
+export async function getReferralSettings(): Promise<ReferralSettings> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const coll = client.db(dbName).collection(settingsCollection);
+		const doc = await coll.findOne({ _id: "referral" as unknown as ObjectId });
+		const limit = doc?.defaultReferralLimit;
+
+		return {
+			defaultReferralLimit: typeof limit === "number" ? limit : FALLBACK_REFERRAL_LIMIT,
+			updatedBy: doc?.updatedBy,
+			updatedAt: doc?.updatedAt
+		};
+	} catch (error) {
+		console.error("Error fetching referral settings:", error);
+		throw error;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/** Sets the platform-wide default referral limit. Users with an individual limit are unaffected. */
+export async function updateReferralSettings(defaultReferralLimit: number, adminUsername: string): Promise<void> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const coll = client.db(dbName).collection(settingsCollection);
+		await coll.updateOne(
+			{ _id: "referral" as unknown as ObjectId },
+			{ $set: { defaultReferralLimit, updatedBy: adminUsername, updatedAt: new Date() } },
+			{ upsert: true }
+		);
+	} catch (error) {
+		console.error("Error updating referral settings:", error);
+		throw error;
+	} finally {
+		if (client) await client.close();
+	}
+}
+
+/**
+ * Referral overview across all users, in one aggregation.
+ *
+ * Counts come from the cached `user1CData.referalCount` written by the nightly 1C sync and by
+ * user visits, so they can lag reality by up to a day — computing them live would mean one 1C
+ * call per user.
+ */
+export async function getReferralStats(defaultLimit: number): Promise<ReferralStats> {
+	let client: MongoClient | null = null;
+
+	try {
+		if (!dbUri || !dbName || !usersCollection) throw new Error("MongoDB configuration is missing");
+		client = new MongoClient(dbUri);
+		await client.connect();
+
+		const users = client.db(dbName).collection<UserDocument>(usersCollection);
+		const [row] = await users
+			.aggregate([
+				{ $match: { "value.user1CData": { $nin: [null, undefined] } } },
+				{
+					$project: {
+						count: { $ifNull: ["$value.user1CData.referalCount", 0] },
+						limit: { $ifNull: ["$referralLimit", defaultLimit] },
+						hasCustom: { $cond: [{ $in: [{ $type: "$referralLimit" }, ["int", "long", "double", "decimal"]] }, 1, 0] }
+					}
+				},
+				{
+					$group: {
+						_id: null,
+						totalCustomers: { $sum: 1 },
+						atLimit: { $sum: { $cond: [{ $gte: ["$count", "$limit"] }, 1, 0] } },
+						withCustomLimit: { $sum: "$hasCustom" },
+						totalReferrals: { $sum: "$count" }
+					}
+				}
+			])
+			.toArray();
+
+		return {
+			totalCustomers: row?.totalCustomers ?? 0,
+			atLimit: row?.atLimit ?? 0,
+			withCustomLimit: row?.withCustomLimit ?? 0,
+			totalReferrals: row?.totalReferrals ?? 0
+		};
+	} catch (error) {
+		console.error("Error computing referral stats:", error);
+		throw error;
+	} finally {
+		if (client) await client.close();
 	}
 }
 

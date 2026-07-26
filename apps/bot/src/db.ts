@@ -10,6 +10,7 @@ const usersCollection = process.env.MONGO_DB_COLLECTION_USERS || "";
 const reminderLogsCollection = process.env.MONGO_DB_COLLECTION_REMINDER_LOGS || "reminder_logs";
 const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
 const employeesCollection = process.env.MONGO_DB_COLLECTION_EMPLOYEES || "employees";
+const settingsCollection = process.env.MONGO_DB_COLLECTION_SETTINGS || "settings";
 
 if (!dbUri) throw new Error("The Mongodb connection string is empty!");
 
@@ -23,11 +24,28 @@ export interface EmployeeDoc {
 	createdAt: Date;
 }
 
+/**
+ * Session document with our own top-level fields.
+ *
+ * `referralLimit` deliberately sits OUTSIDE `value`: the grammY MongoDBAdapter writes
+ * `{ $set: { key, value } }` on every interaction, replacing `value` wholesale, so an
+ * admin edit stored inside it could be silently clobbered by the next session write-back.
+ * Sibling top-level fields are never touched by the adapter. Written only by apps/admin.
+ */
+export type UserSessionDoc = ISession & {
+	/** Max referrals this user may add. Absent/null → DEFAULT_REFERRAL_LIMIT. */
+	referralLimit?: number | null;
+	referralLimitUpdatedBy?: string;
+	referralLimitUpdatedAt?: Date;
+};
+
 let client: MongoClient;
-export let users: Collection<ISession>;
+export let users: Collection<UserSessionDoc>;
 export let reminderLogs: Collection<ReminderLogEntry>;
 export let broadcastJobs: Collection<BroadcastJob>;
 export let employees: Collection<EmployeeDoc>;
+/** Platform settings, one document per area (e.g. `_id: "referral"`). Written by apps/admin. */
+export let settings: Collection<{ _id: string; defaultReferralLimit?: number }>;
 
 export const connectToDb = async () => {
 	try {
@@ -37,10 +55,11 @@ export const connectToDb = async () => {
 		console.log("Successfully connected to MongoDB Atlas!");
 
 		const db = client.db(dbName);
-		users = db.collection(usersCollection);
+		users = db.collection<UserSessionDoc>(usersCollection);
 		reminderLogs = db.collection<ReminderLogEntry>(reminderLogsCollection);
 		broadcastJobs = db.collection<BroadcastJob>(broadcastJobsCollection);
 		employees = db.collection<EmployeeDoc>(employeesCollection);
+		settings = db.collection(settingsCollection);
 
 		return client;
 	} catch (error) {

@@ -5,6 +5,7 @@ import { Header } from "@/components/common/header";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { ReferralLockedCard } from "@/components/common/referral-locked-card";
 import { ReferralQRCode } from "./components/referral-qr-code";
+import { ReferralLimitCard } from "./components/referral-limit-card";
 import { ReferralsList } from "./components/referrals-list";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
@@ -58,7 +59,14 @@ export default function ReferralPage() {
 	});
 	const referrals = referralsData ?? [];
 
-	const { data: preparedMessageId } = useSWR(userId ? "/v1/referrals/link" : null, preparedMessageFetcher, {
+	// Referral cap: our own limit (from the API) against the 1C referral count.
+	// At the cap the API refuses to mint a prepared message, so don't even ask for one.
+	const referralLimit = typeof data?.referralLimit === "number" ? data.referralLimit : null;
+	const limitReached = referralLimit !== null && (data?.referalCount ?? 0) >= referralLimit;
+
+	// Wait for the user data before asking: until it arrives we can't know whether the cap is
+	// reached, and requesting early would fire a pointless 403 on every load of a capped user.
+	const { data: preparedMessageId } = useSWR(userId && data && !limitReached ? "/v1/referrals/link" : null, preparedMessageFetcher, {
 		revalidateOnFocus: false,
 		dedupingInterval: 60_000
 	});
@@ -118,12 +126,16 @@ export default function ReferralPage() {
 			) : data && data.code === 0 ? (
 				<>
 					<BonusInfo data={data} />
-					<ReferralQRCode
-						referralLink={referralLink}
-						preparedMessageId={preparedMessageId ?? null}
-						onCopy={handleCopy}
-						onShare={handleShare}
-					/>
+					{limitReached ? (
+						<ReferralLimitCard />
+					) : (
+						<ReferralQRCode
+							referralLink={referralLink}
+							preparedMessageId={preparedMessageId ?? null}
+							onCopy={handleCopy}
+							onShare={handleShare}
+						/>
+					)}
 					<ProductCarousel />
 					<ReferralsList
 						referrals={referrals}

@@ -1,5 +1,5 @@
 import { MongoClient, ObjectId, type Db, type Collection } from "mongodb";
-import { config } from "./config";
+import { DEFAULT_REFERRAL_LIMIT, config } from "./config";
 
 export type ApiKeyDoc = {
 	_id: ObjectId;
@@ -20,6 +20,14 @@ export type ApiKeyDoc = {
 export type UserSessionDoc = {
 	_id: ObjectId;
 	key: string;
+	/**
+	 * Referral cap for this user, managed by apps/admin. Absent/null → DEFAULT_REFERRAL_LIMIT.
+	 * Top-level on purpose: the bot's grammY adapter rewrites `value` wholesale on every
+	 * interaction, so an admin-owned field inside it could be clobbered.
+	 */
+	referralLimit?: number | null;
+	referralLimitUpdatedBy?: string;
+	referralLimitUpdatedAt?: Date;
 	value: {
 		id?: number;
 		phone_number?: string;
@@ -151,10 +159,43 @@ export async function findTelegramIdByPhone(phone: string): Promise<number | nul
 	return Number.isFinite(id) ? id : null;
 }
 
+// Platform-wide referral default, set on the admin Referal page. Cached in-process because
+// /v1/users/me is a hot path; the window matches the 1C cache TTL so both refresh together.
+const REFERRAL_SETTINGS_TTL_MS = 60 * 1000;
+let referralDefaultCache: { value: number; fetchedAt: number } | null = null;
+
+/**
+ * Default referral limit for users without an individual one.
+ * Falls back to DEFAULT_REFERRAL_LIMIT when nothing has been configured or the read fails —
+ * a settings lookup must never break a user-facing request.
+ */
+export async function getDefaultReferralLimit(): Promise<number> {
+	if (referralDefaultCache && Date.now() - referralDefaultCache.fetchedAt < REFERRAL_SETTINGS_TTL_MS) {
+		return referralDefaultCache.value;
+	}
+
+	try {
+		const db = await getDb();
+		const doc = await db.collection(config.MONGO_DB_COLLECTION_SETTINGS).findOne({ _id: "referral" as never });
+		const limit = (doc as { defaultReferralLimit?: unknown } | null)?.defaultReferralLimit;
+		const value = typeof limit === "number" ? limit : DEFAULT_REFERRAL_LIMIT;
+		referralDefaultCache = { value, fetchedAt: Date.now() };
+		return value;
+	} catch (err) {
+		console.error("[settings] failed to read referral default, using fallback", err);
+		return DEFAULT_REFERRAL_LIMIT;
+	}
+}
+
+/** Reads the whole user document by Telegram ID — use when a top-level field (e.g. `referralLimit`) is needed. */
+export async function getUserSessionDoc(userId: string): Promise<UserSessionDoc | null> {
+	const col = await getUsersCollection();
+	return col.findOne({ key: userId });
+}
+
 /** Reads a user session by Telegram ID (session key). */
 export async function getUserSession(userId: string): Promise<UserSessionDoc["value"] | null> {
-	const col = await getUsersCollection();
-	const doc = await col.findOne({ key: userId });
+	const doc = await getUserSessionDoc(userId);
 	return doc?.value ?? null;
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
 	flexRender,
@@ -26,6 +27,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserDocument } from "@/lib/db";
+import { FALLBACK_REFERRAL_LIMIT } from "@/lib/referral";
 import { ColumnFilterHeader } from "./common/column-filter-header";
 import { Loading } from "./common/loading";
 
@@ -48,7 +50,12 @@ const arrIncludesValueFn: FilterFn<User> = (row, columnId, filterValue) => {
 	return filterValue.includes(row.getValue(columnId));
 };
 
-function createColumns(employeesByCode: Record<string, EmployeeSummary>): ColumnDef<User>[] {
+/** The cap actually in force for a user: their own value, or the platform default from settings. */
+function effectiveReferralLimit(user: User, defaultLimit: number): number {
+	return typeof user.referralLimit === "number" ? user.referralLimit : defaultLimit;
+}
+
+function createColumns(employeesByCode: Record<string, EmployeeSummary>, defaultReferralLimit: number): ColumnDef<User>[] {
 	return [
 		{
 			id: "select",
@@ -76,7 +83,11 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 					</Button>
 				);
 			},
-			cell: ({ row }) => <div>{row.original.value.id}</div>
+			cell: ({ row }) => (
+				<Link href={`/users/${row.original.key}`} className="text-blue-600 hover:underline">
+					{row.original.value.id}
+				</Link>
+			)
 		},
 		{
 			accessorFn: (row) => row.value.first_name,
@@ -306,6 +317,26 @@ function createColumns(employeesByCode: Record<string, EmployeeSummary>): Column
 			}
 		},
 		{
+			// Sort by how much of the cap is left, so users who can still invite come first.
+			accessorFn: (row) => effectiveReferralLimit(row, defaultReferralLimit) - (row.value.user1CData?.referalCount ?? 0),
+			id: "referralLimit",
+			header: ({ column }) => (
+				<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+					Referal limiti
+					<ArrowUpDown />
+				</Button>
+			),
+			cell: ({ row }) => {
+				const limit = effectiveReferralLimit(row.original, defaultReferralLimit);
+				const used = row.original.value.user1CData?.referalCount ?? 0;
+				return (
+					<div className={used >= limit ? "text-destructive" : undefined}>
+						{used} / {limit}
+					</div>
+				);
+			}
+		},
+		{
 			accessorFn: (row) => {
 				const createdAt = row.value.createdAt;
 				if (!createdAt) return 0;
@@ -401,6 +432,7 @@ export function UsersList() {
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
 	const [employeesByCode, setEmployeesByCode] = React.useState<Record<string, EmployeeSummary>>({});
+	const [defaultReferralLimit, setDefaultReferralLimit] = React.useState(FALLBACK_REFERRAL_LIMIT);
 
 	React.useEffect(() => {
 		async function fetchUsers() {
@@ -465,7 +497,27 @@ export function UsersList() {
 		};
 	}, [router]);
 
-	const columns = React.useMemo(() => createColumns(employeesByCode), [employeesByCode]);
+	// Platform default from the Referal settings page; users without an individual limit follow it.
+	React.useEffect(() => {
+		let cancelled = false;
+		async function fetchReferralDefault() {
+			try {
+				const res = await fetch("/api/referral-settings");
+				if (!res.ok) return;
+				const data = await res.json();
+				const limit = data?.settings?.defaultReferralLimit;
+				if (!cancelled && typeof limit === "number") setDefaultReferralLimit(limit);
+			} catch {
+				// ignore, fall back to FALLBACK_REFERRAL_LIMIT
+			}
+		}
+		fetchReferralDefault();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const columns = React.useMemo(() => createColumns(employeesByCode, defaultReferralLimit), [employeesByCode, defaultReferralLimit]);
 
 	const table = useReactTable({
 		data: users,
@@ -539,6 +591,9 @@ export function UsersList() {
 				Level: val.user1CData?.bonusInfo?.uroven ?? "",
 				"Последний визит": val.user1CData?.lastVisit === true ? "Ha" : val.user1CData?.lastVisit === false ? "Yo'q" : "",
 				"Xarid qilgan": val.user1CData?.contractFirst === true ? "Ha" : val.user1CData?.contractFirst === false ? "Yo'q" : "",
+				"Referallar soni": val.user1CData?.referalCount ?? 0,
+				"Referal limiti": effectiveReferralLimit(row.original, defaultReferralLimit),
+				"Limit turi": typeof row.original.referralLimit === "number" ? "Maxsus" : "Standart",
 				"Yaratilgan sana": createdAtStr
 			};
 		});
@@ -580,7 +635,10 @@ export function UsersList() {
 				</DropdownMenu>
 			</div>
 			<div className="flex items-center justify-between mb-3">
-				<h2 className="text-lg font-medium text-gray-800">Foydalanuvchilar ro'yxati</h2>
+				<div>
+					<h2 className="text-lg font-medium text-gray-800">Foydalanuvchilar ro&apos;yxati</h2>
+					<p className="text-xs text-gray-500">Referal limiti: ishlatilgan / limit. Limitni o&apos;zgartirish uchun ID ustiga bosing.</p>
+				</div>
 				<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={users.length === 0} className="shrink-0">
 					<Download className="mr-2 h-4 w-4" />
 					Excel
