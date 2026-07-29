@@ -10,6 +10,16 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.11.0] - 2026-07-30
+
+### Added
+
+- New "ASLZAR bonus kartasi" card showing the customer's 1C client ID as a QR code, so shop staff can scan it at the till and find the customer instantly instead of typing the ID by hand. The client ID is also printed under the code as a fallback if the scan fails. Tapping "QR kodni kattalashtirish" enlarges the code to fill the screen for easier scanning; tapping anywhere closes it again. The card appears on the home screen and on the personal-details page, and only for ASLZAR customers — the same condition as the referral programme.
+
+### Changed
+
+- The profile picture on the home screen is larger, and the "Tasdiqlangan / Tasdiqlanmagan Mijoz" badge now sits directly beneath it (previously below the greeting) and is slightly bigger.
+
 ## [2.10.0] - 2026-07-26
 
 ### Added
