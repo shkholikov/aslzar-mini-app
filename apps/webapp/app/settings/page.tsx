@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
+import { BonusCard } from "@/components/common/bonus-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@/hooks/useUser";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -91,6 +92,9 @@ export default function SettingsPage() {
 							) : null}
 						</div>
 					</SectionCard>
+
+					{/* Same gate as the home screen: ASLZAR customers only. */}
+					{data.contractFirst === true && data.clientId ? <BonusCard clientId={data.clientId} /> : null}
 				</>
 			) : (
 				<RegisterPromptCard />

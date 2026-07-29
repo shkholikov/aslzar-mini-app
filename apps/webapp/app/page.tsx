@@ -10,6 +10,7 @@ import { News } from "@/components/news";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
+import { BonusCard } from "@/components/common/bonus-card";
 
 export default function HomePage() {
 	const { data, loading } = useUser();
@@ -31,6 +32,8 @@ export default function HomePage() {
 				<Profile />
 				<div className="w-full overflow-hidden">
 					{!loading && !(data && data.code === 0) && <RegisterPromptCard />}
+					{/* Bonus card is for ASLZAR customers only — same gate as the referral programme. */}
+					{!loading && data?.code === 0 && data.contractFirst === true && data.clientId && <BonusCard clientId={data.clientId} />}
 					<PlatformInfo />
 					<ProductCarousel />
 					<ChannelSubscribeCard />
