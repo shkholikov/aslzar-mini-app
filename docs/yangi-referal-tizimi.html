@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ASLZAR 💎 — Referal dasturi va bonus kartasi qo‘llanmasi</title>
+<style>
+  :root { --gold: #C8A24B; --ink: #1c1c1e; --muted: #6b6b70; --line: #e6e6ea; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); margin: 0; padding: 40px 48px; background: #fff; line-height: 1.55;
+    max-width: 1000px; margin-inline: auto;
+  }
+  header { border-bottom: 3px solid var(--gold); padding-bottom: 18px; margin-bottom: 8px; }
+  h1 { margin: 0 0 6px; font-size: 27px; letter-spacing: -0.3px; }
+  h2 {
+    font-size: 21px; margin: 40px 0 10px; padding-top: 14px; border-top: 1px solid var(--line);
+    page-break-after: avoid; break-after: avoid;
+  }
+  h3 { font-size: 16px; margin: 22px 0 6px; page-break-after: avoid; break-after: avoid; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .card {
+    border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px; margin: 14px 0 22px;
+    background: #fcfcfd; page-break-inside: avoid; break-inside: avoid;
+  }
+  .note { background: #fff8e8; border-left: 4px solid var(--gold); padding: 12px 16px; border-radius: 8px; font-size: 14px; margin: 14px 0; }
+  .warn { background: #fdf0ef; border-left: 4px solid #d1685e; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin: 14px 0; }
+  .mermaid { text-align: center; }
+  /* Keep every diagram inside one printed page — mermaid scales by width, so cap the height
+     and let the width follow, otherwise a tall flow is sliced across a page break. */
+  .mermaid svg { max-height: 860px; width: auto !important; max-width: 100%; }
+  /* mermaid appends a tooltip div to <body>; it sits past the last section and forces a blank page. */
+  .mermaidTooltip { display: none !important; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; margin-top: 8px; }
+  th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; vertical-align: top; }
+  th { background: #f6f1e5; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 5px 0; }
+  code { background: #f3f3f5; border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+
+  /* Screenshots */
+  figure { margin: 0 0 18px; page-break-inside: avoid; break-inside: avoid; }
+  figure img { display: block; border: 1px solid var(--line); border-radius: 10px; max-width: 100%; }
+  figcaption { font-size: 13px; color: var(--muted); margin-top: 7px; }
+  .phone img { max-width: 215px; }
+  .phone-wide img { max-width: 340px; }
+  /* Telegram message crops are wide, not phone-shaped — keep them full width so the text stays legible. */
+  .msg img { max-width: 100%; border-radius: 12px; }
+  /* Two shots side by side; sized so a phone + a wide crop fit one printed line. */
+  .shots { display: flex; gap: 18px; align-items: flex-start; }
+  .shots figure { flex: 0 1 auto; }
+  .missing {
+    border: 2px dashed var(--gold); border-radius: 10px; padding: 26px; text-align: center;
+    color: var(--muted); font-size: 14px; background: #fffdf7;
+  }
+  /* One card per question, so a long FAQ paginates between questions instead of splitting one. */
+  .qa { padding: 14px 22px; margin: 0 0 10px; }
+  .qa p { margin: 4px 0 0; }
+  .toc { font-size: 14px; }
+  .toc a { color: var(--ink); text-decoration: none; }
+  .toc li { margin: 3px 0; }
+  .lead { font-size: 15px; }
+
+  @media print {
+    body { padding: 0 12px; max-width: none; }
+    h2 { border-top: none; }
+    a { color: inherit; text-decoration: none; }
+    /* Trailing margin on the final block otherwise spills into an empty extra page. */
+    .card:last-of-type { margin-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ASLZAR 💎 — Referal dasturi va bonus kartasi qo‘llanmasi</h1>
+  <div class="sub">
+    Referal dasturi qanday ishlaydi, limitlar admin panelda qanday boshqariladi va mijoz bonus QR
+    kartasini do‘konda qanday ishlatadi.<br />
+    Platforma versiyasi 2.11.0 · Hujjat sanasi: 30.07.2026
+  </div>
+</header>
+
+<div class="card toc">
+  <b>Mundarija</b>
+  <ol>
+    <li><a href="#s1">Referal dasturi nima</a></li>
+    <li><a href="#s2">Kimlar ishtirok eta oladi</a></li>
+    <li><a href="#s3">Asosiy oqim — Aziz va Bobur misolida</a></li>
+    <li><a href="#s4">Mukofot va 10 kunlik oyna</a></li>
+    <li><a href="#s5">Referal limiti (yangi imkoniyat)</a></li>
+    <li><a href="#s6">Foydalanuvchi ilovada nimani ko‘radi</a></li>
+    <li><a href="#s7">Bot qanday xabar yuboradi</a></li>
+    <li><a href="#s8">Admin panelda boshqarish</a></li>
+    <li><a href="#s9">Kim nima qiladi</a></li>
+    <li><a href="#s10">Bonus QR kartasi</a></li>
+    <li><a href="#s11">Savol-javob</a></li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s1">1. Referal dasturi nima</h2>
+
+<p class="lead">
+  Referal dasturi — ASLZAR mijozlariga o‘z tanishlarini platformaga taklif qilish va ular xarid qilganda
+  mukofot olish imkonini beruvchi tizim.
+</p>
+
+<div class="card">
+  <p>Dastur uch qismdan iborat:</p>
+  <ul>
+    <li><b>Telegram bot</b> — taklif havolasini qabul qiladi, ikkala tomonni tekshiradi va referalni biriktiradi.</li>
+    <li><b>Mini ilova (Mini App)</b> — foydalanuvchi o‘z havolasini, QR kodini va taklif qilganlar ro‘yxatini ko‘radi.</li>
+    <li><b>1C tizimi</b> — xaridni kuzatadi, mukofotni hisoblaydi va muddati o‘tgan referallarni o‘chiradi.</li>
+  </ul>
+  <p>
+    Bundan tashqari <b>admin panel</b> orqali referal limitlari — ya’ni bitta foydalanuvchi nechta odam
+    taklif qila olishi — to‘liq boshqariladi. Bu qo‘llanmaning asosiy yangiligi shu.
+  </p>
+</div>
+
+<div class="note">
+  <b>Muhim:</b> ilgari amal qilgan <b>10 000 so‘mlik bonus bekor qilingan</b> — u hech kimga berilmaydi.
+  Endi mukofot faqat haqiqiy xariddan foiz ko‘rinishida beriladi va uni 1C hisoblaydi.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s2">2. Kimlar ishtirok eta oladi</h2>
+
+<div class="card">
+  <table>
+    <tr>
+      <th style="width: 22%">Rol</th>
+      <th style="width: 39%">Shart</th>
+      <th>Izoh</th>
+    </tr>
+    <tr>
+      <td><b>Taklif qiluvchi</b><br /><span class="sub">(misolda — Aziz)</span></td>
+      <td>ASLZAR mijozi bo‘lishi <b>shart</b> — kamida bitta xarid qilgan bo‘lishi kerak.</td>
+      <td>Xarid qilmagan foydalanuvchi uchun referal bo‘limi yopiq bo‘ladi.</td>
+    </tr>
+    <tr>
+      <td><b>Taklif qilinuvchi</b><br /><span class="sub">(misolda — Bobur)</span></td>
+      <td>ASLZAR mijozi bo‘lmasligi kerak — yangi odam bo‘lishi shart.</td>
+      <td>Allaqachon mijoz bo‘lgan odam referal sifatida hisobga olinmaydi.</td>
+    </tr>
+  </table>
+</div>
+
+<h3>Xarid qilmagan foydalanuvchi nimani ko‘radi</h3>
+
+<figure class="phone">
+  <img src="images/referral/miniapp-locked.png" alt="Referal dasturi yopiq holati" />
+  <figcaption>
+    Hali xarid qilmagan foydalanuvchi uchun referal sahifasi: havola ham, QR kod ham ko‘rsatilmaydi.
+    Uning o‘rniga tushuntirish matni va katalogga o‘tish tugmasi chiqadi.
+  </figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="s3">3. Asosiy oqim — Aziz va Bobur misolida</h2>
+
+<p>
+  <b>Aziz</b> — ASLZAR mijozi, ilgari xarid qilgan. <b>Bobur</b> — uning tanishi, hali ASLZAR bilan
+  ishlamagan. Quyida to‘liq jarayon ko‘rsatilgan.
+</p>
+
+<h3>3.1. Birinchi bosqich — Aziz havolani ulashadi</h3>
+
+<div class="card">
+  <div class="mermaid">
+flowchart TD
+    START(["Aziz mini ilovada Referal bo'limini ochadi"]) --> ELIG{"Aziz ASLZAR mijozimi?"}
+    ELIG -->|"Yo'q — xarid qilmagan"| BLOCK(["Referal bo'limi yopiq — tushuntirish matni ko'rsatiladi"])
+    ELIG -->|"Ha"| LIM{"Aziz referal limitiga yetganmi?"}
+    LIM -->|"Ha — limit to'lgan"| HIDE(["Havola va QR kod berilmaydi — 'Referal dasturi' xabari"])
+    LIM -->|"Yo'q — joy bor"| SHARE(["Aziz havola yoki QR kodni ulashadi"])
+  </div>
+</div>
+
+<h3>3.2. Ikkinchi bosqich — Bobur havolani bosadi</h3>
+
+<div class="card">
+  <div class="mermaid">
+flowchart TD
+    JOIN(["Bobur havolani bosadi va botga qo'shiladi"]) --> PHONE{"Telefon raqamini yubordimi?"}
+    PHONE -->|"Yo'q"| WAIT(["Referal biriktirilmaydi — raqam kutiladi"])
+    PHONE -->|"Ha"| CHK{"Bobur ASLZAR mijozi EMASmi?"}
+    CHK -->|"Yo'q — allaqachon mijoz"| STOP(["Referal qo'shilmaydi"])
+    CHK -->|"Ha — u yangi"| LIVE{"Azizning limiti 1C dan jonli tekshiriladi"}
+    LIVE -->|"Limit to'lgan"| NOTIFY(["Referal qo'shilmaydi — Azizga xabar yuboriladi"])
+    LIVE -->|"Joy bor"| ADD(["Referal biriktiriladi: Aziz → Bobur"])
+  </div>
+</div>
+
+<h3>3.3. Uchinchi bosqich — 10 kunlik oyna</h3>
+
+<div class="card">
+  <div class="mermaid">
+flowchart TD
+    ADD(["Referal biriktirildi"]) --> WIN{{"10 kunlik oyna ochiladi"}}
+    WIN --> BUY{"Bobur 10 kun ichida xarid qildimi?"}
+    BUY -->|"Ha"| REWARD(["Bobur ASLZAR mijoziga aylanadi — 1C xarid summasidan foizni Azizga beradi"])
+    BUY -->|"Yo'q"| DELETE(["1C referalni avtomatik o'chiradi"])
+  </div>
+</div>
+
+<h3>Xuddi shu jarayon oddiy so‘zlar bilan</h3>
+
+<div class="card">
+  <ol>
+    <li>Aziz mini ilovadagi <b>Referal</b> bo‘limini ochadi va o‘z havolasini (yoki QR kodini) oladi.</li>
+    <li>U havolani Boburga yuboradi.</li>
+    <li>Bobur havolani bosadi — Telegram botni ochadi va <b>“Start”</b> bosadi.</li>
+    <li>Bot Boburdan telefon raqamini so‘raydi. <b>Raqam yuborilmaguncha referal biriktirilmaydi</b> —
+      havolani bosishning o‘zi yetarli emas.</li>
+    <li>Raqam kelgach bot tekshiradi: Bobur haqiqatan ham yangi odammi va Azizda bo‘sh joy bormi.</li>
+    <li>Hammasi joyida bo‘lsa — referal biriktiriladi va Azizga xabar keladi.</li>
+    <li>Shundan so‘ng 1C tomonida <b>10 kunlik oyna</b> boshlanadi.</li>
+  </ol>
+</div>
+
+<div class="note">
+  <b>Diqqat:</b> referal <b>darhol</b> emas, balki Bobur telefon raqamini yuborgandan keyin biriktiriladi.
+  Shuning uchun havola bosilgani bilan referallar soni bir zumda oshmasligi mumkin.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s4">4. Mukofot va 10 kunlik oyna</h2>
+
+<div class="card">
+  <ul>
+    <li>Referal biriktirilgach, Bobur uchun <b>10 kunlik muddat</b> boshlanadi.</li>
+    <li>Bobur shu 10 kun ichida xarid qilsa — u ASLZAR mijoziga aylanadi va
+      <b>xarid summasidan foiz taklif qilgan Azizga</b> beriladi.</li>
+    <li>Agar 10 kun ichida xarid bo‘lmasa — <b>1C referalni avtomatik o‘chiradi</b>.
+      Aziz hech narsa yo‘qotmaydi, shunchaki bu taklif hisobga olinmaydi.</li>
+    <li>Foizni hisoblash ham, referalni o‘chirish ham <b>to‘liq 1C tomonida</b> bajariladi.
+      Bot bunga aralashmaydi.</li>
+  </ul>
+</div>
+
+<div class="note">
+  Aynan shu avtomatik o‘chirish sababli admin paneldagi <b>“Jami referallar”</b> ko‘rsatkichi kichik
+  bo‘lishi mumkin: xarid bilan yakunlanmagan takliflar u yerda saqlanib qolmaydi.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s5">5. Referal limiti (yangi imkoniyat)</h2>
+
+<p class="lead">
+  Referal limiti — bitta foydalanuvchi jami nechta odamni referal sifatida qo‘sha olishini belgilaydigan chegara.
+</p>
+
+<div class="card">
+  <h3 style="margin-top:0">Asosiy qoidalar</h3>
+  <ul>
+    <li>Har bir foydalanuvchi uchun <b>standart limit — 5 ta referal</b>.</li>
+    <li>Standart limitni admin panelning <b>Referal</b> sahifasida istalgan vaqtda o‘zgartirish mumkin.
+      U shaxsiy limiti belgilanmagan <b>barcha</b> foydalanuvchilarga qo‘llaniladi.</li>
+    <li>Alohida foydalanuvchi uchun <b>shaxsiy limit</b> belgilash mumkin. Shaxsiy limit
+      <b>har doim ustuvor</b> — standart limit unga ta’sir qilmaydi.</li>
+    <li>Limit ASLZAR tomonida boshqariladi. <b>1C dagi <code>referalLimit</code> maydoni ishlatilmaydi.</b></li>
+    <li>Referallar soni esa <b>1C dan olinadi</b> va referal biriktirilayotgan paytda
+      <b>jonli tekshiriladi</b> — eskirgan ma’lumot ishlatilmaydi.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Limit to‘lganda nima bo‘ladi</h3>
+  <table>
+    <tr><th style="width:34%">Kimga</th><th>Nima bo‘ladi</th></tr>
+    <tr>
+      <td><b>Taklif qiluvchiga</b></td>
+      <td>Mini ilovada havola, QR kod, <i>Nusxa olish</i> va <i>Ulashish</i> tugmalari
+        ko‘rsatilmaydi. Ularning o‘rniga tushuntirish kartasi chiqadi. Yangi referal biriktirilsa,
+        botdan sababini tushuntiruvchi xabar keladi.</td>
+    </tr>
+    <tr>
+      <td><b>Taklif qilinganga</b></td>
+      <td><b>Hech narsa o‘zgarmaydi.</b> U odatdagidek ro‘yxatdan o‘tadi va ilovadan to‘liq foydalanadi —
+        faqat referal biriktirilmaydi. Unga hech qanday ogohlantirish yuborilmaydi.</td>
+    </tr>
+  </table>
+</div>
+
+<div class="warn">
+  <b>Limitdan oshib ketgan foydalanuvchilar.</b> Agar kimdadir limitdan ko‘p referal bo‘lsa
+  (masalan, limit 5 ta, referallari 8 ta), mavjud referallar <b>saqlanib qoladi</b> va mukofotlar
+  o‘z kuchida qoladi. Faqat <b>yangi</b> referal qo‘shish to‘xtatiladi.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s6">6. Foydalanuvchi ilovada nimani ko‘radi</h2>
+
+<h3>Oddiy holat — limitda joy bor</h3>
+
+<div class="shots">
+  <figure class="phone">
+    <img src="images/referral/miniapp-normal.png" alt="Referal sahifasi — oddiy holat" />
+    <figcaption>Referal sahifasining umumiy ko‘rinishi.</figcaption>
+  </figure>
+  <figure class="phone-wide">
+    <img src="images/referral/miniapp-normal-actions.png" alt="Bonus kartalari va QR kod" />
+    <figcaption>
+      Yuqorida uchta karta: <b>Level</b>, <b>Bonus</b> va yangi <b>Takliflar</b> kartasi —
+      u <code>ishlatilgan / limit</code> ko‘rinishida (misolda <b>2 / 5</b>) foydalanuvchida yana
+      qancha joy borligini ko‘rsatadi. Pastda QR kod, <i>Nusxa olish</i> va <i>Ulashish</i> tugmalari.
+    </figcaption>
+  </figure>
+</div>
+
+<h3>Limit to‘lgan holat</h3>
+
+<div class="shots">
+  <figure class="phone">
+    <img src="images/referral/miniapp-limit.png" alt="Referal sahifasi — limit to'lgan" />
+    <figcaption>Limit to‘lganda sahifaning umumiy ko‘rinishi.</figcaption>
+  </figure>
+  <figure class="phone-wide">
+    <img src="images/referral/miniapp-limit-actions.png" alt="Referal dasturi kartasi" />
+    <figcaption>
+      <b>Takliflar</b> kartasi <b>5 / 5</b> ni ko‘rsatadi. QR kod va ulashish tugmalari o‘rniga
+      <b>“Referal dasturi”</b> kartasi chiqadi va <b>“ASLZAR bilan bog‘lanish”</b> tugmasi
+      foydalanuvchini to‘g‘ridan-to‘g‘ri ASLZAR admin akkauntiga olib o‘tadi.
+    </figcaption>
+  </figure>
+</div>
+
+<div class="note">
+  Ulashish imkoniyati faqat ekranda yashirilmaydi — <b>server ham</b> bu holatda ulashish uchun xabar
+  tayyorlashdan bosh tortadi. Ya’ni chekni chetlab o‘tish mumkin emas.
+</div>
+
+<h3>Taklif qilinganlar ro‘yxati</h3>
+
+<figure class="phone-wide">
+  <img src="images/referral/miniapp-referrals-list.png" alt="Referallar ro'yxati" />
+  <figcaption>
+    Foydalanuvchi o‘zi taklif qilgan odamlarni, ularning xarid holatini va sanasini ko‘rib turadi.
+    Ro‘yxat 1C dan olinadi va limit to‘lganda ham ko‘rinib turaveradi.
+  </figcaption>
+</figure>
+
+<!-- ============================================================ -->
+<h2 id="s7">7. Bot qanday xabar yuboradi</h2>
+
+<p>
+  Bot ikki holatda <b>faqat taklif qiluvchiga</b> xabar yuboradi. Taklif qilingan odam bu xabarlarni ko‘rmaydi.
+</p>
+
+<h3>1-holat — referal qo‘shildi</h3>
+
+<figure class="msg">
+  <img src="images/referral/bot-referral-added.png" alt="Referal qo'shildi xabari" />
+  <figcaption>
+    Taklif muvaffaqiyatli biriktirilganda taklif qiluvchiga keladigan xabar: kim qo‘shilgani,
+    10 kunlik shart va referallarni ilovadan kuzatish mumkinligi eslatiladi.
+  </figcaption>
+</figure>
+
+<h3>2-holat — limit to‘lgan, referal qo‘shilmadi</h3>
+
+<figure class="msg">
+  <img src="images/referral/bot-referral-limit.png" alt="Referal qo'shilmadi xabari" />
+  <figcaption>
+    Limit to‘lganda keladigan xabar: kim hisobga olinmagani aytiladi va batafsil ma’lumot uchun
+    ASLZAR bilan bog‘lanish taklif qilinadi.
+  </figcaption>
+</figure>
+
+<div class="note">
+  Ikkinchi xabarda <b>raqamlar ataylab ko‘rsatilmaydi</b> — foydalanuvchiga limitning aniq qiymati
+  aytilmaydi, chunki u har bir foydalanuvchi uchun har xil bo‘lishi mumkin.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s8">8. Admin panelda boshqarish</h2>
+
+<h3>8.1. Barcha foydalanuvchilar uchun standart limit</h3>
+
+<p>
+  Admin panelning chap menyusidagi <b>Referal</b> bo‘limini oching. Bu sahifada dastur sozlamalari va
+  umumiy statistika joylashgan.
+</p>
+
+<figure>
+  <img src="images/referral/admin-referral-page.png" alt="Admin panel — Referal sahifasi" />
+  <figcaption>Admin panel → <b>Referal</b> sahifasi.</figcaption>
+</figure>
+
+<figure>
+  <img src="images/referral/admin-referral-default.png" alt="Standart referal limiti formasi" />
+  <figcaption>
+    <b>Standart referal limiti.</b> Yangi qiymatni kiriting va <b>Saqlash</b> tugmasini bosing.
+    Pastda oxirgi o‘zgartirishni kim va qachon qilgani ko‘rsatiladi.
+  </figcaption>
+</figure>
+
+<div class="note">
+  Standart limitni faqat <b>superadmin</b> o‘zgartira oladi. Boshqa adminlar sahifani ko‘ra oladi,
+  lekin forma ular uchun faol bo‘lmaydi.
+</div>
+
+<h3>8.2. Statistika nimani anglatadi</h3>
+
+<figure>
+  <img src="images/referral/admin-referral-stats.png" alt="Referal statistikasi kartalari" />
+  <figcaption>Referal statistikasi.</figcaption>
+</figure>
+
+<div class="card">
+  <table>
+    <tr><th style="width:26%">Ko‘rsatkich</th><th>Ma’nosi</th></tr>
+    <tr><td><b>Mijozlar</b></td><td>1C ma’lumotlari mavjud bo‘lgan foydalanuvchilar soni.</td></tr>
+    <tr><td><b>Limitga yetganlar</b></td><td>Referallar soni o‘z limitiga yetgan va endi yangi referal qo‘sha olmaydigan foydalanuvchilar.</td></tr>
+    <tr><td><b>Maxsus limitli</b></td><td>Standartdan farqli, shaxsiy limit belgilangan foydalanuvchilar soni.</td></tr>
+    <tr><td><b>Jami referallar</b></td><td>Barcha mijozlar bo‘yicha 1C da qayd etilgan referallar yig‘indisi.</td></tr>
+  </table>
+</div>
+
+<h3>8.3. Foydalanuvchilar ro‘yxatidagi limit ustuni</h3>
+
+<figure>
+  <img src="images/referral/admin-users-list.png" alt="Foydalanuvchilar ro'yxati — Referal limiti ustuni" />
+  <figcaption>
+    <b>Foydalanuvchilar</b> sahifasidagi <b>Referal limiti</b> ustuni har bir foydalanuvchi uchun
+    <code>ishlatilgan / limit</code> ko‘rinishida chiqadi. Limitga yetgan qatorlar <b>qizil rangda</b>
+    ajratiladi. Ustunni bosib saralash mumkin — kimda kam joy qolgani birinchi bo‘lib chiqadi.
+    Ma’lumotni Excelga ham yuklab olish mumkin.
+  </figcaption>
+</figure>
+
+<div class="note">
+  Kerakli ustunlarni yuqori o‘ngdagi <b>Ustunlar</b> tugmasi orqali yashirish yoki ko‘rsatish mumkin —
+  yuqoridagi rasmda aynan shu qilingan.
+</div>
+
+<h3>8.4. Bitta foydalanuvchi uchun shaxsiy limit</h3>
+
+<p>Foydalanuvchi sahifasini ochish uchun ro‘yxatdagi <b>ID</b> raqamini bosing.</p>
+
+<figure>
+  <img src="images/referral/admin-user-profile.png" alt="Foydalanuvchi sahifasi" />
+  <figcaption>
+    Foydalanuvchi sahifasi: referal limiti, umumiy ma’lumot, 1C ma’lumotlari, moliyaviy holat va
+    u taklif qilgan odamlar ro‘yxati bir joyda.
+  </figcaption>
+</figure>
+
+<figure>
+  <img src="images/referral/admin-user-limit-card.png" alt="Referal limiti kartasi" />
+  <figcaption><b>Referal limiti</b> kartasi.</figcaption>
+</figure>
+
+<div class="card">
+  <b>Shaxsiy limitni o‘zgartirish tartibi:</b>
+  <ol>
+    <li><b>Foydalanuvchilar</b> sahifasida kerakli odamni toping (ism, familiya yoki telefon bo‘yicha qidiruv ishlaydi).</li>
+    <li>Uning <b>ID</b> raqamini bosing.</li>
+    <li><b>Referal limiti</b> kartasidagi <b>Yangi limit</b> maydoniga son kiriting.</li>
+    <li><b>Saqlash</b> tugmasini bosing — o‘zgarish darhol kuchga kiradi.</li>
+  </ol>
+  <p style="margin-bottom:0">
+    Kartadagi <b>Ishlatilgan</b> qatori hozirgi holatni, <b>Joriy limit</b> amaldagi chegarani,
+    <b>O‘zgartirgan</b> esa oxirgi o‘zgartirishni kim va qachon qilganini ko‘rsatadi.
+  </p>
+</div>
+
+<div class="note">
+  Maydonni <b>bo‘sh qoldirib saqlansa</b>, foydalanuvchi shaxsiy limitdan voz kechadi va yana
+  standart limitga qaytadi.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s9">9. Kim nima qiladi</h2>
+
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:40%">Amal</th>
+      <th style="width:14%">Bot</th>
+      <th style="width:14%">1C</th>
+      <th style="width:18%">Admin panel</th>
+    </tr>
+    <tr><td>Taklif qiluvchi va taklif qilinuvchini tekshirish</td><td>✅</td><td>—</td><td>—</td></tr>
+    <tr><td>Referal limitini tekshirish</td><td>✅</td><td>—</td><td>—</td></tr>
+    <tr><td>Referalni biriktirish</td><td>✅ avtomatik</td><td>—</td><td>—</td></tr>
+    <tr><td>Taklif qiluvchiga xabar yuborish</td><td>✅</td><td>—</td><td>—</td></tr>
+    <tr><td>10 kunlik oyna va xaridni kuzatish</td><td>—</td><td>✅</td><td>—</td></tr>
+    <tr><td>Xariddan foiz hisoblash</td><td>—</td><td>✅</td><td>—</td></tr>
+    <tr><td>Muddati o‘tgan referalni o‘chirish</td><td>—</td><td>✅</td><td>—</td></tr>
+    <tr><td>Standart limitni belgilash</td><td>—</td><td>—</td><td>✅ superadmin</td></tr>
+    <tr><td>Shaxsiy limitni belgilash</td><td>—</td><td>—</td><td>✅</td></tr>
+    <tr><td>Statistikani ko‘rish</td><td>—</td><td>—</td><td>✅</td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s10">10. Bonus QR kartasi</h2>
+
+<p>
+  Har bir ASLZAR mijozining 1C tizimida o‘z <b>Mijoz ID</b> raqami bor. Ilgari bu raqamni do‘konda
+  og‘zaki aytib berish kerak edi. Endi mini ilovada <b>ASLZAR bonus kartasi</b> paydo bo‘ldi — u shu
+  raqamni <b>QR kod</b> ko‘rinishida ko‘rsatadi. Xodim kodni skaner qiladi va mijozni bir zumda topadi.
+</p>
+
+<div class="card">
+  <b>Karta nima uchun kerak</b>
+  <ul>
+    <li>Mijozni 1C da tez topish — raqamni qo‘lda kiritish shart emas.</li>
+    <li>Bonuslarni ishlatishda navbatni tezlashtirish.</li>
+    <li>Xato kamayadi — raqam noto‘g‘ri eshitilishi yoki noto‘g‘ri yozilishi ehtimoli yo‘qoladi.</li>
+  </ul>
+</div>
+
+<h3>Kartani kim ko‘radi</h3>
+
+<p>
+  Karta <b>referal dasturi bilan bir xil shartga</b> bo‘ysunadi: uni faqat <b>ASLZAR mijozlari</b>,
+  ya’ni kamida bitta xarid qilgan foydalanuvchilar ko‘radi. Bu 1C dagi <code>contractFirst</code>
+  belgisi bilan aniqlanadi — u xarid qilingandan keyin <code>true</code> bo‘ladi.
+</p>
+
+<div class="card">
+  <table>
+    <tr>
+      <th style="width:52%">Foydalanuvchi holati</th>
+      <th style="width:24%">Bonus kartasi</th>
+      <th style="width:24%">Referal bo‘limi</th>
+    </tr>
+    <tr><td>Ro‘yxatdan o‘tgan va xarid qilgan (ASLZAR mijozi)</td><td>✅ ko‘rinadi</td><td>✅ ochiq</td></tr>
+    <tr><td>Ro‘yxatdan o‘tgan, lekin hali xarid qilmagan</td><td>— ko‘rinmaydi</td><td>— yopiq</td></tr>
+    <tr><td>Umuman ro‘yxatdan o‘tmagan</td><td>— ko‘rinmaydi</td><td>— yopiq</td></tr>
+  </table>
+</div>
+
+<div class="note">
+  Xarid qilmagan foydalanuvchi uchun karta shunchaki <b>ko‘rsatilmaydi</b> — hech qanday xato yoki
+  ogohlantirish chiqmaydi. Birinchi xariddan so‘ng karta o‘zi paydo bo‘ladi, alohida sozlash talab
+  qilinmaydi.
+</div>
+
+<h3>Karta qanday ko‘rinadi</h3>
+
+<div class="shots">
+  <figure class="phone">
+    <img src="images/referral/bonus-card-home.png" alt="Bosh sahifadagi bonus kartasi" />
+    <figcaption>
+      Karta <b>bosh sahifada</b>, “Platforma Haqida” bo‘limidan yuqorida joylashadi.
+    </figcaption>
+  </figure>
+  <figure class="phone-wide">
+    <img src="images/referral/bonus-card.png" alt="Bonus kartasining yaqin ko‘rinishi" />
+    <figcaption>
+      Kartada QR kod, uning ostida <b>Mijoz ID</b> matn ko‘rinishida (misolda
+      <code>00-00073809</code>) va <b>“QR kodni kattalashtirish”</b> tugmasi bor.
+    </figcaption>
+  </figure>
+</div>
+
+<h3>Karta yana qayerda bor</h3>
+
+<div class="shots">
+  <figure class="phone">
+    <img src="images/referral/bonus-card-settings.png" alt="Shaxsiy ma'lumotlar sahifasidagi bonus kartasi" />
+    <figcaption>
+      Xuddi shu karta <b>“Shaxsiy ma’lumotlar”</b> sahifasining eng pastida ham turadi. Bu sahifa
+      Telegramdagi sozlamalar tugmasi (⚙) orqali ochiladi.
+    </figcaption>
+  </figure>
+  <figure class="phone">
+    <img src="images/referral/bonus-card-fullscreen.png" alt="Kattalashtirilgan QR kod" />
+    <figcaption>
+      <b>“QR kodni kattalashtirish”</b> tugmasi bosilganda QR kod butun ekranni egallaydi —
+      skaner qilish osonlashadi. Yopish uchun <b>ekranning istalgan joyiga</b> bosish kifoya.
+    </figcaption>
+  </figure>
+</div>
+
+<h3>Do‘konda qanday ishlatiladi</h3>
+
+<div class="card">
+  <ol>
+    <li>Mijoz mini ilovani ochadi (bosh sahifa yoki “Shaxsiy ma’lumotlar”).</li>
+    <li><b>“QR kodni kattalashtirish”</b> tugmasini bosadi.</li>
+    <li>Telefon ekranini kassadagi xodimga ko‘rsatadi.</li>
+    <li>Xodim QR kodni skaner qiladi va 1C da mijozni topadi.</li>
+    <li>Kod o‘qilmasa — xodim QR ostidagi <b>Mijoz ID</b> raqamini qo‘lda kiritadi.</li>
+  </ol>
+</div>
+
+<div class="note">
+  QR kodda <b>faqat Mijoz ID</b> saqlanadi — telefon raqami, passport, bonus miqdori yoki boshqa
+  shaxsiy ma’lumot yo‘q. Shuning uchun kodni ko‘rsatish xavfsiz.
+</div>
+
+<div class="note">
+  Skaner qilish qiyin bo‘lsa, telefon ekranining <b>yorqinligini oshirish</b> tavsiya etiladi —
+  ilova yorqinlikni o‘zi boshqara olmaydi.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s11">11. Savol-javob</h2>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Havola ilgari ulashilgan bo‘lsa, limit to‘lgandan keyin u ishlaydimi?</h3>
+  <p>
+    Havolaning o‘zi ochiladi — odam botga qo‘shiladi va ro‘yxatdan o‘tadi. Lekin limit
+    <b>har bir referal biriktirilishida qaytadan tekshiriladi</b>, shuning uchun referal hisobga olinmaydi.
+    Eski havolalar orqali chetlab o‘tish mumkin emas.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Limitdan oshib ketgan foydalanuvchilarning referallari o‘chib ketadimi?</h3>
+  <p>Yo‘q. Mavjud referallar ham, ular bo‘yicha mukofotlar ham saqlanib qoladi. Faqat yangi qo‘shish to‘xtaydi.</p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Limitni o‘zgartirsam, qachon kuchga kiradi?</h3>
+  <p>
+    Bot uchun — <b>darhol</b>: har bir referalda joriy qiymat qayta o‘qiladi.
+    Mini ilova va admin panelda — <b>bir daqiqa ichida</b>.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Standart limitni o‘zgartirsam, shaxsiy limitlarga ta’sir qiladimi?</h3>
+  <p>Yo‘q. Shaxsiy limit har doim ustuvor. Standart limit faqat shaxsiy limiti yo‘qlarga qo‘llaniladi.</p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Taklif qilingan odam limit haqida biror narsa biladimi?</h3>
+  <p>Yo‘q. U hech qanday xabar olmaydi va odatdagidek ro‘yxatdan o‘tadi.</p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Nima uchun “Jami referallar” ko‘rsatkichi kichik?</h3>
+  <p>
+    Chunki 1C xarid bilan yakunlanmagan referallarni 10 kundan keyin o‘chiradi. Statistikada faqat
+    hozirda 1C da qayd etilgan referallar ko‘rinadi.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Xodimlar referal kodlari (emp1, emp2 ...) ham shu limitga bo‘ysunadimi?</h3>
+  <p>
+    Yo‘q. Xodim referali — alohida mexanizm, u foydalanuvchi qaysi xodim orqali kelganini qayd etadi.
+    Referal limiti unga taalluqli emas.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Limit o‘rniga bo‘sh qiymat saqlansa nima bo‘ladi?</h3>
+  <p>Foydalanuvchi standart limitga qaytadi — ya’ni admin panelda belgilangan umumiy qiymatga.</p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Bonus kartasi ko‘rinmayapti — nima uchun?</h3>
+  <p>
+    Karta faqat <b>ASLZAR mijozlariga</b>, ya’ni kamida bitta xarid qilganlarga ko‘rsatiladi.
+    Ro‘yxatdan o‘tgan, lekin hali xarid qilmagan foydalanuvchida karta chiqmaydi. Birinchi xariddan
+    keyin u avtomatik paydo bo‘ladi.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">QR kod skaner qilinmasa nima qilish kerak?</h3>
+  <p>
+    QR kodning ostida <b>Mijoz ID</b> raqami matn ko‘rinishida yozilgan — xodim uni 1C ga qo‘lda
+    kiritishi mumkin. Xuddi shu raqam “Shaxsiy ma’lumotlar” sahifasida <b>Mijoz ID</b> qatorida ham
+    turadi.
+  </p>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#f6f1e5', primaryBorderColor: '#C8A24B', primaryTextColor: '#1c1c1e',
+      lineColor: '#8a8a90', fontFamily: '-apple-system, Segoe UI, Roboto, sans-serif'
+    },
+    flowchart: { curve: 'basis', nodeSpacing: 40, rankSpacing: 46, useMaxWidth: true }
+  });
+  await mermaid.run({ querySelector: '.mermaid' });
+  document.body.dataset.mermaidReady = 'true';
+</script>
+</body>
+</html>
