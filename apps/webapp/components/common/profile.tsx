@@ -9,9 +9,17 @@ import { useTelegram } from "@/hooks/useTelegram";
 import { BadgeCheckIcon, BadgeXIcon } from "lucide-react";
 import Image from "next/image";
 
-const DEFAULT_PROFILE_INFO = {
+interface ProfileInfo {
+	verified: boolean;
+	/** Null until 1C tells us the level — an unregistered user has no tier, so never invent one. */
+	uroven: string | null;
+	bonusOstatok: number;
+	contracts: number;
+}
+
+const DEFAULT_PROFILE_INFO: ProfileInfo = {
 	verified: false,
-	uroven: "Silver",
+	uroven: null,
 	bonusOstatok: 0,
 	contracts: 0
 };
@@ -76,57 +84,55 @@ export function Profile() {
 					<h4 className="text-center font-semibold tracking-tight">ASLZAR platformasiga xush kelibsiz!</h4>
 				</span>
 
+				{/* Always rendered, in every state: a grid that appears only once 1C answers made the
+				    skeletons below unreachable and shoved the page down when the data landed. */}
 				<div className="mx-2">
-					{profileInfo.verified && (
-						<>
-							<Separator className="my-2" />
+					<Separator className="my-2" />
 
-							<div className="grid grid-cols-3 gap-2 w-full">
-								<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
-									<Image src="/icons/crown.webp" alt="Level" width={64} height={64} className="object-contain" priority sizes="64px" />
-									<div className="text-sm font-semibold text-center">Level</div>
-									{loading ? (
-										<Skeleton className="h-5 w-14 rounded-full" />
-									) : (
-										<Badge variant="default" className="bg-[#be9941] text-white w-fit">
-											{profileInfo.uroven}
-										</Badge>
-									)}
-								</div>
-								<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
-									<Image
-										src="/icons/contract.webp"
-										alt="Shartnomalar"
-										width={64}
-										height={64}
-										className="object-contain"
-										priority
-										sizes="64px"
-									/>
-									<div className="text-sm font-semibold text-center">Shartnoma</div>
-									{loading ? (
-										<Skeleton className="h-5 w-8 rounded-full" />
-									) : (
-										<Badge variant="default" className="bg-[#be9941] text-white w-fit">
-											{profileInfo.contracts} ta
-										</Badge>
-									)}
-								</div>
-								<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
-									<Image src="/icons/bonus.webp" alt="Bonus" width={64} height={64} className="object-contain" priority sizes="64px" />
-									<div className="text-sm font-semibold text-center">Bonus</div>
-									{loading ? (
-										<Skeleton className="h-5 w-20 rounded-full" />
-									) : (
-										<Badge variant="default" className="bg-[#be9941] text-white w-fit">
-											{profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
-										</Badge>
-									)}
-								</div>
-							</div>
-							<Separator className="my-2" />
-						</>
-					)}
+					<div className="grid grid-cols-3 gap-2 w-full">
+						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
+							<Image src="/icons/crown.webp" alt="Level" width={64} height={64} className="object-contain" priority sizes="64px" />
+							<div className="text-sm font-semibold text-center">Level</div>
+							{loading ? (
+								<Skeleton className="h-5 w-14 rounded-full" />
+							) : (
+								<Badge variant="default" className="bg-[#be9941] text-white w-fit">
+									{profileInfo.uroven ?? "—"}
+								</Badge>
+							)}
+						</div>
+						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
+							<Image
+								src="/icons/contract.webp"
+								alt="Shartnomalar"
+								width={64}
+								height={64}
+								className="object-contain"
+								priority
+								sizes="64px"
+							/>
+							<div className="text-sm font-semibold text-center">Shartnoma</div>
+							{loading ? (
+								<Skeleton className="h-5 w-8 rounded-full" />
+							) : (
+								<Badge variant="default" className="bg-[#be9941] text-white w-fit">
+									{profileInfo.contracts} ta
+								</Badge>
+							)}
+						</div>
+						<div className="backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1">
+							<Image src="/icons/bonus.webp" alt="Bonus" width={64} height={64} className="object-contain" priority sizes="64px" />
+							<div className="text-sm font-semibold text-center">Bonus</div>
+							{loading ? (
+								<Skeleton className="h-5 w-20 rounded-full" />
+							) : (
+								<Badge variant="default" className="bg-[#be9941] text-white w-fit">
+									{profileInfo.bonusOstatok.toLocaleString("uz-UZ")} so&apos;m
+								</Badge>
+							)}
+						</div>
+					</div>
+					<Separator className="my-2" />
 				</div>
 			</div>
 		</>

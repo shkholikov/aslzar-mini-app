@@ -10,6 +10,17 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.11.1] - 2026-08-01
+
+### Fixed
+
+- The profile stats (Level, Shartnoma, Bonus) and the "Tasdiqlangan Mijoz" badge no longer appear with a delay when the Mini App is opened. Previously the app waited for a full round-trip to 1C before it could show anything, so on most launches the cards were missing for the first few seconds and then jumped into place. The app now shows the last known values straight away and quietly fetches the current ones in the background, so the bonus balance stays just as up to date as before.
+- While the data is still loading, the three cards now show placeholders instead of being absent from the screen. They previously disappeared entirely until the data arrived, which pushed the rest of the page down when it did.
+
+### Changed
+
+- The Level, Shartnoma and Bonus cards are now shown to every user. Users who have not registered yet see a dash for their level (they do not have one) and zeros for contracts and bonuses, followed as before by the invitation to register.
+
 ## [2.11.0] - 2026-07-30
 
 ### Added

@@ -4,9 +4,38 @@ import type { MiniAppAuthedRequest } from "../../auth-miniapp";
 import { getDefaultReferralLimit, getUserSessionDoc, updateUserSession1CData } from "../../db";
 import { OneCError, createUser, searchUserByPhone } from "../../integrations/aslzar1c";
 
-// bonusOstatok changes in 1C at any time, so keep the cache window short —
-// the app shows cached data instantly and revalidates within a minute.
+// bonusOstatok changes in 1C at any time, so keep the cache window short.
+// Past the window we still answer from Mongo and refresh 1C in the background
+// (see refreshOneCInBackground) — the miniapp renders instantly on every open
+// and picks up the new balance on the next one.
 const CACHE_TTL_MS = 60 * 1000;
+
+// Guards against a burst of requests from the same user each firing their own
+// 1C call. Only the first stale hit schedules a refresh; the rest ride along.
+const refreshesInFlight = new Set<string>();
+
+/**
+ * Re-fetches 1C data and mirrors it onto the session without blocking the response.
+ * Failures are logged and swallowed: the caller already has cached data, and a
+ * transient 1C outage must not turn into an unhandled rejection.
+ */
+function refreshOneCInBackground(userId: string, phone: string): void {
+	if (refreshesInFlight.has(userId)) return;
+	refreshesInFlight.add(userId);
+
+	void (async () => {
+		try {
+			const data = await searchUserByPhone(phone);
+			if (data?.code === 0) {
+				await updateUserSession1CData(userId, data, true);
+			}
+		} catch (err) {
+			console.error("[users/me] background 1C refresh failed", err);
+		} finally {
+			refreshesInFlight.delete(userId);
+		}
+	})();
+}
 
 /**
  * GET /v1/users/me
@@ -34,11 +63,16 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 	const updatedAt = rawUpdatedAt instanceof Date ? rawUpdatedAt : rawUpdatedAt ? new Date((rawUpdatedAt as { $date: string }).$date) : null;
 	const isStale = !updatedAt || Date.now() - updatedAt.getTime() > CACHE_TTL_MS;
 
-	if (!isStale && tgSessionData.user1CData) {
+	// Stale-while-revalidate: any cached copy is served immediately. Blocking on 1C here
+	// meant every launch past the 60s window waited a full round-trip before the profile
+	// could render, so the stats grid and verification badge appeared late on each open.
+	if (tgSessionData.user1CData) {
+		if (isStale) refreshOneCInBackground(userId, tgSessionData.phone_number);
 		res.status(200).json({ ...tgSessionData.user1CData, referralLimit, tgData: tgSessionData });
 		return;
 	}
 
+	// Nothing cached yet (first open after phone verification) — 1C is the only source.
 	try {
 		const data = await searchUserByPhone(tgSessionData.phone_number);
 		if (data?.code === 0) {
