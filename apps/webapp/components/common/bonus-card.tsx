@@ -45,13 +45,13 @@ export function BonusCard({ clientId }: BonusCardProps) {
 							</p>
 						</div>
 
-						<div className="flex shrink-0 flex-col items-center gap-1">
-							{/* Hardcoded black-on-white: the theme's --foreground/--background would follow the
-							    .dark variant and render an unscannable QR on this dark card. */}
-							<div className="rounded-2xl bg-white p-2">
-								<QRCode className="size-24" data={clientId} foreground="#000000" background="#ffffff" />
-							</div>
-							<p className="text-[11px] font-semibold tracking-wide text-white/80">{clientId}</p>
+						{/* Hardcoded black-on-white: the theme's --foreground/--background would follow the
+						    .dark variant and render an unscannable QR on this dark card.
+						    The client id is deliberately NOT printed alongside: it is a 1C lookup key that
+						    the till accepts as proof of identity, so a readable copy could be re-encoded
+						    from a shared screenshot and used to spend someone else's bonuses. */}
+						<div className="shrink-0 rounded-2xl bg-white p-2">
+							<QRCode className="size-24" data={clientId} foreground="#000000" background="#ffffff" />
 						</div>
 					</div>
 

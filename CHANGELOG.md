@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.11.2] - 2026-08-03
+
+### Removed
+
+- The client ID is no longer printed as text under the bonus card QR code, or under the enlarged version of it. Only the QR code itself is shown now. The number was readable in any screenshot of the card, and since the till accepts that number on its own when writing off bonuses, a shared screenshot was enough for someone else to spend another person's bonuses. Staff scan the code as before; the number is still visible to the customer on the "Shaxsiy ma'lumotlar" page.
+
 ## [2.11.1] - 2026-08-01
 
 ### Fixed

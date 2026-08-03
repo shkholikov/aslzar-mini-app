@@ -46,11 +46,11 @@ export function BonusCardOverlay({ clientId, onClose }: BonusCardOverlayProps) {
 			className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-black/70 p-8 backdrop-blur-xl"
 		>
 			{/* Hardcoded black-on-white: the theme's --foreground/--background would follow the .dark
-			    variant and render an unscannable QR. */}
+			    variant and render an unscannable QR.
+			    The client id is deliberately NOT printed under the code — see bonus-card.tsx. */}
 			<div className="rounded-[2.5rem] bg-white p-5 shadow-2xl">
 				<QRCode className="size-72" data={clientId} foreground="#000000" background="#ffffff" />
 			</div>
-			<p className="text-lg font-bold tracking-wide text-white">{clientId}</p>
 		</div>,
 		document.body
 	);
