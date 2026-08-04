@@ -94,7 +94,7 @@ export default function SettingsPage() {
 					</SectionCard>
 
 					{/* Same gate as the home screen: ASLZAR customers only. */}
-					{data.contractFirst === true && data.clientId ? <BonusCard clientId={data.clientId} /> : null}
+					{data.contractFirst === true && data.bonusToken ? <BonusCard /> : null}
 				</>
 			) : (
 				<RegisterPromptCard />

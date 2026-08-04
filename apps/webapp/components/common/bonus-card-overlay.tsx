@@ -5,7 +5,8 @@ import { createPortal } from "react-dom";
 import { QRCode } from "@/components/ui/shadcn-io/qr-code";
 
 interface BonusCardOverlayProps {
-	clientId: string;
+	/** Signed, short-lived QR payload — see docs/1c-bonus-token.md. The parent owns its refresh. */
+	token: string;
 	onClose: () => void;
 }
 
@@ -14,7 +15,7 @@ interface BonusCardOverlayProps {
  * Deliberately an in-page overlay rather than a route: no navigation means no Telegram
  * BackButton wiring and none of the iOS stuck-back-navigation trouble.
  */
-export function BonusCardOverlay({ clientId, onClose }: BonusCardOverlayProps) {
+export function BonusCardOverlay({ token, onClose }: BonusCardOverlayProps) {
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => setMounted(true), []);
@@ -47,9 +48,10 @@ export function BonusCardOverlay({ clientId, onClose }: BonusCardOverlayProps) {
 		>
 			{/* Hardcoded black-on-white: the theme's --foreground/--background would follow the .dark
 			    variant and render an unscannable QR.
-			    The client id is deliberately NOT printed under the code — see bonus-card.tsx. */}
+			    Nothing is printed under the code — the payload is a short-lived signed token, and the
+			    client id it contains must not be readable off a screenshot. See bonus-card.tsx. */}
 			<div className="rounded-[2.5rem] bg-white p-5 shadow-2xl">
-				<QRCode className="size-72" data={clientId} foreground="#000000" background="#ffffff" />
+				<QRCode className="size-72" data={token} foreground="#000000" background="#ffffff" />
 			</div>
 		</div>,
 		document.body
