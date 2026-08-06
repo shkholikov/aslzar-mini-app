@@ -33,7 +33,7 @@ export default function HomePage() {
 				<div className="w-full overflow-hidden">
 					{!loading && !(data && data.code === 0) && <RegisterPromptCard />}
 					{/* Bonus card is for ASLZAR customers only — same gate as the referral programme. */}
-					{!loading && data?.code === 0 && data.contractFirst === true && data.clientId && <BonusCard clientId={data.clientId} />}
+					{!loading && data?.code === 0 && data.contractFirst === true && data.bonusToken && <BonusCard />}
 					<PlatformInfo />
 					<ProductCarousel />
 					<ChannelSubscribeCard />

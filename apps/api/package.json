@@ -7,7 +7,8 @@
 		"dev": "NODE_ENV=development ts-node src/index.ts",
 		"build": "tsc",
 		"start": "NODE_ENV=production ts-node src/index.ts",
-		"create-key": "ts-node scripts/create-key.ts"
+		"create-key": "ts-node scripts/create-key.ts",
+		"verify-bonus-token": "ts-node scripts/verify-bonus-token.ts"
 	},
 	"dependencies": {
 		"cors": "^2.8.6",

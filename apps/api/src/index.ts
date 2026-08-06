@@ -8,7 +8,7 @@ import { rateLimitByApiKey } from "./rate-limit";
 import { sendMessageHandler } from "./routes/send-message";
 import { openApiSpec } from "./openapi";
 // Internal routes (consumed by app.aslzarbot.uz only — intentionally undocumented in /docs)
-import { getMeHandler, registerHandler } from "./routes/internal/users";
+import { getBonusTokenHandler, getMeHandler, registerHandler } from "./routes/internal/users";
 import { listProductsHandler } from "./routes/internal/products";
 import { listNewsHandler } from "./routes/internal/news";
 import { listBranchesHandler } from "./routes/internal/branches";
@@ -74,6 +74,9 @@ app.post("/v1/external/sendMessage", requireApiKey, rateLimitByApiKey, sendMessa
 // IMPORTANT: do NOT add these to apps/api/src/openapi.ts. They are intentionally
 // invisible at /docs to keep the public docs scoped to partner-facing endpoints.
 app.get("/v1/users/me", requireMiniAppAuth, getMeHandler);
+// Split out from /v1/users/me so the bonus card can renew its QR without re-rendering every
+// screen bound to user data, or triggering a background 1C refresh each time.
+app.get("/v1/users/me/bonus-token", requireMiniAppAuth, getBonusTokenHandler);
 app.post("/v1/users/register", requireMiniAppAuth, registerHandler);
 app.get("/v1/products", requireMiniAppAuth, listProductsHandler);
 app.get("/v1/news", requireMiniAppAuth, listNewsHandler);

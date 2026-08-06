@@ -5,22 +5,21 @@ import { QRCode } from "@/components/ui/shadcn-io/qr-code";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useBonusToken } from "@/hooks/useBonusToken";
 import { BonusCardOverlay } from "./bonus-card-overlay";
-import { Maximize2 } from "lucide-react";
-
-interface BonusCardProps {
-	/** Raw 1C client id (e.g. "00-00073809") — encoded verbatim, that's what the in-store scanner reads. */
-	clientId: string;
-}
+import { Maximize2, WifiOff } from "lucide-react";
 
 /**
  * Standalone card (not a SectionCard — the eyebrow and headline live inside the panel, so a
- * SectionCard heading above would duplicate them). Owns its own fullscreen state so any page can
- * drop it in with a single line.
+ * SectionCard heading above would duplicate them). Takes no props: the token and its refresh
+ * lifecycle both come from useBonusToken, so any page can drop it in with a single line.
  */
-export function BonusCard({ clientId }: BonusCardProps) {
+export function BonusCard() {
 	const tg = useTelegram();
+	const { token, expired } = useBonusToken();
 	const [expanded, setExpanded] = useState(false);
+
+	const scannable = Boolean(token) && !expired;
 
 	const open = useCallback(() => {
 		tg?.HapticFeedback?.impactOccurred("heavy");
@@ -47,21 +46,32 @@ export function BonusCard({ clientId }: BonusCardProps) {
 
 						{/* Hardcoded black-on-white: the theme's --foreground/--background would follow the
 						    .dark variant and render an unscannable QR on this dark card.
-						    The client id is deliberately NOT printed alongside: it is a 1C lookup key that
-						    the till accepts as proof of identity, so a readable copy could be re-encoded
-						    from a shared screenshot and used to spend someone else's bonuses. */}
-						<div className="shrink-0 rounded-2xl bg-white p-2">
-							<QRCode className="size-24" data={clientId} foreground="#000000" background="#ffffff" />
+						    The payload is a signed token that expires after five minutes, not the client id —
+						    a screenshot of this card is worthless once it lapses. See docs/1c-bonus-token.md. */}
+						<div className="flex size-[112px] shrink-0 items-center justify-center rounded-2xl bg-white p-2">
+							{scannable ? (
+								<QRCode className="size-24" data={token!} foreground="#000000" background="#ffffff" />
+							) : (
+								<WifiOff className="size-8 text-black/25" />
+							)}
 						</div>
 					</div>
 
-					<RippleButton variant="outline" className={`${goldButtonClass} mt-4 w-full`} onClick={open}>
-						<Maximize2 className="size-4" /> QR kodni kattalashtirish
-					</RippleButton>
+					{scannable ? (
+						<RippleButton variant="outline" className={`${goldButtonClass} mt-4 w-full`} onClick={open}>
+							<Maximize2 className="size-4" /> QR kodni kattalashtirish
+						</RippleButton>
+					) : (
+						/* An enlarged dead QR is worse than none: the cashier would scan it repeatedly and
+						   blame the card rather than the connection. */
+						<p className="mt-4 text-center text-sm leading-snug text-white/70">
+							Kod yangilanmadi. Internetga ulaning va qaytadan urinib ko&apos;ring.
+						</p>
+					)}
 				</div>
 			</div>
 
-			{expanded ? <BonusCardOverlay clientId={clientId} onClose={close} /> : null}
+			{expanded && scannable ? <BonusCardOverlay token={token!} onClose={close} /> : null}
 		</>
 	);
 }

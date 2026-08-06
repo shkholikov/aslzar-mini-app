@@ -62,6 +62,12 @@ export const config = {
 	AMOCRM_BASE_URL: optional("AMOCRM_BASE_URL"),
 	AMOCRM_API_TOKEN: optional("AMOCRM_API_TOKEN"),
 	AMOCRM_PIPELINE_ID: optional("AMOCRM_PIPELINE_ID"),
+	// Shared secret for bonus card QR tokens (docs/1c-bonus-token.md) — held identically by us
+	// and by 1C, which verifies tokens offline by recomputing the same HMAC. Deliberately
+	// optional(): required() throws at boot, and a missing value must not take products, news,
+	// referrals and the external sendMessage endpoint down to protect one card. The startup
+	// warning below is what keeps that degradation from being silent.
+	BONUS_TOKEN_SECRET: optional("BONUS_TOKEN_SECRET"),
 	// CORS allowlist for the webapp + admin origins
 	CORS_ALLOWED_ORIGINS: parseList("CORS_ALLOWED_ORIGINS", [
 		"https://app.aslzarbot.uz",
@@ -71,6 +77,19 @@ export const config = {
 	]),
 	PORT: parseInt(process.env.PORT || "3001", 10)
 };
+
+// A missing or mistyped signing key is invisible until a customer is standing at a till, so
+// say something at boot. Never log the value itself.
+if (!config.BONUS_TOKEN_SECRET) {
+	console.warn("⚠️  BONUS_TOKEN_SECRET is not set — the bonus card QR will be hidden for every user.");
+} else if (process.env.NODE_ENV === "production" && !/^[0-9a-f]{64}$/i.test(config.BONUS_TOKEN_SECRET)) {
+	// Production only: development deliberately uses the short human-readable key from
+	// docs/1c-bonus-token.md so local tokens reproduce the vectors published to the 1C team.
+	// Warning on that every boot would just train everyone to ignore this line.
+	console.warn(
+		`⚠️  BONUS_TOKEN_SECRET is not 64 hex characters (length ${config.BONUS_TOKEN_SECRET.length}) — check for a truncated paste.`
+	);
+}
 
 /**
  * Referral cap applied when a user has no explicit `referralLimit` (admin-managed, top-level

@@ -10,6 +10,17 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.12.0] - 2026-08-04
+
+### Changed
+
+- The bonus card QR code now carries a code that expires after five minutes instead of the customer's permanent client number. The app renews it by itself while the card is on screen, so customers always see a working code and nothing changes for them at the till. A screenshot of someone's card stops working within minutes, so it can no longer be passed around and used to spend their bonuses.
+- If the phone has no connection when the code needs renewing, the card now says so and asks the customer to reconnect, instead of showing a code the till would reject.
+
+### Note
+
+- The old permanent format still works at the till until 1C is switched over to accept the new codes only. Until that switch, a client number on its own is still enough to write off bonuses, so this release does not close the problem on its own. See `docs/1c-bonus-token.md`.
+
 ## [2.11.2] - 2026-08-03
 
 ### Removed

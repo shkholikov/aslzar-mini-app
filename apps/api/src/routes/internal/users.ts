@@ -1,6 +1,8 @@
 import type { Response } from "express";
 import { z } from "zod";
 import type { MiniAppAuthedRequest } from "../../auth-miniapp";
+import { buildBonusToken } from "../../bonus-token";
+import { config } from "../../config";
 import { getDefaultReferralLimit, getUserSessionDoc, updateUserSession1CData } from "../../db";
 import { OneCError, createUser, searchUserByPhone } from "../../integrations/aslzar1c";
 
@@ -68,7 +70,11 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 	// could render, so the stats grid and verification badge appeared late on each open.
 	if (tgSessionData.user1CData) {
 		if (isStale) refreshOneCInBackground(userId, tgSessionData.phone_number);
-		res.status(200).json({ ...tgSessionData.user1CData, referralLimit, tgData: tgSessionData });
+		// Minted per request and never stored — the QR is only good for 5 minutes, so a shared
+		// screenshot expires before anyone can spend against it. Placed after the spread so a
+		// future 1C field of the same name can't shadow it.
+		const bonusToken = buildBonusToken((tgSessionData.user1CData as { clientId?: unknown }).clientId, config.BONUS_TOKEN_SECRET);
+		res.status(200).json({ ...tgSessionData.user1CData, referralLimit, bonusToken, tgData: tgSessionData });
 		return;
 	}
 
@@ -78,7 +84,9 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 		if (data?.code === 0) {
 			await updateUserSession1CData(userId, data, true);
 		}
-		res.status(200).json({ ...data, referralLimit, tgData: tgSessionData });
+		// `data.code !== 0` (user unknown to 1C) carries no clientId, so this correctly yields null.
+		const bonusToken = buildBonusToken((data as { clientId?: unknown } | null)?.clientId, config.BONUS_TOKEN_SECRET);
+		res.status(200).json({ ...data, referralLimit, bonusToken, tgData: tgSessionData });
 	} catch (err) {
 		console.error("[users/me] 1C search failed", err);
 		if (err instanceof OneCError) {
@@ -87,6 +95,33 @@ export async function getMeHandler(req: MiniAppAuthedRequest, res: Response): Pr
 		}
 		res.status(500).json({ error: "Internal server error", details: err instanceof Error ? err.message : "Unknown error" });
 	}
+}
+
+/**
+ * GET /v1/users/me/bonus-token
+ *
+ * Mints a fresh QR token for the caller and nothing else.
+ *
+ * Deliberately separate from /v1/users/me. The card renews every few minutes, and routing
+ * that through the full profile endpoint cost us twice: on the client every screen bound to
+ * user data re-rendered, and on the server each renewal found the 60s cache stale and
+ * scheduled another background 1C fetch. This reads one Mongo document and signs it.
+ */
+export async function getBonusTokenHandler(req: MiniAppAuthedRequest, res: Response): Promise<void> {
+	const userId = String(req.miniAppUser!.id);
+
+	const userDoc = await getUserSessionDoc(userId);
+	const clientId = (userDoc?.value?.user1CData as { clientId?: unknown } | undefined)?.clientId;
+	const token = buildBonusToken(clientId, config.BONUS_TOKEN_SECRET);
+
+	if (!token) {
+		// No 1C record yet, or no signing key configured. The card treats this the same as a
+		// failed renewal and shows its reconnect state rather than a code the till would reject.
+		res.status(404).json({ error: "No bonus token available for this user" });
+		return;
+	}
+
+	res.status(200).json({ token });
 }
 
 const RegisterSchema = z.object({
