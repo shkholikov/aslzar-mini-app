@@ -502,8 +502,14 @@ flowchart TD
 
 <p>
   Har bir ASLZAR mijozining 1C tizimida o‘z <b>Mijoz ID</b> raqami bor. Ilgari bu raqamni do‘konda
-  og‘zaki aytib berish kerak edi. Endi mini ilovada <b>ASLZAR bonus kartasi</b> paydo bo‘ldi — u shu
-  raqamni <b>QR kod</b> ko‘rinishida ko‘rsatadi. Xodim kodni skaner qiladi va mijozni bir zumda topadi.
+  og‘zaki aytib berish kerak edi. Endi mini ilovada <b>ASLZAR bonus kartasi</b> paydo bo‘ldi — xodim
+  QR kodni skaner qiladi va mijozni bir zumda topadi.
+</p>
+
+<p>
+  QR kod ichida endi <b>himoyalangan, muddatli kod</b> saqlanadi: u <b>5 daqiqa</b> amal qiladi va
+  ilova uni o‘zi yangilab turadi. Nima uchun bunday qilingani quyida —
+  <b>“QR kod o‘zi yangilanib turadi”</b> bo‘limida tushuntirilgan.
 </p>
 
 <div class="card">
@@ -554,8 +560,8 @@ flowchart TD
   <figure class="phone-wide">
     <img src="images/referral/bonus-card.png" alt="Bonus kartasining yaqin ko‘rinishi" />
     <figcaption>
-      Kartada QR kod, uning ostida <b>Mijoz ID</b> matn ko‘rinishida (misolda
-      <code>00-00073809</code>) va <b>“QR kodni kattalashtirish”</b> tugmasi bor.
+      Kartada QR kod va <b>“QR kodni kattalashtirish”</b> tugmasi bor. Mijoz ID raqami
+      <b>endi QR ostida yozilmaydi</b> — sababi quyida.
     </figcaption>
   </figure>
 </div>
@@ -579,6 +585,53 @@ flowchart TD
   </figure>
 </div>
 
+<h3>QR kod o‘zi yangilanib turadi</h3>
+
+<p>
+  Ilgari QR kodda mijozning <b>Mijoz ID</b> raqami turardi. Bu raqam hech qachon o‘zgarmaydi —
+  demak kartaning bir marta olingan <b>skrinshoti abadiy ishlar edi</b>. Shu sababli ba’zi
+  xodimlar mijozlarning kartalarini bir-biriga yuborib, <b>begona bonuslarni yechib olgan</b>
+  holatlar aniqlandi.
+</p>
+
+<p>
+  Endi QR kodda o‘zgaruvchan, himoyalangan kod saqlanadi:
+</p>
+
+<div class="card">
+  <ul>
+    <li>Kod <b>5 daqiqa</b> amal qiladi.</li>
+    <li>Karta ekranda ochiq turganda ilova kodni <b>o‘zi yangilaydi</b> — mijoz hech narsa qilmaydi.</li>
+    <li>Ilova qayta ochilganda ham yangi kod beriladi.</li>
+    <li>Kodning haqiqiyligini va muddatini <b>1C tekshiradi</b> — soxta yoki eskirgan kod qabul qilinmaydi.</li>
+  </ul>
+</div>
+
+<div class="warn">
+  <b>Skrinshot endi ishlamaydi.</b> Bir necha daqiqadan so‘ng u eskiradi va kassada rad etiladi.
+  Begona kartadan foydalanib bonus yechish imkoni yo‘q.
+</div>
+
+<div class="note">
+  <b>Mijoz uchun hech narsa o‘zgarmaydi.</b> U xuddi avvalgidek kartani ochadi va ko‘rsatadi.
+  Yangilanish fonda, ko‘rinmasdan sodir bo‘ladi — ekranda hech qanday taymer yoki ogohlantirish
+  chiqmaydi.
+</div>
+
+<h3>Internet bo‘lmasa</h3>
+
+<p>
+  Yangi kodni olish uchun telefonda internet kerak bo‘ladi. Aloqa yo‘qolsa, karta QR kod o‘rniga
+  <b>“Kod yangilanmadi. Internetga ulaning va qaytadan urinib ko‘ring”</b> degan yozuvni ko‘rsatadi.
+  Aloqa tiklangach karta o‘zi qayta ishlay boshlaydi — ilovani qayta ochish shart emas.
+</p>
+
+<div class="note">
+  Bu ataylab shunday qilingan: kassada o‘qilmaydigan kodni ko‘rsatgandan ko‘ra, sababini darhol
+  aytib qo‘ygan yaxshiroq. Aks holda xodim kodni bir necha marta skaner qilib, aybni kartadan
+  qidirgan bo‘lardi.
+</div>
+
 <h3>Do‘konda qanday ishlatiladi</h3>
 
 <div class="card">
@@ -587,13 +640,19 @@ flowchart TD
     <li><b>“QR kodni kattalashtirish”</b> tugmasini bosadi.</li>
     <li>Telefon ekranini kassadagi xodimga ko‘rsatadi.</li>
     <li>Xodim QR kodni skaner qiladi va 1C da mijozni topadi.</li>
-    <li>Kod o‘qilmasa — xodim QR ostidagi <b>Mijoz ID</b> raqamini qo‘lda kiritadi.</li>
+    <li>Kod qabul qilinmasa — mijozdan ilovani <b>yopib, qaytadan ochishni</b> so‘rang. Yangi kod chiqadi.</li>
   </ol>
 </div>
 
+<div class="warn">
+  <b>Mijoz ID raqamini qo‘lda kiritish endi ishlamaydi.</b> Bonus yechish uchun mijozning
+  telefonidagi <b>amaldagi QR kod</b> kerak. Bu ataylab shunday: raqamning o‘zini bilish yetarli
+  bo‘lganda, uni bilgan har kim begona bonusni yechib olishi mumkin edi.
+</div>
+
 <div class="note">
-  QR kodda <b>faqat Mijoz ID</b> saqlanadi — telefon raqami, passport, bonus miqdori yoki boshqa
-  shaxsiy ma’lumot yo‘q. Shuning uchun kodni ko‘rsatish xavfsiz.
+  QR kodda telefon raqami, passport, bonus miqdori yoki boshqa shaxsiy ma’lumot <b>yo‘q</b> —
+  faqat Mijoz ID, kodning amal qilish muddati va imzo. Shuning uchun kodni ko‘rsatish xavfsiz.
 </div>
 
 <div class="note">
@@ -669,9 +728,50 @@ flowchart TD
 <div class="card qa">
   <h3 style="margin-top:0">QR kod skaner qilinmasa nima qilish kerak?</h3>
   <p>
-    QR kodning ostida <b>Mijoz ID</b> raqami matn ko‘rinishida yozilgan — xodim uni 1C ga qo‘lda
-    kiritishi mumkin. Xuddi shu raqam “Shaxsiy ma’lumotlar” sahifasida <b>Mijoz ID</b> qatorida ham
-    turadi.
+    Avval mijozdan telefon ekranining <b>yorqinligini oshirishni</b> va
+    <b>“QR kodni kattalashtirish”</b> tugmasini bosishni so‘rang. Shundan keyin ham o‘qilmasa —
+    ilovani <b>yopib, qaytadan ochish</b> kerak: yangi kod chiqadi.
+  </p>
+  <p>
+    Mijoz ID raqamini qo‘lda kiritish endi <b>ishlamaydi</b> — bonus yechish uchun amaldagi QR kod
+    talab qilinadi.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Kassada “kod eskirgan” degan javob chiqdi. Nima bo‘ldi?</h3>
+  <p>
+    Kod <b>5 daqiqa</b> amal qiladi. Agar mijoz kartani ancha oldin ochib qo‘ygan bo‘lsa yoki
+    skrinshot ko‘rsatayotgan bo‘lsa, kod eskirgan bo‘ladi. Yechim oddiy: mijoz ilovani qayta ochadi
+    va yangi kod ko‘rsatadi.
+  </p>
+  <p>
+    Bu <b>nosozlik emas</b> — himoya shunday ishlashi kerak. Karta buzilmagan.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Mijoz kartani ochib qo‘yib, navbatda uzoq turdi. Kod eskiradimi?</h3>
+  <p>
+    Yo‘q. Karta ekranda ochiq turganda ilova kodni <b>o‘zi yangilab turadi</b>. Mijoz navbatda
+    qancha turgani muhim emas — kassaga yetganda ekranda amaldagi kod bo‘ladi.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Do‘konda internet yoki aloqa yomon bo‘lsa-chi?</h3>
+  <p>
+    Yangi kod olish uchun <b>mijozning telefonida</b> internet bo‘lishi kerak. Aloqa bo‘lmasa karta
+    QR o‘rniga “Kod yangilanmadi. Internetga ulaning...” degan yozuvni ko‘rsatadi. Mijoz Wi-Fi ga
+    ulansa yoki aloqa tiklansa, karta o‘zi qayta ishlaydi.
+  </p>
+</div>
+
+<div class="card qa">
+  <h3 style="margin-top:0">Mijoz kartasini boshqa odamga yuborsa nima bo‘ladi?</h3>
+  <p>
+    Yuborilgan skrinshot bir necha daqiqadan keyin <b>ishlamay qoladi</b>. Boshqa odam u bilan bonus
+    yecha olmaydi. Aynan shu muammoni hal qilish uchun kodga muddat qo‘yilgan.
   </p>
 </div>
 
