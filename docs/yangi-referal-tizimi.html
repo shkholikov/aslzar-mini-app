@@ -76,9 +76,9 @@
 <header>
   <h1>ASLZAR 💎 — Referal dasturi va bonus kartasi qo‘llanmasi</h1>
   <div class="sub">
-    Referal dasturi qanday ishlaydi, limitlar admin panelda qanday boshqariladi va mijoz bonus QR
-    kartasini do‘konda qanday ishlatadi.<br />
-    Platforma versiyasi 2.11.0 · Hujjat sanasi: 30.07.2026
+    Referal dasturi qanday ishlaydi, limitlar admin panelda qanday boshqariladi, bonus 1C da qanday
+    ishlatiladi va mijoz bonus QR kartasini do‘konda qanday ko‘rsatadi.<br />
+    Platforma versiyasi 2.12.0 · Hujjat sanasi: 08.08.2026
   </div>
 </header>
 
@@ -92,10 +92,11 @@
     <li><a href="#s5">Referal limiti (yangi imkoniyat)</a></li>
     <li><a href="#s6">Foydalanuvchi ilovada nimani ko‘radi</a></li>
     <li><a href="#s7">Bot qanday xabar yuboradi</a></li>
-    <li><a href="#s8">Admin panelda boshqarish</a></li>
-    <li><a href="#s9">Kim nima qiladi</a></li>
-    <li><a href="#s10">Bonus QR kartasi</a></li>
-    <li><a href="#s11">Savol-javob</a></li>
+    <li><a href="#s8">Bonusni ishlatish tartibi</a></li>
+    <li><a href="#s9">Admin panelda boshqarish</a></li>
+    <li><a href="#s10">Kim nima qiladi</a></li>
+    <li><a href="#s11">Bonus QR kartasi</a></li>
+    <li><a href="#s12">Savol-javob</a></li>
   </ol>
 </div>
 
@@ -376,9 +377,69 @@ flowchart TD
 </div>
 
 <!-- ============================================================ -->
-<h2 id="s8">8. Admin panelda boshqarish</h2>
+<h2 id="s8">8. Bonusni ishlatish tartibi</h2>
 
-<h3>8.1. Barcha foydalanuvchilar uchun standart limit</h3>
+<p class="lead">
+  Mijozning to‘plangan bonuslarini ishlatish uchun xodim 1C da QR tugmasini bosadi va mijozning
+  telefonidagi bonus kartasini skaner qiladi. Tartib savdo turiga qarab ikki xil bo‘ladi.
+</p>
+
+<div class="note">
+  Skaner qilinadigan QR kod — bu mijozning mini ilovasidagi <b>ASLZAR bonus kartasi</b>
+  (<b>11-bo‘lim</b>). Kod <b>5 daqiqa</b> amal qiladi, shuning uchun skaner qilish paytida mijoz
+  ilovani ochib turgan bo‘lishi kerak.
+</div>
+
+<h3>8.1. Muddatli shartnoma bo‘yicha savdoda</h3>
+
+<div class="card">
+  <ol>
+    <li>Shartnomani rasmiylashtirish oynasida <b>«Условия рассрочки»</b> bo‘limini oching.</li>
+    <li><b>«Оплата от бонуса»</b> maydonining yonidagi <b>QR tugmasini</b> bosing.</li>
+    <li>Mijozning telefonida ochilgan QR kodni skaner qiling.</li>
+    <li>Kod muvaffaqiyatli o‘qilgach, bonusdan foydalanish imkoniyati ochiladi.</li>
+    <li>Yechib olinishi lozim bo‘lgan <b>bonus summasini</b> kiriting.</li>
+  </ol>
+</div>
+
+<figure>
+  <img src="images/referral/1c-bonus-rassrochka.png" alt="1C — «Условия рассрочки» bo'limi, «Оплата от бонуса» maydoni" />
+  <figcaption>
+    <b>«Условия рассрочки»</b> bo‘limi. <b>«Оплата от бонуса»</b> maydonining o‘ng tomonidagi
+    QR tugmasi skanerni ishga tushiradi.
+  </figcaption>
+</figure>
+
+<h3>8.2. Naqd savdoda</h3>
+
+<div class="card">
+  <ol>
+    <li><b>«Основное»</b> bo‘limini oching.</li>
+    <li>Mijoz ma’lumotlari qatoridagi — <b>«Клиент»</b> maydonining yonidagi — <b>QR tugmasini</b> bosing.</li>
+    <li>Mijozning telefonida ochilgan QR kodni skaner qiling.</li>
+    <li>Kod muvaffaqiyatli o‘qilgach, bonusdan foydalanish imkoniyati ochiladi.</li>
+    <li>Yechib olinishi lozim bo‘lgan <b>bonus summasini</b> kiriting.</li>
+  </ol>
+</div>
+
+<figure>
+  <img src="images/referral/1c-bonus-naqd.png" alt="1C — «Реализация товаров и услуг», «Клиент» qatoridagi QR tugmasi" />
+  <figcaption>
+    <b>«Реализация товаров и услуг»</b> hujjatining <b>«Основное»</b> bo‘limi. QR tugmasi
+    <b>«Клиент»</b> maydonining yonida joylashgan.
+  </figcaption>
+</figure>
+
+<div class="warn">
+  Bonusni yechish uchun <b>amaldagi QR kod</b> talab qilinadi. Mijoz ID raqamini qo‘lda kiritish
+  yoki eski skrinshotni skaner qilish orqali bonus yechib bo‘lmaydi — buning sababi
+  <b>11-bo‘limda</b> tushuntirilgan.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="s9">9. Admin panelda boshqarish</h2>
+
+<h3>9.1. Barcha foydalanuvchilar uchun standart limit</h3>
 
 <p>
   Admin panelning chap menyusidagi <b>Referal</b> bo‘limini oching. Bu sahifada dastur sozlamalari va
@@ -403,7 +464,7 @@ flowchart TD
   lekin forma ular uchun faol bo‘lmaydi.
 </div>
 
-<h3>8.2. Statistika nimani anglatadi</h3>
+<h3>9.2. Statistika nimani anglatadi</h3>
 
 <figure>
   <img src="images/referral/admin-referral-stats.png" alt="Referal statistikasi kartalari" />
@@ -420,7 +481,7 @@ flowchart TD
   </table>
 </div>
 
-<h3>8.3. Foydalanuvchilar ro‘yxatidagi limit ustuni</h3>
+<h3>9.3. Foydalanuvchilar ro‘yxatidagi limit ustuni</h3>
 
 <figure>
   <img src="images/referral/admin-users-list.png" alt="Foydalanuvchilar ro'yxati — Referal limiti ustuni" />
@@ -437,7 +498,7 @@ flowchart TD
   yuqoridagi rasmda aynan shu qilingan.
 </div>
 
-<h3>8.4. Bitta foydalanuvchi uchun shaxsiy limit</h3>
+<h3>9.4. Bitta foydalanuvchi uchun shaxsiy limit</h3>
 
 <p>Foydalanuvchi sahifasini ochish uchun ro‘yxatdagi <b>ID</b> raqamini bosing.</p>
 
@@ -474,7 +535,7 @@ flowchart TD
 </div>
 
 <!-- ============================================================ -->
-<h2 id="s9">9. Kim nima qiladi</h2>
+<h2 id="s10">10. Kim nima qiladi</h2>
 
 <div class="card">
   <table>
@@ -498,7 +559,7 @@ flowchart TD
 </div>
 
 <!-- ============================================================ -->
-<h2 id="s10">10. Bonus QR kartasi</h2>
+<h2 id="s11">11. Bonus QR kartasi</h2>
 
 <p>
   Har bir ASLZAR mijozining 1C tizimida o‘z <b>Mijoz ID</b> raqami bor. Ilgari bu raqamni do‘konda
@@ -661,7 +722,7 @@ flowchart TD
 </div>
 
 <!-- ============================================================ -->
-<h2 id="s11">11. Savol-javob</h2>
+<h2 id="s12">12. Savol-javob</h2>
 
 <div class="card qa">
   <h3 style="margin-top:0">Havola ilgari ulashilgan bo‘lsa, limit to‘lgandan keyin u ishlaydimi?</h3>
