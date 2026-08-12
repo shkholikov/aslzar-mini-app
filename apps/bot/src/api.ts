@@ -62,6 +62,33 @@ export async function searchUserByPhone(phone: string): Promise<Partial<I1CUserD
 	}
 }
 
+/** 1C records referral dates in shop-local time. Same zone as the payment-reminder cron. */
+const TZ = "Asia/Tashkent";
+
+/**
+ * Builds the `chislo` referral timestamp 1C expects: `DD.MM.YYYY HH:mm:ss`, Tashkent local time.
+ *
+ * Built from Intl parts rather than the Date getters, which resolve against the *process*
+ * timezone — UTC on Railway, where no TZ is set. That stamped every referral attributed
+ * between 00:00 and 05:00 Tashkent onto the previous calendar day.
+ *
+ * `hourCycle: "h23"` matters: the `hour12: false` shorthand can render midnight as "24".
+ */
+function tashkentChislo(now: Date = new Date()): string {
+	const parts = new Intl.DateTimeFormat("en-GB", {
+		timeZone: TZ,
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hourCycle: "h23"
+	}).formatToParts(now);
+	const part = (type: Intl.DateTimeFormatPartTypes): string => parts.find((p) => p.type === type)?.value ?? "";
+	return `${part("day")}.${part("month")}.${part("year")} ${part("hour")}:${part("minute")}:${part("second")}`;
+}
+
 /**
  * Adds a referral to a user's referral list in 1C API
  * @param clientId - The referrer's clientId from 1C
@@ -83,17 +110,7 @@ export async function addReferral(
 			return false;
 		}
 
-		// Format date as DD.MM.YYYY HH:mm:ss
-		// TODO: should be fixed later - date format handling is manual here
-		const now = new Date();
-		const day = String(now.getDate()).padStart(2, "0");
-		const month = String(now.getMonth() + 1).padStart(2, "0");
-		const year = now.getFullYear();
-		const hours = String(now.getHours()).padStart(2, "0");
-		const minutes = String(now.getMinutes()).padStart(2, "0");
-		const seconds = String(now.getSeconds()).padStart(2, "0");
-		const chislo = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-		// ------------------------------------------------------------
+		const chislo = tashkentChislo();
 
 		// Build the endpoint URL
 		const endpoint = `${API_BASE_URL}addReferral`;
