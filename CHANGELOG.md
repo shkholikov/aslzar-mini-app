@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.12.1] - 2026-08-12
+
+### Fixed
+
+- Referrals are now dated by Tashkent time. The date sent to 1C when someone is added as a referral was taken from the server's own clock, which runs on UTC, so anyone who registered between midnight and 5 in the morning Tashkent time was recorded against the previous day. Those referrals now carry the date the customer actually saw on their phone.
+
 ## [2.12.0] - 2026-08-04
 
 ### Changed
