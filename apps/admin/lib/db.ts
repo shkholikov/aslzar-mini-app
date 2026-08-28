@@ -148,6 +148,8 @@ export interface UserDocument extends Document {
 					message: string | null;
 					id: string;
 					months: number;
+					/** 1C contract state: "active" | "closed" | "returned". Absent on older 1C responses. */
+					status?: string;
 					sum: number;
 					skidka: number;
 					vznos: number;

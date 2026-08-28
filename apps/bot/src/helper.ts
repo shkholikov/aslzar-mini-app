@@ -36,6 +36,32 @@ export function isAslzarCustomer(user1CData: Partial<I1CUserData> | undefined): 
 	return user1CData?.contractFirst === true;
 }
 
+const warnedContractStatuses = new Set<string>();
+
+/**
+ * Whether a 1C contract still carries a payment obligation.
+ *
+ * 1C leaves the installment schedule fully populated on contracts it has closed or returned —
+ * a re-issued contract keeps its old schedule with every row unpaid and no payments recorded.
+ * Reading only the schedule made the bot remind customers about contracts they had settled.
+ *
+ * Excludes by known terminal states rather than requiring `"active"`: an unrecognised or
+ * missing value keeps the current behaviour, so a partial 1C rollout can never silence
+ * every reminder at once.
+ */
+export function isActiveContract(status: unknown): boolean {
+	if (typeof status !== "string") return true;
+	const normalized = status.trim().toLowerCase();
+	if (normalized === "closed" || normalized === "returned") return false;
+	// Fail-open is only safe if we find out about it: a 1C vocabulary change would
+	// otherwise make this filter quietly do nothing. Warn once per distinct value.
+	if (normalized !== "" && normalized !== "active" && !warnedContractStatuses.has(normalized)) {
+		warnedContractStatuses.add(normalized);
+		console.warn(`[Contract status] unrecognised value from 1C: "${status}" — treating the contract as active`);
+	}
+	return true;
+}
+
 /**
  * How many referrals the inviter already has, according to 1C.
  *

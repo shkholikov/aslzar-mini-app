@@ -1,6 +1,13 @@
 import { Context, SessionFlavor } from "grammy";
 
 /**
+ * Contract state as reported by 1C on each `contract.ids[]` entry.
+ * `closed` and `returned` contracts carry no further payment obligation, even when 1C
+ * leaves their installment schedule populated. See `isActiveContract` in helper.ts.
+ */
+export type ContractStatus = "active" | "closed" | "returned";
+
+/**
  * 1C API User Data Response
  * Typed structure based on current API response, with flexibility for future changes
  * Use Partial<I1CUserData> to make all properties optional
@@ -17,6 +24,8 @@ export interface I1CUserData {
 			message: string | null;
 			id: string;
 			months: number;
+			/** Contract state. Absent on responses from 1C versions before 2026-08-29. */
+			status?: ContractStatus;
 			sum: number;
 			skidka: number;
 			vznos: number;

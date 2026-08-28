@@ -3,6 +3,7 @@ import { SectionCard } from "@/components/common/section-card";
 import { Badge } from "@/components/ui/badge";
 import { ClockAlert } from "lucide-react";
 import { format1CDate, parse1CDate } from "@/lib/format1cDate";
+import { isActiveContract } from "@/lib/contract-status";
 
 interface ScheduleItem {
 	status: boolean;
@@ -15,6 +16,7 @@ interface ScheduleItem {
 interface ContractWithSchedule {
 	id?: string | number;
 	contractId?: string | number;
+	status?: string;
 	schedule?: ScheduleItem[];
 	[key: string]: any;
 }
@@ -42,6 +44,11 @@ function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment
 	const upcomingPayments: UpcomingPayment[] = [];
 
 	contracts.forEach((contract) => {
+		// Closed and returned contracts keep an unpaid-looking schedule in 1C forever.
+		if (!isActiveContract(contract.status)) {
+			return;
+		}
+
 		if (!contract.schedule || !Array.isArray(contract.schedule)) {
 			return;
 		}
