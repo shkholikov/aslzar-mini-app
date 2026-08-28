@@ -10,6 +10,24 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.13.0] - 2026-08-28
+
+### Fixed
+
+- Customers no longer get payment reminders for contracts that have already been closed or returned. When a contract is re-issued — the customer keeps the same item but signs a new contract — 1C leaves the old contract's payment schedule in place with every instalment still marked unpaid and no payments recorded against it. To the bot that looked like an ordinary unpaid contract, so it kept asking for money that was not owed. One customer was reminded every month for four months about a contract that had been replaced two weeks after it was signed. 1C now reports each contract's state, and the bot skips anything closed or returned. Reminders for genuinely active contracts are unchanged.
+- The "Kutilayotgan to'lovlar" block in the app no longer lists instalments from closed or returned contracts, for the same reason.
+- Admin dashboard money figures — outstanding payments, overdue amount and customer count, active contracts, and the 7- and 30-day upcoming totals — now leave out closed and returned contracts, so they show what customers actually owe. Monthly sales are deliberately unchanged: a contract that was later returned was still a sale in the month it was signed.
+
+### Added
+
+- Every row in the app's "Shartnomalar" table now shows the contract's state — Faol, Yopilgan or Qaytarilgan — so customers can tell at a glance which of their contracts are still running.
+- The contracts table is now paged five at a time, with active contracts listed first. Almost every customer has five contracts or fewer and sees no change; the few with more no longer get one very long table.
+
+### Note
+
+- Until 1C reports a state for a contract, that contract is treated as active exactly as before. A delayed or partial 1C rollout therefore changes nothing rather than silencing reminders that should still go out.
+- Dashboard trend arrows will show a one-off drop in outstanding and overdue figures for about a month, until the daily snapshots taken before this change age out of the comparison window. See `docs/1c-contract-status.md`.
+
 ## [2.12.1] - 2026-08-12
 
 ### Fixed

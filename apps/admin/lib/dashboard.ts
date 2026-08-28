@@ -260,7 +260,11 @@ interface ContractMetrics {
 
 /**
  * Contract-derived money metrics computed from the installment `schedule[]` (the 1C
- * top-level remain/latePayment/contract.active fields are not populated in real data):
+ * top-level remain/latePayment/contract.active fields are not populated in real data).
+ * Contracts 1C reports as `closed` or `returned` are excluded — their schedules stay
+ * populated after the contract ends, so including them overstated every figure here.
+ * Monthly sales (`computeSales`) deliberately still counts them: a contract that was
+ * later returned was still a sale in the month it was signed. Metrics:
  * - receivables      = Σ unpaid installments (sumToPay − sumPayed) across all schedules
  * - overdue          = Σ unpaid installments whose due date is already past; count = distinct customers
  * - activeContracts  = contracts that still carry an unpaid balance
@@ -271,6 +275,13 @@ async function computeContracts(db: Db): Promise<ContractMetrics> {
 	const up7 = addDaysStr(today, 7);
 	const up30 = addDaysStr(today, 30);
 	const sched = "$value.user1CData.contract.ids.schedule";
+	const statusPath = "$value.user1CData.contract.ids.status";
+	// Same rule as isActiveContract() in the bot and webapp: trim + lowercase, and treat
+	// anything that isn't a recognised terminal state as still owing money.
+	const contractStatus = {
+		$toLower: { $cond: [{ $eq: [{ $type: statusPath }, "string"] }, { $trim: { input: statusPath } }, "active"] }
+	};
+	const NON_PAYABLE_STATUSES = ["closed", "returned"];
 	const dbl = (input: string) => ({ $convert: { input, to: "double", onError: 0, onNull: 0 } });
 	const due = { $subtract: [dbl(`${sched}.sumToPay`), dbl(`${sched}.sumPayed`)] };
 	const inWindow = (from: string, to: string) => ({ $and: [{ $gte: ["$date", from] }, { $lt: ["$date", to] }] });
@@ -280,6 +291,11 @@ async function computeContracts(db: Db): Promise<ContractMetrics> {
 		.aggregate([
 			{ $match: { "value.user1CData.contract.ids": { $type: "array" } } },
 			{ $unwind: "$value.user1CData.contract.ids" },
+			// Contracts 1C has closed or returned carry no obligation, but 1C leaves their
+			// schedule populated with unpaid rows — counting them inflated every figure below.
+			// The $type guard keeps a non-string status from throwing and taking the whole
+			// dashboard down; anything missing or unrecognised counts as active, as before.
+			{ $match: { $expr: { $not: [{ $in: [contractStatus, NON_PAYABLE_STATUSES] }] } } },
 			{
 				$facet: {
 					// Active contracts = contracts still carrying an unpaid balance.

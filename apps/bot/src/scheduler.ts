@@ -12,6 +12,7 @@ import { paymentReminderItem, paymentReminderText } from "./messages";
 import type { I1CUserData, ReminderLogEntry } from "./types";
 import { format1CDate } from "./format1cDate";
 import { searchUserByPhone } from "./api";
+import { isActiveContract } from "./helper";
 
 const TZ = "Asia/Tashkent";
 const REMINDER_DAYS = new Set([0, 3, 5]);
@@ -35,6 +36,11 @@ interface SessionWith1C {
 	user1CData?: Partial<I1CUserData>;
 }
 
+/** Optional per-run tally, for logging how often the contract-state filter fires. */
+interface ScanStats {
+	skippedContracts: number;
+}
+
 // ——— Date helpers ———
 
 function getTodayTashkent(): string {
@@ -49,7 +55,7 @@ function daysUntil(todayStr: string, paymentDateStr: string): number {
 
 // ——— Domain: get upcoming payments (0, 3, 5 days before) ———
 
-function getUpcomingPayments(session: SessionWith1C): UpcomingPayment[] {
+function getUpcomingPayments(session: SessionWith1C, stats?: ScanStats): UpcomingPayment[] {
 	const contracts = session.user1CData?.contract?.ids;
 	if (!Array.isArray(contracts)) return [];
 
@@ -57,6 +63,13 @@ function getUpcomingPayments(session: SessionWith1C): UpcomingPayment[] {
 	const out: UpcomingPayment[] = [];
 
 	for (const contract of contracts) {
+		// 1C leaves the schedule populated on closed/returned contracts, so the rows below
+		// would otherwise look unpaid forever.
+		if (!isActiveContract(contract.status)) {
+			if (stats) stats.skippedContracts++;
+			continue;
+		}
+
 		const schedule = contract.schedule;
 		if (!Array.isArray(schedule)) continue;
 		const contractId = contract.id ?? "N/A";
@@ -135,6 +148,8 @@ async function runDailyJob(api: Api): Promise<void> {
 	});
 	const docs = await cursor.toArray();
 	const source: "cron" | "test" = "cron";
+	const stats: ScanStats = { skippedContracts: 0 };
+	let sentCount = 0;
 
 	for (const doc of docs) {
 		const key = (doc as { key?: string }).key;
@@ -155,7 +170,7 @@ async function runDailyJob(api: Api): Promise<void> {
 		if (phone) {
 			const fresh = await searchUserByPhone(phone);
 			if (fresh) {
-				payments = getUpcomingPayments({ user1CData: fresh });
+				payments = getUpcomingPayments({ user1CData: fresh }, stats);
 				// Keep the session cache warm (mirrors apps/api updateUserSession1CData).
 				try {
 					await users.updateOne(
@@ -185,6 +200,7 @@ async function runDailyJob(api: Api): Promise<void> {
 
 		try {
 			const result = await api.sendMessage(key, messageText);
+			sentCount++;
 			await logReminder({
 				telegramUserId: key,
 				sentAt: new Date(),
@@ -214,6 +230,8 @@ async function runDailyJob(api: Api): Promise<void> {
 			console.error(`[Payment reminder] send failed for user ${key}:`, err);
 		}
 	}
+
+	console.log(`[Payment reminder] ${today}: sent ${sentCount}, skipped ${stats.skippedContracts} closed/returned contracts`);
 }
 
 // ——— Scheduler ———
