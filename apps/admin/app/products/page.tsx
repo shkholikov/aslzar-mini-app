@@ -11,6 +11,7 @@ import type { ProductDoc } from "@/lib/db";
 import { Download, Loader2, Package, Upload } from "lucide-react";
 import { Loading } from "@/components/common/loading";
 import { exportToExcel } from "@/lib/export";
+import { PRODUCTS_ADMIN_ENABLED } from "@/lib/products-admin";
 
 const ACCEPT_MEDIA = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime";
 const PAGE_SIZE = 10;
@@ -208,6 +209,33 @@ export default function ProductsPage() {
 			Yaratilgan: formatDate(p.createdAt)
 		}));
 		exportToExcel(rows, "Mahsulotlar", "mahsulotlar");
+	}
+
+	// The editor is kept whole behind the flag rather than deleted — see lib/products-admin.ts.
+	if (!PRODUCTS_ADMIN_ENABLED) {
+		return (
+			<AdminGuard requiredPermission="products">
+				<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
+					<div className="w-full max-w-2xl">
+						<div className="flex items-center gap-2 pb-4">
+							<Package className="w-10 h-10 text-gray-800" />
+							<div>
+								<h1 className="text-2xl text-gray-800 font-semibold">Mahsulotlar</h1>
+								<p className="text-sm text-gray-600">Katalog endi 1C bilan avtomatik sinxronlanadi</p>
+							</div>
+						</div>
+						<Separator className="mb-6" />
+						<div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+							<p className="text-sm text-gray-800 font-medium mb-2">Mahsulotlarni bu yerdan boshqarish o‘chirilgan</p>
+							<p className="text-sm text-gray-700 leading-relaxed">
+								Mini App katalogi endi ASLZAR ID orqali 1C dan yuklanadi va har kecha soat 02:00 da yangilanadi. Mahsulot nomi, probasi,
+								og‘irligi, narxi va qoldig‘i to‘g‘ridan-to‘g‘ri 1C dan keladi — bu yerda qo‘lda kiritish shart emas.
+							</p>
+						</div>
+					</div>
+				</main>
+			</AdminGuard>
+		);
 	}
 
 	return (

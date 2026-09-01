@@ -3,6 +3,7 @@ import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
+import { DeepLinkHandler } from "@/components/common/deep-link-handler";
 import { SettingsButton } from "@/components/common/settings-button";
 import { BackgroundImage } from "@/components/common/background-image";
 import { TelegramProvider } from "@/hooks/useTelegram";
@@ -81,7 +82,7 @@ export default function RootLayout({
 			<body
 				className={`${montserratFont.variable} font-sans antialiased`}
 				style={{
-					paddingTop: "var(--tg-content-safe-area-inset-top)",
+					paddingTop: "calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px))",
 					paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + var(--tg-content-safe-area-inset-bottom, 0px) + 100px)",
 					paddingLeft: "env(safe-area-inset-left, 0px)",
 					paddingRight: "env(safe-area-inset-right, 0px)"
@@ -92,6 +93,7 @@ export default function RootLayout({
 					<TelegramGuard>
 						<UserProvider>
 							<ProductsProvider>
+								<DeepLinkHandler />
 								<AnimatedPage>{children}</AnimatedPage>
 								<SettingsButton />
 								<div className="flex justify-center">

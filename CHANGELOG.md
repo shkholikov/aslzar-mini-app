@@ -10,6 +10,29 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.14.0] - 2026-09-01
+
+### Changed
+
+- The Mini App catalogue now shows the real shop. Products come from ASLZAR ID, which syncs from 1C every night, so what a customer sees is what is actually in the display cases — with real prices and real stock. Previously the catalogue held two dozen items entered by hand, last updated in April, with no stock information and almost no prices.
+- Because a customer can now search, filter and page through thousands of items, the catalogue page had to earn its space back: the page heading was taking up half the first screen before a single product appeared. It is now a single compact line, and the search box and category buttons stay in place as you scroll.
+
+### Added
+
+- Search across the catalogue. If one of the words matches nothing, the app says so and shows results for the rest rather than returning an empty page.
+- Filters by category, fineness, metal colour and whether a piece has a stone, plus toggles for photos and availability.
+- A product page. It lists the individual pieces in stock, each with its own size, weight and price — two rings of the same design are not the same weight, so they are not the same price. Tapping a card in the catalogue opens it.
+- Sharing from a product page. "Ulashish" sends the piece to a Telegram chat as a photo card with its name, fineness and price, and a button that opens the catalogue in the bot — so a share doubles as an invite. "Storyga" puts the photo on the sender's story, captioned "ASLZAR 💎 {piece} — {price}" with an invitation to open the bot for more. Both buttons are hidden on older Telegram versions that cannot do it.
+
+### Fixed
+
+- Local development against an ngrok tunnel no longer fails on POST requests. The origin allowlist is now enforced in production only; outside it any origin is accepted, so a tunnel hostname that changes on every restart does not need adding to the config each time. Production is unchanged.
+
+### Note
+
+- Staff no longer enter products in the admin panel; that page now explains where the catalogue comes from. Nothing was deleted — the editor can be switched back on if the shop ever needs to curate something by hand.
+- The "Bu buyum haqida so'rash" button on a product page is in place but does nothing yet. It is waiting on the AI assistant integration, which is still being agreed with the partner. Until then no enquiry is recorded when a customer taps it.
+
 ## [2.13.0] - 2026-08-28
 
 ### Fixed

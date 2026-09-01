@@ -33,6 +33,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the documented template, which is the only record of what this app needs
+# and, just as importantly, of what must never be put here.
+!.env.example
 
 # vercel
 .vercel

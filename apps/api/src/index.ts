@@ -10,6 +10,12 @@ import { openApiSpec } from "./openapi";
 // Internal routes (consumed by app.aslzarbot.uz only — intentionally undocumented in /docs)
 import { getBonusTokenHandler, getMeHandler, registerHandler } from "./routes/internal/users";
 import { listProductsHandler } from "./routes/internal/products";
+import {
+	getCatalogProductHandler,
+	listCatalogCategoriesHandler,
+	listCatalogHandler,
+	prepareProductShareHandler
+} from "./routes/internal/catalog";
 import { listNewsHandler } from "./routes/internal/news";
 import { listBranchesHandler } from "./routes/internal/branches";
 import { listBonusProgramsHandler } from "./routes/internal/bonus-programs";
@@ -35,6 +41,7 @@ app.use(
 		origin: (origin, cb) => {
 			// Server-to-server (no Origin header) and same-origin: allow.
 			if (!origin) return cb(null, true);
+			if (config.CORS_ALLOW_ANY_ORIGIN) return cb(null, true);
 			if (config.CORS_ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
 			return cb(new Error(`Origin ${origin} not allowed by CORS`));
 		},
@@ -79,6 +86,15 @@ app.get("/v1/users/me", requireMiniAppAuth, getMeHandler);
 app.get("/v1/users/me/bonus-token", requireMiniAppAuth, getBonusTokenHandler);
 app.post("/v1/users/register", requireMiniAppAuth, registerHandler);
 app.get("/v1/products", requireMiniAppAuth, listProductsHandler);
+// Live catalogue proxied from ASLZAR ID (docs/aslzarid-catalog.md). Separate from /v1/products
+// above, which still serves the legacy admin-managed collection during the migration.
+// Categories is registered before :productId so the literal segment is not read as an id.
+app.get("/v1/catalog", requireMiniAppAuth, listCatalogHandler);
+app.get("/v1/catalog/categories", requireMiniAppAuth, listCatalogCategoriesHandler);
+app.get("/v1/catalog/:productId", requireMiniAppAuth, getCatalogProductHandler);
+// Mints a prepared message so the miniapp can offer WebApp.shareMessage() — a share doubles as
+// an invite, since the card carries a button back into the bot.
+app.post("/v1/catalog/:productId/share", requireMiniAppAuth, prepareProductShareHandler);
 app.get("/v1/news", requireMiniAppAuth, listNewsHandler);
 app.get("/v1/branches", requireMiniAppAuth, listBranchesHandler);
 app.get("/v1/bonus-programs", requireMiniAppAuth, listBonusProgramsHandler);

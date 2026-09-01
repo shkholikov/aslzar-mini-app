@@ -7,27 +7,33 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useProducts } from "@/hooks/useProducts";
+import { displayName } from "@/lib/catalog";
 import Image from "next/image";
-
-const VIDEO_EXTS = [".mp4", ".mov", ".webm", ".ogg"];
-const isVideo = (url: string) => VIDEO_EXTS.some((ext) => url.toLowerCase().includes(ext));
 
 export function ProductCarousel() {
 	const router = useRouter();
 	const tg = useTelegram();
 	const { products, loading } = useProducts();
-	const [emblaRef] = useEmblaCarousel({ loop: true, dragFree: true }, [AutoScroll({ speed: 1, stopOnInteraction: false, stopOnMouseEnter: false })]);
+	const [emblaRef] = useEmblaCarousel({ loop: true, dragFree: true }, [
+		AutoScroll({ speed: 1, stopOnInteraction: false, stopOnMouseEnter: false })
+	]);
 
-	const handleCardClick = useCallback(() => {
-		tg?.HapticFeedback?.impactOccurred("light");
-		router.push("/catalog");
-	}, [tg, router]);
+	const handleCardClick = useCallback(
+		(productId: string) => {
+			tg?.HapticFeedback?.impactOccurred("light");
+			router.push(`/catalog/${encodeURIComponent(productId)}`);
+		},
+		[tg, router]
+	);
 
 	if (loading) {
 		return (
 			<div className="flex gap-3 px-2 py-2 overflow-hidden w-full">
 				{[0, 1, 2].map((i) => (
-					<div key={i} className="flex-none w-[42%] border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md overflow-hidden">
+					<div
+						key={i}
+						className="flex-none w-[42%] border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md overflow-hidden"
+					>
 						<div className="relative aspect-[4/5]">
 							<Skeleton className="w-full h-full rounded-none" />
 						</div>
@@ -37,8 +43,8 @@ export function ProductCarousel() {
 		);
 	}
 
-	const imageProducts = products.filter((p) => !isVideo(p.url));
-	const latest = imageProducts.slice(0, 3);
+	const withPhotos = products.filter((p) => p.images.length > 0);
+	const latest = withPhotos.slice(0, 3);
 
 	if (latest.length < 2) return null;
 
@@ -50,12 +56,12 @@ export function ProductCarousel() {
 				<div className="flex gap-3 px-2 py-2">
 					{items.map((product, index) => (
 						<div
-							key={`${product.id}-${index}`}
+							key={`${product.productId}-${index}`}
 							className="flex-none w-[42%] border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md overflow-hidden cursor-pointer"
-							onClick={handleCardClick}
+							onClick={() => handleCardClick(product.productId)}
 						>
 							<div className="relative aspect-[4/5]">
-								<Image src={product.url} alt={product.title} fill className="object-cover" sizes="42vw" />
+								<Image src={product.images[0].medium} alt={displayName(product)} fill className="object-cover" sizes="42vw" />
 							</div>
 						</div>
 					))}

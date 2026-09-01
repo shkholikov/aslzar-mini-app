@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper, UserCog, Plug, LayoutDashboard, Share2 } from "lucide-react";
 import type { AdminPermission, AdminRole } from "@/lib/auth-utils";
+import { PRODUCTS_ADMIN_ENABLED } from "@/lib/products-admin";
 
 export interface NavItem {
 	href: string;
@@ -34,6 +35,9 @@ export function visibleNavItems({ authenticated, role, permissions }: NavAccess)
 	const isSuperadmin = role === "superadmin" || !role;
 	return NAV_ITEMS.filter((item) => {
 		if (!authenticated) return false;
+		// Filtered rather than removed from NAV_ITEMS: navTitle() reads the same array to resolve
+		// the page header, so dropping the entry would blank the title on /products.
+		if (item.href === "/products" && !PRODUCTS_ADMIN_ENABLED) return false;
 		if (item.superadminOnly) return isSuperadmin;
 		if (item.permission === null) return isSuperadmin;
 		if (isSuperadmin) return true;
