@@ -3,6 +3,8 @@
  * These can be imported in both server and client components.
  */
 
+import { PRODUCTS_ADMIN_ENABLED } from "@/lib/products-admin";
+
 export type AdminRole = "superadmin" | "staff";
 export type AdminPermission = "employees" | "products" | "news" | "broadcast" | "suggestions" | "users";
 
@@ -49,6 +51,9 @@ export function getFirstAllowedPath(admin: AdminUserBase): string {
 	if (isSuperAdmin(admin)) return "/";
 	const permissions = admin.permissions ?? [];
 	for (const perm of Object.keys(PERMISSION_PATH_MAP) as AdminPermission[]) {
+		// While the product editor is disabled, landing a products-only admin on it would strand
+		// them on a notice with nowhere else to go.
+		if (perm === "products" && !PRODUCTS_ADMIN_ENABLED) continue;
 		if (permissions.includes(perm)) return PERMISSION_PATH_MAP[perm];
 	}
 	return "/login"; // no permissions at all

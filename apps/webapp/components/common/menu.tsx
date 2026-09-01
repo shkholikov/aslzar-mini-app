@@ -24,7 +24,20 @@ export function Menu() {
 	}, [router]);
 
 	const effectivePath = SUB_ROUTE_PARENTS[pathname] ?? pathname;
-	const activeIndex = navigationItems.findIndex((item) => item.path === effectivePath);
+	// Exact match first, then longest matching prefix. The map above cannot express a dynamic
+	// segment, so without the fallback /catalog/00-0000067 matches nothing and the dock
+	// highlights "asosiy" while the customer is on a product page.
+	const exactIndex = navigationItems.findIndex((item) => item.path === effectivePath);
+	const activeIndex =
+		exactIndex !== -1
+			? exactIndex
+			: navigationItems.reduce(
+					(best, item, i) =>
+						item.path !== "/" && effectivePath.startsWith(`${item.path}/`) && item.path.length > (navigationItems[best]?.path.length ?? 0)
+							? i
+							: best,
+					-1
+				);
 
 	const navItems = navigationItems.map((item) => ({
 		...item,

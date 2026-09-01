@@ -2,127 +2,211 @@
 
 import * as React from "react";
 import { Header } from "@/components/common/header";
-import { SectionCard } from "@/components/common/section-card";
-import { ProductCard, type ProductCardProps } from "@/components/common/product-card";
+import { ProductCard } from "@/components/common/product-card";
+import { CatalogState } from "@/components/common/catalog-state";
+import { CatalogFilters, type Filters, activeFilterCount } from "./components/catalog-filters";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
-import { useProducts, type CatalogProduct } from "@/hooks/useProducts";
+import { Badge } from "@/components/ui/badge";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
+import { useCatalogCategories, useCatalogPage } from "@/hooks/useCatalog";
 import { useTelegram } from "@/hooks/useTelegram";
-import { LayoutGrid, List } from "lucide-react";
-import Image from "next/image";
+import type { CatalogProduct } from "@/lib/catalog";
+import { LayoutGrid, List, Search, SlidersHorizontal } from "lucide-react";
 
-const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|m4v)(\?|$)/i;
-const PAGE_SIZE = 6;
+const PER_PAGE = 24;
+const SEARCH_DEBOUNCE_MS = 350;
 
-function productToCardProps(p: CatalogProduct): ProductCardProps {
-	const mediaType: ProductCardProps["mediaType"] = VIDEO_EXTENSIONS.test(p.url) ? "video" : "image";
-	return {
-		id: p.id,
-		title: p.title,
-		description: p.description,
-		price: typeof p.price === "number" && isFinite(p.price) && p.price > 0 ? p.price : undefined,
-		url: p.url,
-		badgeLabel: p.badgeLabel,
-		mediaType
-	};
-}
+const EMPTY_FILTERS: Filters = { hasPhotos: true, inStock: true };
 
 export default function CatalogPage() {
-	const { products: rawProducts, loading } = useProducts();
-	const products = React.useMemo(() => rawProducts.map(productToCardProps), [rawProducts]);
-	const error: string | null = null;
-	const [page, setPage] = React.useState(1);
-	const [compact, setCompact] = React.useState(true);
 	const tg = useTelegram();
+	const [compact, setCompact] = React.useState(true);
+	const [rawSearch, setRawSearch] = React.useState("");
+	const [search, setSearch] = React.useState("");
+	const [category, setCategory] = React.useState<string | undefined>();
+	const [filters, setFilters] = React.useState<Filters>(EMPTY_FILTERS);
+	const [sheetOpen, setSheetOpen] = React.useState(false);
+	const [page, setPage] = React.useState(1);
+	// Pages accumulate: "load more" appends rather than replacing, so scrolling back up works.
+	const [loaded, setLoaded] = React.useState<CatalogProduct[]>([]);
 
-	const totalPages = Math.ceil(products.length / PAGE_SIZE);
-	const paginated = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+	const { categories } = useCatalogCategories();
 
-	const goToPrev = () => {
-		tg?.HapticFeedback?.impactOccurred("medium");
-		setPage((p) => Math.max(1, p - 1));
-	};
+	// Debounce typing so a five-letter word is one request, not five.
+	React.useEffect(() => {
+		const t = setTimeout(() => setSearch(rawSearch), SEARCH_DEBOUNCE_MS);
+		return () => clearTimeout(t);
+	}, [rawSearch]);
 
-	const goToNext = () => {
-		tg?.HapticFeedback?.impactOccurred("medium");
-		setPage((p) => Math.min(totalPages, p + 1));
+	// Any change to the query starts a fresh result set.
+	React.useEffect(() => {
+		setPage(1);
+		setLoaded([]);
+	}, [search, category, filters]);
+
+	const { products, meta, loading, failure, retry } = useCatalogPage({ ...filters, search, category, page, perPage: PER_PAGE });
+
+	React.useEffect(() => {
+		if (!products.length) return;
+		setLoaded((prev) => {
+			if (page === 1) return products;
+			// SWR can re-emit the same page; key on productId so a re-render never duplicates rows.
+			const seen = new Set(prev.map((p) => p.productId));
+			return [...prev, ...products.filter((p) => !seen.has(p.productId))];
+		});
+	}, [products, page]);
+
+	const filterCount = activeFilterCount(filters);
+	const ignored = meta?.search?.ignored ?? [];
+	const matched = meta?.search?.matched ?? [];
+	const firstLoad = loading && loaded.length === 0;
+
+	const pick = (fn: () => void) => () => {
+		tg?.HapticFeedback?.impactOccurred("light");
+		fn();
 	};
 
 	return (
-		<div className="pt-12">
-			<Header title="Katalog" description="Mahsulotlar katalogi" iconImage="/icons/ring.webp" />
-			<SectionCard iconImage="/icons/book.webp" title="Mahsulotlar" bare>
-				<div className="flex justify-end mb-2 gap-1">
+		<div className="pt-3">
+			<Header
+				title="Katalog"
+				description="Mahsulotlar katalogi"
+				iconImage="/icons/ring.webp"
+				compact
+				actions={
+					<div className="flex gap-1">
+						<button
+							onClick={pick(() => setCompact(true))}
+							aria-label="Ikki ustunli ko'rinish"
+							className={`p-1.5 rounded-md transition-colors ${compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground"}`}
+						>
+							<LayoutGrid className="size-4" />
+						</button>
+						<button
+							onClick={pick(() => setCompact(false))}
+							aria-label="Ro'yxat ko'rinishi"
+							className={`p-1.5 rounded-md transition-colors ${!compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground"}`}
+						>
+							<List className="size-4" />
+						</button>
+					</div>
+				}
+			/>
+
+			{/* Search and categories stay reachable while scrolling — with thousands of products
+			    the customer needs to refine far more often than with a two-dozen list. */}
+			<div className="pb-2">
+				<div className="flex gap-2 px-4 pt-2">
+					<div className="grow flex items-center gap-2 h-11 px-4 rounded-full border-2 bg-muted/50 backdrop-blur-[10px]">
+						<Search className="size-4 text-muted-foreground shrink-0" />
+						<input
+							value={rawSearch}
+							onChange={(e) => setRawSearch(e.target.value)}
+							placeholder="Qidirish…"
+							className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+						/>
+					</div>
 					<button
-						onClick={() => {
-							tg?.HapticFeedback?.impactOccurred("light");
-							setCompact(true);
-						}}
-						className={`p-1.5 rounded-md transition-colors ${compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground hover:text-foreground"}`}
-						aria-label="Compact view"
+						onClick={pick(() => setSheetOpen(true))}
+						aria-label="Filtrlar"
+						className="relative size-11 shrink-0 rounded-full bg-[#be9941] text-white flex items-center justify-center"
 					>
-						<LayoutGrid className="size-4" />
-					</button>
-					<button
-						onClick={() => {
-							tg?.HapticFeedback?.impactOccurred("light");
-							setCompact(false);
-						}}
-						className={`p-1.5 rounded-md transition-colors ${!compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground hover:text-foreground"}`}
-						aria-label="List view"
-					>
-						<List className="size-4" />
+						<SlidersHorizontal className="size-4" />
+						{filterCount > 0 && (
+							<span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-foreground text-background text-[10px] font-bold flex items-center justify-center border-2 border-background">
+								{filterCount}
+							</span>
+						)}
 					</button>
 				</div>
-				<div className={compact ? "grid grid-cols-2 gap-2" : "grid grid-cols-1 gap-3"}>
-					{loading &&
-						(compact ? [0, 1, 2, 3, 4, 5] : [0, 1, 2, 3]).map((i) => (
-							<div key={i} className="border-2 rounded-4xl overflow-hidden flex flex-col">
-								<Skeleton className="w-full aspect-[4/5]" />
-								<div className={compact ? "p-2 flex flex-col gap-1" : "p-4 flex flex-col gap-2"}>
+
+				{categories.length > 0 && (
+					<div className="flex gap-2 px-4 pt-2.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+						<Chip active={!category} onClick={pick(() => setCategory(undefined))}>
+							Hammasi
+						</Chip>
+						{categories.map((c) => (
+							<Chip key={c.id} active={category === c.slug} onClick={pick(() => setCategory(c.slug))}>
+								{c.name.uz}
+							</Chip>
+						))}
+					</div>
+				)}
+			</div>
+
+			<div className="px-4">
+				{/* The API drops a search word that matches nothing rather than returning nothing.
+				    Saying so is the difference between "no such thing" and "we showed you less". */}
+				{ignored.length > 0 && matched.length > 0 && (
+					<div className="flex gap-2.5 items-start rounded-2xl bg-[#f0e6d2] text-[#6b5620] px-4 py-3 mb-3 text-xs leading-relaxed">
+						<span>
+							«{ignored.join("», «")}» bo&apos;yicha topilmadi — «{matched.join("», «")}» bo&apos;yicha ko&apos;rsatildi
+						</span>
+					</div>
+				)}
+
+				{meta && !firstLoad && (
+					<div className="pb-2">
+						<Badge variant="default" className="bg-[#be9941] text-white">
+							{meta.total} ta mahsulot
+						</Badge>
+					</div>
+				)}
+
+				{/* An outage must not read as "we have nothing" — the customer would simply leave. */}
+				{failure && !firstLoad && loaded.length === 0 && <CatalogState kind={failure} onAction={retry} />}
+
+				<div className={compact ? "grid grid-cols-2 gap-2.5" : "grid grid-cols-1 gap-3"}>
+					{firstLoad &&
+						(compact ? [0, 1, 2, 3, 4, 5] : [0, 1, 2]).map((i) => (
+							<div key={i} className="border-2 rounded-4xl overflow-hidden">
+								<Skeleton className="w-full aspect-square" />
+								<div className="p-2.5 flex flex-col gap-1.5">
 									<Skeleton className="h-3 w-3/4" />
-									{!compact && (
-										<>
-											<Skeleton className="h-3 w-full" />
-											<Skeleton className="h-3 w-5/6" />
-										</>
-									)}
-									<div className={`${compact ? "mt-1" : "mt-2"} flex justify-end`}>
-										<Skeleton className={compact ? "h-7 w-7 rounded-md" : "h-9 w-28 rounded-md"} />
-									</div>
+									<Skeleton className="h-3 w-1/2" />
 								</div>
 							</div>
 						))}
-					{!loading && error && <p className="text-sm text-red-600 py-4 col-span-2">{error}</p>}
-					{!loading && !error && products.length === 0 && (
-						<Item variant="outline" className="col-span-2 flex-col gap-3 py-10 rounded-4xl border-dashed text-center">
-							<ItemMedia className="size-20 opacity-70 relative">
-								<Image src="/icons/ring.webp" alt="" fill className="object-contain" />
-							</ItemMedia>
-							<ItemContent className="items-center gap-1">
-								<ItemTitle>Hozircha mahsulotlar yo&apos;q</ItemTitle>
-								<ItemDescription>Tez orada yangi mahsulotlar qo&apos;shiladi</ItemDescription>
-							</ItemContent>
-						</Item>
-					)}
-					{!loading && !error && paginated.map((product) => <ProductCard key={product.id} {...product} compact={compact} />)}
+
+					{!firstLoad && loaded.map((p) => <ProductCard key={p.productId} product={p} compact={compact} />)}
 				</div>
-				{!loading && !error && totalPages > 1 && (
-					<div className="flex items-center justify-between mt-4">
-						<RippleButton variant="outline" className={goldButtonClass} onClick={goToPrev} disabled={page === 1}>
-							← Oldingi
-						</RippleButton>
-						<span className="text-sm text-muted-foreground">
-							{page} / {totalPages}
-						</span>
-						<RippleButton variant="outline" className={goldButtonClass} onClick={goToNext} disabled={page === totalPages}>
-							Keyingi →
+
+				{!firstLoad && !failure && loaded.length === 0 && (
+					<CatalogState
+						kind="empty"
+						actionLabel="Filtrlarni tozalash"
+						onAction={() => {
+							setFilters(EMPTY_FILTERS);
+							setCategory(undefined);
+							setRawSearch("");
+						}}
+					/>
+				)}
+
+				{meta?.hasMore && !firstLoad && (
+					<div className="flex justify-center mt-4">
+						<RippleButton variant="outline" className={goldButtonClass} disabled={loading} onClick={pick(() => setPage((p) => p + 1))}>
+							{loading ? "Yuklanmoqda…" : "Ko'proq yuklash"}
 						</RippleButton>
 					</div>
 				)}
-			</SectionCard>
+			</div>
+
+			<CatalogFilters open={sheetOpen} onOpenChange={setSheetOpen} value={filters} onChange={setFilters} total={meta?.total} />
 		</div>
+	);
+}
+
+function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+	return (
+		<button
+			onClick={onClick}
+			className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold border-2 transition-colors ${
+				active ? "bg-[#be9941] border-[#be9941] text-white" : "bg-muted/50 border-border text-muted-foreground"
+			}`}
+		>
+			{children}
+		</button>
 	);
 }

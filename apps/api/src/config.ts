@@ -58,6 +58,16 @@ export const config = {
 	ASLZAR_1C_BASE_URL: optional("ASLZAR_1C_BASE_URL"),
 	ASLZAR_1C_USERNAME: optional("ASLZAR_1C_USERNAME"),
 	ASLZAR_1C_PASSWORD: optional("ASLZAR_1C_PASSWORD"),
+	// ASLZAR ID product catalogue (docs/aslzarid-catalog.md). Read-only, synced from 1C nightly.
+	// optional() for the same reason as BONUS_TOKEN_SECRET below: a missing key must degrade the
+	// catalogue alone, not take the whole API down at boot.
+	// No trailing slash here, unlike ASLZAR_1C_BASE_URL — paths in integrations/aslzarid.ts
+	// carry a leading slash instead.
+	ASLZAR_ID_BASE_URL: process.env.ASLZAR_ID_BASE_URL || "https://api.aslzarid.uz",
+	ASLZAR_ID_API_KEY: optional("ASLZAR_ID_API_KEY"),
+	// Upstream data changes once a night, so an hour is safe and keeps us far inside their
+	// 60 req/min-per-key budget, which is shared across every miniapp user at once.
+	ASLZAR_ID_CACHE_TTL_SECONDS: parseInt(process.env.ASLZAR_ID_CACHE_TTL_SECONDS || "3600", 10),
 	// AmoCRM integration (moved from webapp)
 	AMOCRM_BASE_URL: optional("AMOCRM_BASE_URL"),
 	AMOCRM_API_TOKEN: optional("AMOCRM_API_TOKEN"),
@@ -69,6 +79,15 @@ export const config = {
 	// warning below is what keeps that degradation from being silent.
 	BONUS_TOKEN_SECRET: optional("BONUS_TOKEN_SECRET"),
 	// CORS allowlist for the webapp + admin origins
+	// Escape hatch for local Mini App testing: an ngrok tunnel's hostname changes on every restart,
+	// so allowlisting it would mean editing config each session. Note this only bites on POST —
+	// browsers omit `Origin` on a same-origin GET but always send it on a POST, and Next's dev
+	// rewrite forwards it here verbatim.
+	//
+	// Deliberately an explicit opt-in rather than `NODE_ENV !== "production"`: NODE_ENV is NOT set
+	// on the Railway service, so a negated check would silently disable the allowlist in
+	// production. Absent variable = allowlist enforced.
+	CORS_ALLOW_ANY_ORIGIN: process.env.CORS_ALLOW_ANY_ORIGIN === "true",
 	CORS_ALLOWED_ORIGINS: parseList("CORS_ALLOWED_ORIGINS", [
 		"https://app.aslzarbot.uz",
 		"https://admin.aslzarbot.uz",
@@ -80,6 +99,10 @@ export const config = {
 
 // A missing or mistyped signing key is invisible until a customer is standing at a till, so
 // say something at boot. Never log the value itself.
+if (!config.ASLZAR_ID_API_KEY) {
+	console.warn("⚠️  ASLZAR_ID_API_KEY is not set — /v1/catalog will return 503 and the miniapp catalogue will be empty.");
+}
+
 if (!config.BONUS_TOKEN_SECRET) {
 	console.warn("⚠️  BONUS_TOKEN_SECRET is not set — the bonus card QR will be hidden for every user.");
 } else if (process.env.NODE_ENV === "production" && !/^[0-9a-f]{64}$/i.test(config.BONUS_TOKEN_SECRET)) {

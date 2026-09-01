@@ -52,3 +52,42 @@ export async function sendTelegramMessage(params: SendMessageParams): Promise<Te
 	}
 	return data.result;
 }
+
+export type PreparedInlineMessage = { id: string; expiration_date: number };
+
+/**
+ * Telegram Bot API `savePreparedInlineMessage`.
+ *
+ * Stores a message the Mini App can then hand to `WebApp.shareMessage(id)`, which opens
+ * Telegram's own "send to…" picker. This is the only way a Mini App can share rich content —
+ * a photo with a caption and an inline button — rather than a bare link.
+ *
+ * The bot already uses this for referral links (apps/bot/src/helper.ts:114).
+ * The returned id is short-lived; mint one per share rather than caching it.
+ */
+export async function savePreparedInlineMessage(params: {
+	user_id: number;
+	result: Record<string, unknown>;
+	allow_user_chats?: boolean;
+	allow_bot_chats?: boolean;
+	allow_group_chats?: boolean;
+	allow_channel_chats?: boolean;
+}): Promise<PreparedInlineMessage> {
+	const url = `https://api.telegram.org/bot${config.BOT_TOKEN}/savePreparedInlineMessage`;
+	const res = await fetch(url, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(params)
+	});
+	const data = (await res.json()) as {
+		ok: boolean;
+		result?: PreparedInlineMessage;
+		error_code?: number;
+		description?: string;
+	};
+
+	if (!data.ok || !data.result) {
+		throw new TelegramApiError(data.description || "Telegram API error", data.error_code ?? res.status);
+	}
+	return data.result;
+}

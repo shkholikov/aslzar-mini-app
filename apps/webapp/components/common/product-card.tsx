@@ -1,132 +1,64 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
-import { Badge } from "@/components/ui/badge";
+import NextLink from "next/link";
 import { useTelegram } from "@/hooks/useTelegram";
-import { apiRequest } from "@/lib/api-client";
-import { goldButtonClass } from "@/components/common/button-variants";
-import { ShoppingCart } from "lucide-react";
-import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogAction
-} from "@/components/ui/alert-dialog";
-
-export type ProductMediaType = "image" | "video";
+import { displayName, priceLabel, type CatalogProduct } from "@/lib/catalog";
 
 export interface ProductCardProps {
-	id: string;
-	title: string;
-	description: string;
-	price?: number;
-	/** URL for image or video (use mediaType to choose how to render) */
-	url: string;
-	badgeLabel?: string;
-	/** "image" (default) or "video" */
-	mediaType?: ProductMediaType;
-	/** Compact mode: smaller card for 2-column grid */
+	product: CatalogProduct;
+	/** Compact: 2-column grid. Otherwise a single wide column. */
 	compact?: boolean;
 }
 
-const SUCCESS_MESSAGE = "Qiziqish bildirganingiz uchun rahmat, biz siz bilan tez orada bog'lanamiz.";
-
-export function ProductCard({ id, title, description, price, url, badgeLabel, mediaType = "image", compact = false }: ProductCardProps) {
+/**
+ * A catalogue tile. The whole card navigates to the product page — the buying conversation
+ * happens there, where the individual pieces and their prices are visible.
+ *
+ * Price is a range, never a single figure: two pieces of one design differ in weight and so
+ * differ in price, so the card shows the cheapest with "dan" whenever there is a choice.
+ */
+export function ProductCard({ product, compact = false }: ProductCardProps) {
 	const tg = useTelegram();
-	const [interestDialogOpen, setInterestDialogOpen] = useState(false);
-	const [sending, setSending] = useState(false);
 
-	const hasPrice = typeof price === "number" && isFinite(price) && price > 0;
-	const formattedPrice = hasPrice ? new Intl.NumberFormat("uz-UZ").format(price) : null;
-
-	const handleBuy = async () => {
-		setSending(true);
-		try {
-			tg?.HapticFeedback?.impactOccurred("medium");
-			await apiRequest("/v1/product-interest", {
-				method: "POST",
-				body: {
-					productId: id,
-					productTitle: title,
-					productDescription: description,
-					productPrice: hasPrice ? price : undefined,
-					productUrl: url
-				}
-			});
-			setInterestDialogOpen(true);
-			tg?.HapticFeedback?.notificationOccurred("success");
-		} catch {
-			tg?.HapticFeedback?.notificationOccurred("error");
-		} finally {
-			setSending(false);
-		}
-	};
-
-	const isVideo = mediaType === "video";
+	const title = displayName(product);
+	const price = priceLabel(product.variants);
+	const cover = product.images[0];
 
 	return (
-		<div className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md overflow-hidden flex flex-col">
-			<div className="relative w-full aspect-[4/5] overflow-hidden bg-muted/30">
-				{isVideo ? (
-					<video src={url} controls playsInline className="absolute inset-0 w-full h-full object-cover" />
-				) : (
+		<NextLink
+			href={`/catalog/${encodeURIComponent(product.productId)}`}
+			onClick={() => tg?.HapticFeedback?.impactOccurred("light")}
+			className="border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md overflow-hidden flex flex-col"
+		>
+			<div className="relative w-full aspect-square overflow-hidden bg-muted/30">
+				{cover ? (
 					<Image
-						src={url}
+						src={cover.medium}
 						alt={title}
 						fill
 						className="object-cover"
-						sizes={compact ? "(max-width: 768px) 48vw, 400px" : "(max-width: 768px) 100vw, 560px"}
+						sizes={compact ? "(max-width: 768px) 48vw, 300px" : "(max-width: 768px) 100vw, 560px"}
 					/>
+				) : (
+					// A large part of the catalogue has no imagery in 1C at all. The grid filters
+					// these out by default, but a direct link or a cleared filter can still reach one.
+					<div className="absolute inset-0 flex items-center justify-center">
+						<Image src="/icons/ring.webp" alt="" width={56} height={56} className="object-contain opacity-30" />
+					</div>
 				)}
-				{badgeLabel && (
-					<div className="absolute top-2 left-2">
-						<Badge variant="default" className="bg-[#be9941] text-white text-[10px] px-1.5 py-0.5">
-							{badgeLabel}
-						</Badge>
+				{!product.inStock && (
+					<div className="absolute inset-0 bg-background/55 flex items-center justify-center">
+						<span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-background/90">Sotilgan</span>
 					</div>
 				)}
 			</div>
-			<div className={compact ? "p-2 flex flex-col gap-1" : "p-4 flex flex-col gap-2"}>
-				<div>
-					<h3 className={compact ? "font-semibold text-xs leading-snug line-clamp-2" : "font-semibold text-base leading-snug line-clamp-2"}>
-						{title}
-					</h3>
-					{!compact && <p className="mt-1 text-sm text-muted-foreground line-clamp-3">{description}</p>}
-				</div>
-				<div className={`${compact ? "mt-1" : "mt-2"} flex items-center gap-2 ${hasPrice ? "justify-between" : "justify-end"}`}>
-					{hasPrice && (
-						<div className={compact ? "text-xs font-semibold" : "text-sm font-semibold"}>
-							<span>{formattedPrice}</span> <span className="text-xs text-muted-foreground">so&apos;m</span>
-						</div>
-					)}
-					<RippleButton
-						type="button"
-						variant="outline"
-						className={`${goldButtonClass} ${compact ? "h-7 w-7 p-0" : ""}`}
-						onClick={handleBuy}
-						disabled={sending}
-					>
-						<ShoppingCart className="size-4" />
-						{!compact && (sending ? "..." : "Sotib olish")}
-					</RippleButton>
-				</div>
+
+			<div className={compact ? "p-2.5 flex flex-col gap-0.5" : "p-4 flex flex-col gap-1"}>
+				<h3 className={`font-semibold leading-snug line-clamp-1 ${compact ? "text-sm" : "text-base"}`}>{title}</h3>
+				{price && <div className={`font-bold text-[#be9941] ${compact ? "text-sm" : "text-base"}`}>{price}</div>}
+				{product.variantCount > 1 && <div className="text-[11px] text-muted-foreground">{product.variantCount} dona</div>}
 			</div>
-			<AlertDialog open={interestDialogOpen} onOpenChange={setInterestDialogOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Rahmat</AlertDialogTitle>
-						<AlertDialogDescription>{SUCCESS_MESSAGE}</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogAction>OK</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</div>
+		</NextLink>
 	);
 }
