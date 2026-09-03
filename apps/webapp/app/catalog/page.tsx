@@ -98,7 +98,7 @@ export default function CatalogPage() {
 			    the customer needs to refine far more often than with a two-dozen list. */}
 			<div className="pb-2">
 				<div className="flex gap-2 px-4 pt-2">
-					<div className="grow flex items-center gap-2 h-11 px-4 rounded-full border-2 bg-muted/50 backdrop-blur-[10px]">
+					<div className="grow flex items-center gap-2 h-11 px-4 rounded-full border-2 bg-muted/50 backdrop-blur-[10px] shadow-md">
 						<Search className="size-4 text-muted-foreground shrink-0" />
 						<input
 							value={rawSearch}
@@ -202,7 +202,7 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 	return (
 		<button
 			onClick={onClick}
-			className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold border-2 transition-colors ${
+			className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold border-2 shadow-md transition-colors ${
 				active ? "bg-[#be9941] border-[#be9941] text-white" : "bg-muted/50 border-border text-muted-foreground"
 			}`}
 		>

@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.14.1] - 2026-09-03
+
+### Fixed
+
+- The search box and category buttons on the catalogue page now cast the same soft shadow as the product cards and the home screen's Level/Shartnoma/Bonus tiles. They were the only surfaces on that page without one, so against the marble background they looked flat and slightly sunken next to everything around them.
+
 ## [2.14.0] - 2026-09-01
 
 ### Changed
