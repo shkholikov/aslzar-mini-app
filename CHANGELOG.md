@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.14.2] - 2026-09-04
+
+### Fixed
+
+- The shadow added to the category buttons in 2.14.1 was being cut off along the bottom edge, leaving them looking sliced. The row of buttons scrolls sideways, and a sideways-scrolling container also crops anything that extends above or below it — so the shadow had nowhere to land. The row now leaves room for it.
+
 ## [2.14.1] - 2026-09-03
 
 ### Fixed

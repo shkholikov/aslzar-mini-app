@@ -121,8 +121,11 @@ export default function CatalogPage() {
 					</button>
 				</div>
 
+				{/* pb-3 is not spacing — overflow-x-auto makes this a clipping box on every side
+				    (CSS forces overflow-y to auto), so without room below, the chips' shadow is
+				    sliced flat at the container edge. shadow-md reaches ~10px down. */}
 				{categories.length > 0 && (
-					<div className="flex gap-2 px-4 pt-2.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+					<div className="flex gap-2 px-4 pt-2.5 pb-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 						<Chip active={!category} onClick={pick(() => setCategory(undefined))}>
 							Hammasi
 						</Chip>
