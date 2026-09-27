@@ -10,6 +10,13 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.16.0] - 2026-09-27
+
+### Added
+
+- The catalogue's "Bu buyum haqida so'rash" button now works. Tapping it sends the exact piece the customer picked — its size, weight, price and shop, together with the whole product — to the Besales AI assistant, which answers in the customer's chat with the bot. The Mini App says the answer is on its way and closes. Only the product and piece ids leave the phone; the details are looked up on our side, so the price the assistant quotes can't be changed on the customer's device. If the piece sold in the meantime, the customer is told and the list refreshes. The button had been visible but inactive since 2.14.0.
+- The bot now tells Besales when an assistant message could not be delivered — because the customer blocked the bot, never started it, or deleted their account. Until now Besales counted those messages as delivered and kept writing to people who would never see them. At most one such report per customer per hour, so a misbehaving reply can never turn into an endless loop.
+
 ## [2.15.0] - 2026-09-27
 
 ### Added

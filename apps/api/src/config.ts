@@ -68,6 +68,13 @@ export const config = {
 	// Upstream data changes once a night, so an hour is safe and keeps us far inside their
 	// 60 req/min-per-key budget, which is shared across every miniapp user at once.
 	ASLZAR_ID_CACHE_TTL_SECONDS: parseInt(process.env.ASLZAR_ID_CACHE_TTL_SECONDS || "3600", 10),
+	// Besales AI agent — the catalogue "Bu buyum haqida so'rash" button (docs/besales-integration-plan.md).
+	// Only the exact string "true" enables it, matching the bot's switch. The bot holds its own copy
+	// of these for the chat dialog; the API needs only the inbound direction — replies come back to
+	// the bot, never here. optional() so a missing key disables the button rather than the API.
+	BESALES_ENABLED: process.env.BESALES_ENABLED === "true",
+	BESALES_INBOUND_URL: optional("BESALES_INBOUND_URL"),
+	BESALES_API_KEY: optional("BESALES_API_KEY"),
 	// AmoCRM integration (moved from webapp)
 	AMOCRM_BASE_URL: optional("AMOCRM_BASE_URL"),
 	AMOCRM_API_TOKEN: optional("AMOCRM_API_TOKEN"),
@@ -99,6 +106,10 @@ export const config = {
 
 // A missing or mistyped signing key is invisible until a customer is standing at a till, so
 // say something at boot. Never log the value itself.
+if (config.BESALES_ENABLED && (!config.BESALES_INBOUND_URL || !config.BESALES_API_KEY)) {
+	console.warn("⚠️  BESALES_ENABLED=true but BESALES_INBOUND_URL / BESALES_API_KEY is missing — the catalogue ask button will answer 503.");
+}
+
 if (!config.ASLZAR_ID_API_KEY) {
 	console.warn("⚠️  ASLZAR_ID_API_KEY is not set — /v1/catalog will return 503 and the miniapp catalogue will be empty.");
 }

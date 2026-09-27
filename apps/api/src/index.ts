@@ -14,7 +14,8 @@ import {
 	getCatalogProductHandler,
 	listCatalogCategoriesHandler,
 	listCatalogHandler,
-	prepareProductShareHandler
+	prepareProductShareHandler,
+	askAboutProductHandler
 } from "./routes/internal/catalog";
 import { listNewsHandler } from "./routes/internal/news";
 import { listBranchesHandler } from "./routes/internal/branches";
@@ -95,6 +96,8 @@ app.get("/v1/catalog/:productId", requireMiniAppAuth, getCatalogProductHandler);
 // Mints a prepared message so the miniapp can offer WebApp.shareMessage() — a share doubles as
 // an invite, since the card carries a button back into the bot.
 app.post("/v1/catalog/:productId/share", requireMiniAppAuth, prepareProductShareHandler);
+// Hands a catalogue question to the Besales agent; the answer arrives in the customer's bot chat.
+app.post("/v1/catalog/:productId/ask", requireMiniAppAuth, askAboutProductHandler);
 app.get("/v1/news", requireMiniAppAuth, listNewsHandler);
 app.get("/v1/branches", requireMiniAppAuth, listBranchesHandler);
 app.get("/v1/bonus-programs", requireMiniAppAuth, listBonusProgramsHandler);

@@ -6,15 +6,25 @@
  * apps/api at /v1/catalog/* (the upstream key is server-side; see docs/aslzarid-catalog.md).
  */
 
+import { apiRequest } from "@/lib/api-client";
+
 /** One physical piece. Not a size option — an actual ring in an actual display case. */
 export interface CatalogVariant {
-	/** 1C article number, e.g. `1.6.1.0.024.2`. Stable; `id` is not. */
+	/**
+	 * Identifies this exact piece within its product. Use it — not `article` — to point at a piece:
+	 * every piece of one design shares the same article. Fine as a key within one payload; not
+	 * guaranteed stable across nightly syncs, so never persist it.
+	 */
+	id: string;
+	/** 1C article number, e.g. `1.6.1.0.024.2`. Shared by every piece of the same design. */
 	article: string;
 	/** Null for chains, watches and pendants, where 1C sends "0". */
 	size: number | null;
 	weightGrams: number | null;
 	/** Integer UZS for this exact piece — it follows the piece's own weight. */
 	price: number;
+	/** Shop holding the piece. `uz` is often the Russian name (`uzIsFallback: true`). */
+	branch?: { name: { ru: string; uz: string; uzIsFallback?: boolean } };
 }
 
 export interface CatalogImage {
@@ -207,84 +217,19 @@ export function storyCaption(title: string, price: string | null): string {
 	return `ASLZAR 💎 ${name}${priceSuffix}${tail}`;
 }
 
-// ——— Besales handoff (prepared, not yet sent) ———
+// ——— Besales handoff ———
 
 /**
- * The `metadata` block we agreed to send Besales alongside a selected product.
+ * "Bu buyum haqida so'rash": hands the selected piece to the Besales AI agent.
  *
- * Their agent reads the same aslzarid API we do, so this carries a reference rather than a copy
- * of the catalogue: what it adds is the piece the customer actually chose, and the name they
- * actually saw. That second part matters — we render `displayName()`, so a customer may have
- * been looking at "Uzuk" while the API's Russian name for it is something else entirely.
+ * Only ids leave the device. apps/api loads the product from its own cache and sends Besales the
+ * product and piece as-is (`POST /v1/catalog/:productId/ask`), so the price the agent quotes can't
+ * be edited on the client. The agent's answer arrives in the customer's chat with the bot, not in
+ * the Mini App.
+ *
+ * Throws ApiError: 409 when the piece is gone (sold since the page loaded), 503 when the
+ * integration is switched off, 502 when Besales couldn't be reached.
  */
-export interface AskMetadata {
-	source: "miniapp_catalog";
-	locale: "uz";
-	currency: "UZS";
-	product: {
-		productId: string;
-		displayName: string;
-		model: string;
-		category: string | null;
-		fineness: string | null;
-		/** Raw 1C values, matching what their API returns — not our Latin display forms. */
-		color: string | null;
-		stone: string | null;
-		variantCount: number;
-		priceFrom: number | null;
-	};
-	variant: {
-		article: string;
-		size: number | null;
-		weightGrams: number | null;
-		price: number;
-	} | null;
-}
-
-/**
- * Assembles the payload. Pure — safe to build and inspect without sending anything.
- *
- * Takes the variant itself rather than an article number: `article` is the DESIGN's article in
- * 1C and repeats across every piece of that design (all six pieces of 00-0007766 are
- * `6.6.1.0.002.8`), so it cannot identify which one the customer picked.
- */
-export function buildAskMetadata(product: CatalogProduct, variant?: CatalogVariant | null): AskMetadata {
-	const range = priceRange(product.variants);
-
-	return {
-		source: "miniapp_catalog",
-		locale: "uz",
-		currency: "UZS",
-		product: {
-			productId: product.productId,
-			displayName: displayName(product),
-			model: product.model,
-			category: product.category?.slug ?? null,
-			fineness: product.fineness,
-			color: product.color,
-			stone: product.stone,
-			variantCount: product.variantCount,
-			priceFrom: range?.min ?? null
-		},
-		variant: variant ? { article: variant.article, size: variant.size, weightGrams: variant.weightGrams, price: variant.price } : null
-	};
-}
-
-/**
- * What the product-page CTA does today: builds the payload and stops.
- *
- * Deliberately does not send. Besales is still in testing and the exact shape is being agreed
- * with them, so the button is visible and the logic is ready, but nothing leaves the device.
- * When they are live this becomes one apiRequest to apps/api, which forwards it as a
- * BesalesInbound — nothing else on the page changes.
- *
- * Note this also means no AmoCRM lead is created from the catalogue for now; /v1/product-interest
- * has no other caller.
- */
-export function onAskAboutProduct(product: CatalogProduct, variant?: CatalogVariant | null): AskMetadata {
-	const metadata = buildAskMetadata(product, variant);
-	if (process.env.NODE_ENV !== "production") {
-		console.info("[catalog] ask payload (not sent):", metadata);
-	}
-	return metadata;
+export async function askAboutProduct(productId: string, variantId: string): Promise<void> {
+	await apiRequest(`/v1/catalog/${encodeURIComponent(productId)}/ask`, { method: "POST", body: { variantId } });
 }

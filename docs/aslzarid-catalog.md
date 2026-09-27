@@ -97,10 +97,10 @@ Without the key the API still boots; `/v1/catalog` answers **503** and logs a wa
 
 Because it is `NEXT_PUBLIC_`, the value is inlined at build time — **switching the editor back on needs a redeploy**, not just an env change.
 
-## Not done yet
+## "Bu buyum haqida so'rash" → Besales
 
-The product page's **"Bu buyum haqida so'rash"** button is visible but sends nothing. `buildAskMetadata()` in `lib/catalog.ts` assembles the exact payload agreed with Besales — `productId` and `article` plus what the customer actually saw on screen — and `onAskAboutProduct()` stops there.
+The product page's button hands the selected piece to the Besales AI agent (2.16.0). Only ids leave the device: the Mini App calls `POST /v1/catalog/:productId/ask` with `{ variantId }`, and `apps/api` loads the product from the same cache as the detail page and sends Besales an inbound message with the product and piece **as is** in `metadata`. So the price the agent quotes can't be edited on the client.
 
-Sending it is one `apiRequest` to `apps/api`, which forwards it as a `BesalesInbound` with that object in `metadata`. Besales is still in testing, and their integration lives on the `dev` branch.
+The piece is identified by `variant.id`, not `article` — every piece of one design shares the article. The agent's answer arrives in the customer's **chat with the bot**, so the Mini App says so and closes. Event shape and Besales' conditions: `docs/besales-integration-plan.md`.
 
-**One consequence while this is inert:** `/v1/product-interest` had exactly one caller, the old product card's "Sotib olish" button. With the new card there is no AmoCRM lead created from the catalogue until the handoff ships.
+**Still true:** `/v1/product-interest` had exactly one caller, the old product card's "Sotib olish" button. The new flow goes to Besales, not AmoCRM, so no AmoCRM lead is created from the catalogue.
