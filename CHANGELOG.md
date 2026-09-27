@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.16.1] - 2026-09-27
+
+### Security
+
+- The bot now accepts only a customer's own phone number. Until now, anyone could send the bot another person's contact card from their phone book, and the bot would treat them as that person: the Mini App then showed that customer's contracts and bonus balance, and produced a bonus QR code the till accepted — so someone who knew a customer's number could spend their bonuses. A contact that isn't the sender's own is now refused with a short message. Registering in the Mini App works exactly as before, because sharing your own number is always recognised as yours.
+
 ## [2.16.0] - 2026-09-27
 
 ### Added

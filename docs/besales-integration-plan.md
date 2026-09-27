@@ -198,7 +198,7 @@ The only safe shape is **additive, never consuming**:
 2. _Additionally_ forward the number to Besales when a request is pending (timestamp + TTL,
    not a boolean — a boolean never expires), fire-and-forget so the session write-back never
    waits on their network.
-3. Add the missing `contact.user_id === ctx.from.id` guard.
+3. ~~Add the missing `contact.user_id === ctx.from.id` guard.~~ Done in 2.16.1 (`bot.ts`, `:contact` handler): a contact that isn't the sender's own is refused.
 
 Item 3 is a **pre-existing hole, still unfixed**: neither flow checks that a shared contact card
 belongs to the sender, so attaching someone else's card writes their phone into your session and

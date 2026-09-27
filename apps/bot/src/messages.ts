@@ -61,3 +61,6 @@ Sizning referal limitingiz tugagan\\. Siz taklif qilgan *{name}* referal sifatid
 
 📞 Batafsil ma'lumot uchun ASLZAR bilan bog'laning\\.
 `;
+
+// ——— Contact rejected: someone sent a contact card that isn't their own (plain text, no parse_mode) ———
+export const ownContactOnlyText = "Iltimos, faqat o'zingizning telefon raqamingizni yuboring.";
