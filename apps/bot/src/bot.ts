@@ -10,6 +10,7 @@ import { startBroadcastScheduler } from "./broadcast";
 import { besalesEnabled, buildContact, sendInbound } from "./besales";
 import { startBesalesCallbackServer } from "./callback-server";
 import { startTyping } from "./besales-typing";
+import { ownContactOnlyText } from "./messages";
 
 // Get bot token and webapp url from environment variables
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -102,6 +103,17 @@ async function bootstrap() {
 	bot.on(":contact", async (ctx) => {
 		const contact = ctx.message?.contact;
 		if (!contact) return;
+
+		// Only the sender's own number. Telegram sets `user_id` to the sender when they share their
+		// own contact — through a request_contact button and through the Mini App's requestContact()
+		// alike. A card picked from the phone book carries someone else's user_id, or none. Without
+		// this check, sending another person's contact made the sender "verified" as that 1C client:
+		// their contracts, bonus balance, and a bonus QR signed with their clientId.
+		if (!contact.user_id || contact.user_id !== ctx.from?.id) {
+			console.warn(`[contact] rejected a contact that is not the sender's own (from ${ctx.from?.id})`);
+			await ctx.reply(ownContactOnlyText);
+			return;
+		}
 
 		// Save normalized phone (digits only, without +) to session
 		const rawPhone = contact.phone_number ?? "";
