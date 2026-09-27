@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.15.0] - 2026-09-27
+
+### Added
+
+- The Besales AI dialog integration, previously only on the development branch, is now part of the main codebase (versions 2.5.0–2.8.0 below). It stays switched off in production: nothing changes for customers until the Besales variables are set on the bot service and `BESALES_ENABLED=true`. This merge exists so the next Besales requirements can be built against the current code — including the catalogue, which the development branch did not have.
+
 ## [2.14.2] - 2026-09-04
 
 ### Fixed
@@ -132,7 +138,29 @@ Every committed or deployed change bumps that version and adds an entry here.
 - At the referral limit the miniapp replaces the QR code, "Nusxa olish" and "Ulashish" with a short explanation that new registrations via the link are no longer counted. The API refuses to mint a shareable referral message in that state, so the block cannot be bypassed.
 - The referral count is now read live from 1C at the moment a referral is attributed, instead of the session copy that could be up to 24 hours old.
 
-Version numbers 2.5.0–2.8.0 belong to the Besales integration on the `dev` branch and are intentionally skipped here.
+## [2.8.0] - 2026-07-25
+
+### Added
+
+- "Typing…" indicator for the async Besales dialog. After forwarding a message the bot waits `BESALES_TYPING_DELAY_MS` (default 10s — fast AI replies never flash a typing bubble), then loops the typing action until the callback arrives, capped at `BESALES_TYPING_MAX_MS` (default 30s) so a missing callback can't leave it spinning. Cleared the moment the reply/followup lands.
+
+## [2.7.0] - 2026-07-24
+
+### Changed
+
+- Improved the bot's health check. `GET /health` now returns structured JSON (status, version, uptime, timestamp) instead of plain `ok`, and stays dependency-free so a transient DB blip can't trigger a container restart. Documented in the OpenAPI spec / Swagger UI.
+
+## [2.6.0] - 2026-07-24
+
+### Added
+
+- Swagger / OpenAPI docs for the bot's Besales webhook surface, served by the callback server at `GET /docs` (Swagger UI) and `GET /openapi.json` (OpenAPI 3.1 spec). Documents `/health` and `/webhooks/besales` — signature scheme, request payload (text/buttons/media), and response codes — so the Besales team can view the contract at `https://dev-bot.aslzarbot.uz/docs`. Swagger UI assets are pinned (`swagger-ui-dist@5.32.11`) with Subresource Integrity hashes.
+
+## [2.5.0] - 2026-07-23
+
+### Added
+
+- Besales AI dialog integration in the bot (`apps/bot`). Free-text messages and inline-button taps that aren't handled by existing flows (start, contact, referral) are forwarded to the Besales AI, which replies asynchronously via an HMAC-verified callback the bot receives on its own HTTP server (`/webhooks/besales`) and delivers back to the user (text, buttons, media). Callbacks are deduplicated via a `besales_deliveries` collection with a 7-day TTL. Entirely behind the default-off `BESALES_ENABLED` switch — no behavior change until enabled with real Besales credentials. Adds `apps/bot/.env.example`.
 
 ## [2.4.0] - 2026-07-22
 
