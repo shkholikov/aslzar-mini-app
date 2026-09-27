@@ -207,17 +207,12 @@ its own merits, independently of Besales.
 
 ## Open follow-ups
 
-- **`url` buttons are not rendered.** Besales's button contract is `value` | `url` |
-  `requestContact`, but `buildKeyboard` (`besales-delivery.ts:23-31`) only emits
-  `kb.text(label, value)` — a `url` button would become `callback_data` and a tap would come
-  back as a phantom callback instead of opening a link. ~5 lines. Required before asking the
-  agent to send a "Open the mini-app" button; until then the agent should give the link as text.
+- ~~**`url` buttons are not rendered.**~~ Done in 2.17.0 — see "Buttons we render" below.
 - **No profile-update push.** The phone is attached per message at send time. A user who chats
   first and registers afterwards is only revealed to Besales on their _next_ message; if they
   never write again, Besales never learns the number. Fix would be a lightweight inbound after
   successful registration, or a contacts-update endpoint on their side.
-- `requestContact` remains unimplemented in `besales-docs.ts` / the OpenAPI spec — the wire
-  contract we publish still describes `{label, value}` buttons only.
+- ~~`requestContact` remains unimplemented~~ Done in 2.17.0 — see "Buttons we render" below.
 
 # Events we send beyond chat messages (2.16.0, 2026-09-27)
 
@@ -268,3 +263,55 @@ Besales' three conditions:
 `product` and `variant` are the ASLZAR ID objects as-is; Besales reads `category.name`, `model`, `productId`, `fineness`, `color`, `stone`, `inStock`, `variants[]` and on the variant `id`, `size`, `weightGrams`, `price`, `article`, `branch.name`. Note `category.name` and `branch.name` are `{ ru, uz }` objects, and `uz` is often the Russian name (`uzIsFallback: true`).
 
 The unix-minute in `externalMessageId` makes a double-tap a Besales duplicate (`200`) rather than two questions. The API returns `409` when the piece is gone, `503` when `BESALES_ENABLED` isn't `true` on the API service, `502` when Besales can't be reached.
+
+# Phase 2 (2.17.0, 2026-09-27): `/start`, "share phone" button, Mini App buttons
+
+The July decision above rejected the `requestContact` button because a design that _consumed_ the contact could hang Mini App registration. What shipped is the additive shape that decision said would be safe: the button feeds the **same** `:contact` handler registration already uses (phone saved, 1C lookup, pending referrals processed — unchanged), and only afterwards tells Besales. It depends on the 2.16.1 guard: a contact that isn't the sender's own is refused before any of this runs.
+
+## Buttons we render
+
+| Besales button                                                             | What the user sees                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{ label, value }`                                                         | Inline button; tap comes back as `buttonPayload` (as before)                                                                                                                                                                                |
+| `{ label, url }` on the Mini App host (`WEBAPP_URL` or `app.aslzarbot.uz`) | Inline `web_app` button — opens the Mini App **inside Telegram**, signed in. A plain url would open a browser, where `TelegramGuard` blocks the user                                                                                        |
+| `{ label, url }` other `https://`                                          | Inline url button. Non-https or unparseable → skipped                                                                                                                                                                                       |
+| `{ label, requestContact: true }`                                          | Telegram's "share my phone number" button on a **reply keyboard** (bottom of the screen), one-time. Telegram can't combine it with inline buttons in one message, so **any other buttons in that message are dropped** — it must come alone |
+
+Code: `buildKeyboard` in `apps/bot/src/besales-delivery.ts`. Published contract: `Button` schema in `besales-docs.ts`.
+
+## `contact_shared` — the user answered the agent's "share phone" button
+
+When a message with a `requestContact` button is delivered, we record `contact-requested:<chatId>` in `besales_deliveries` (7-day TTL). When the contact arrives and the marker is younger than 24h, the `:contact` handler consumes it and sends:
+
+```json
+{
+	"externalUserId": "766618738",
+	"externalChatId": "766618738",
+	"externalMessageId": "contact:<message id>",
+	"sourceChannel": "telegram",
+	"contact": { "firstName": "...", "phone": "+998...", "languageCode": "uz" },
+	"metadata": { "event": "contact_shared", "foundIn1C": true }
+}
+```
+
+- **Only after the agent's button.** A Mini App registration leaves no marker, so it sends nothing.
+- `foundIn1C: true` — an existing ASLZAR client, recognised now (names in `contact` come from 1C). `foundIn1C: false` — we have the number but the person is **not a client in 1C**: clients are created only through the Mini App form with a real first and last name, so the agent should send the Mini App button.
+- No `text`. Fires once per request (the marker is consumed).
+
+## `start` — someone pressed Start
+
+Sent at the end of `bot.command("start")`, after our own referral handling and welcome message, for **every** start:
+
+```json
+{
+  "externalMessageId": "start:<message id>",
+  "text": "/start",
+  "contact": { ... },
+  "metadata": { "event": "start", "referral": "employee", "referralCode": "emp5" }
+}
+```
+
+- `referral`: `"client"` (a customer's link), `"employee"` (`empN`), or `null` (no or unrecognised code) — `startReferral()` in `besales.ts`.
+- `referralCode` only for employees. For client links it is the inviter's Telegram id, which the agent doesn't need.
+- Informational only. The referral is stored here and **decided later** in `:contact` (it can still be rejected — already a customer, inviter over the limit, self-referral), so the agent shouldn't promise a bonus at `/start`.
+- Our welcome message with the Mini App button always goes out too; if the agent writes first, the user gets two messages.

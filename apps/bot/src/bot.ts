@@ -1,13 +1,13 @@
 import "./config";
 import { Bot, GrammyError, HttpError, session } from "grammy";
-import { connectToDb, users } from "./db";
+import { besalesDeliveries, connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { handleEmployeeReferralCode, handleReferralCode, initializeSession, sendWebApp } from "./helper";
 import { searchUserByPhone } from "./api";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
-import { besalesEnabled, buildContact, sendInbound } from "./besales";
+import { besalesEnabled, buildContact, sendInbound, startReferral } from "./besales";
 import { startBesalesCallbackServer } from "./callback-server";
 import { startTyping } from "./besales-typing";
 import { ownContactOnlyText } from "./messages";
@@ -97,6 +97,23 @@ async function bootstrap() {
 			}
 			await sendWebApp(ctx, rawCode ?? undefined);
 		}
+
+		// Tell Besales someone pressed Start, and through which kind of link, so the agent can write
+		// first to people a client invited. A copy only: the referral itself is stored above and
+		// decided later in the :contact handler, exactly as before. Our welcome has already gone out,
+		// and sendInbound never throws, so Besales being slow or down can't affect /start.
+		if (besalesEnabled) {
+			void sendInbound({
+				externalUserId: String(ctx.from?.id),
+				externalChatId: String(ctx.chat.id),
+				externalMessageId: `start:${ctx.message?.message_id}`,
+				sourceChannel: "telegram",
+				text: "/start",
+				contact: buildContact(ctx),
+				metadata: { event: "start", ...startReferral(rawCode) },
+				timestamp: ctx.message?.date
+			});
+		}
 	});
 
 	// on receiving contact
@@ -142,6 +159,35 @@ async function bootstrap() {
 		}
 
 		// No reply: contact was shared from webapp; user continues in webapp
+
+		// If the Besales agent asked for this number (its "share phone" button, see
+		// besales-delivery.ts), hand it back so the agent can carry on. Only then: a Mini App
+		// registration leaves no marker and reports nothing. The marker is consumed, so this fires
+		// once per request. foundIn1C tells the agent whether this is an existing client or a new
+		// person who still has to register in the Mini App to become one.
+		if (besalesEnabled && ctx.from && ctx.chat) {
+			const requested = await besalesDeliveries
+				.findOneAndDelete({
+					_id: `contact-requested:${ctx.from.id}`,
+					createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+				})
+				.catch((e) => {
+					console.error(`[besales] contact-request lookup failed for ${ctx.from?.id}:`, e);
+					return null;
+				});
+			if (requested) {
+				startTyping(ctx.api, ctx.chat.id);
+				void sendInbound({
+					externalUserId: String(ctx.from.id),
+					externalChatId: String(ctx.chat.id),
+					externalMessageId: `contact:${ctx.message?.message_id}`,
+					sourceChannel: "telegram",
+					contact: buildContact(ctx),
+					metadata: { event: "contact_shared", foundIn1C: Boolean(ctx.session.user1CData) },
+					timestamp: ctx.message?.date
+				});
+			}
+		}
 	});
 
 	// AI fallback: any free text not consumed by the flows above goes to Besales.

@@ -55,7 +55,12 @@ export interface BesalesInbound {
 
 export interface BesalesButton {
 	label: string;
-	value: string;
+	/** Callback payload returned on tap (Telegram callback_data, ≤64 bytes). */
+	value?: string;
+	/** Opens a link. On the Mini App host it opens the Mini App inside Telegram (see buildKeyboard). */
+	url?: string;
+	/** Telegram's "share my phone number" button. Must come alone in its message. */
+	requestContact?: boolean;
 }
 
 /** One outbound message from Besales; long AI answers are split into several. */
@@ -78,6 +83,24 @@ export interface BesalesWebhookPayload {
 		requestId?: string; // present for reply, absent for followup
 		messages: BesalesOutboundMessage[];
 	};
+}
+
+/**
+ * The referral type of a /start, for Besales' "start" event.
+ *
+ * Mirrors how the /start handler reads the code: `empN` is an employee link, a number is a
+ * client link (the inviter's Telegram id), anything else is not a referral. For client links the
+ * code is deliberately left out — it is another customer's Telegram id, and the agent only needs
+ * to know the person came through a client. Employee codes (`emp5`) are harmless and included.
+ *
+ * Informational only: whether the referral is accepted is decided later, in the :contact handler.
+ */
+export function startReferral(rawCode?: string): { referral: "client" | "employee" | null; referralCode?: string } {
+	const code = rawCode?.trim();
+	if (!code) return { referral: null };
+	if (/^emp\d+$/i.test(code)) return { referral: "employee", referralCode: code.toLowerCase() };
+	if (/^\d+$/.test(code)) return { referral: "client" };
+	return { referral: null };
 }
 
 /**
@@ -118,7 +141,7 @@ export async function sendInbound(msg: BesalesInbound): Promise<void> {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
-				"Authorization": `Bearer ${API_KEY}`
+				Authorization: `Bearer ${API_KEY}`
 			},
 			body: JSON.stringify(msg)
 		});
@@ -135,12 +158,16 @@ export async function sendInbound(msg: BesalesInbound): Promise<void> {
 		}
 		if (response.status === 429) {
 			const retryAfter = response.headers.get("Retry-After");
-			console.warn(`[besales] inbound rate-limited (429), Retry-After=${retryAfter ?? "?"} — dropping externalMessageId=${msg.externalMessageId}`);
+			console.warn(
+				`[besales] inbound rate-limited (429), Retry-After=${retryAfter ?? "?"} — dropping externalMessageId=${msg.externalMessageId}`
+			);
 			return;
 		}
 
 		const text = await response.text().catch(() => "");
-		console.error(`[besales] inbound failed status=${response.status} externalMessageId=${msg.externalMessageId} body=${text.slice(0, 300)}`);
+		console.error(
+			`[besales] inbound failed status=${response.status} externalMessageId=${msg.externalMessageId} body=${text.slice(0, 300)}`
+		);
 	} catch (error) {
 		console.error("[besales] inbound request error:", error);
 	}

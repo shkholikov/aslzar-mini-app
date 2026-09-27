@@ -74,10 +74,23 @@ export const openApiSpec = {
 			},
 			Button: {
 				type: "object",
-				required: ["label", "value"],
+				required: ["label"],
+				description:
+					"Set exactly one of value, url or requestContact. A requestContact button must come alone in its message: Telegram shows it at the bottom of the screen and cannot combine it with other buttons, so any others in that message are dropped.",
 				properties: {
 					label: { type: "string", description: "Tappable button text shown to the user" },
-					value: { type: "string", description: "Payload returned on tap (Telegram callback_data, ≤64 bytes)" }
+					value: { type: "string", description: "Payload returned on tap (Telegram callback_data, ≤64 bytes)" },
+					url: {
+						type: "string",
+						format: "uri",
+						description:
+							"https link. A link to https://app.aslzarbot.uz opens the ASLZAR Mini App inside Telegram, signed in; other links open normally."
+					},
+					requestContact: {
+						type: "boolean",
+						description:
+							"Shows Telegram's 'share my phone number' button. When the user taps it we send you a contact_shared event with contact.phone and metadata.foundIn1C."
+					}
 				}
 			},
 			Media: {
