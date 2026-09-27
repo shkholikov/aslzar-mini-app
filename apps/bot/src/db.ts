@@ -11,6 +11,7 @@ const reminderLogsCollection = process.env.MONGO_DB_COLLECTION_REMINDER_LOGS || 
 const broadcastJobsCollection = process.env.MONGO_DB_COLLECTION_BROADCAST_JOBS || "broadcast_jobs";
 const employeesCollection = process.env.MONGO_DB_COLLECTION_EMPLOYEES || "employees";
 const settingsCollection = process.env.MONGO_DB_COLLECTION_SETTINGS || "settings";
+const besalesDeliveriesCollection = process.env.MONGO_DB_COLLECTION_BESALES_DELIVERIES || "besales_deliveries";
 
 if (!dbUri) throw new Error("The Mongodb connection string is empty!");
 
@@ -39,6 +40,12 @@ export type UserSessionDoc = ISession & {
 	referralLimitUpdatedAt?: Date;
 };
 
+/** Processed Besales callback (dedup). `_id` = Besales webhook delivery id; `createdAt` drives the TTL index. */
+export interface BesalesDeliveryDoc {
+	_id: string;
+	createdAt: Date;
+}
+
 let client: MongoClient;
 export let users: Collection<UserSessionDoc>;
 export let reminderLogs: Collection<ReminderLogEntry>;
@@ -46,6 +53,7 @@ export let broadcastJobs: Collection<BroadcastJob>;
 export let employees: Collection<EmployeeDoc>;
 /** Platform settings, one document per area (e.g. `_id: "referral"`). Written by apps/admin. */
 export let settings: Collection<{ _id: string; defaultReferralLimit?: number }>;
+export let besalesDeliveries: Collection<BesalesDeliveryDoc>;
 
 export const connectToDb = async () => {
 	try {
@@ -60,6 +68,7 @@ export const connectToDb = async () => {
 		broadcastJobs = db.collection<BroadcastJob>(broadcastJobsCollection);
 		employees = db.collection<EmployeeDoc>(employeesCollection);
 		settings = db.collection(settingsCollection);
+		besalesDeliveries = db.collection<BesalesDeliveryDoc>(besalesDeliveriesCollection);
 
 		return client;
 	} catch (error) {
