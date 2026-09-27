@@ -3,6 +3,9 @@ import type { MiniAppAuthedRequest } from "../../auth-miniapp";
 import { config } from "../../config";
 import { savePreparedInlineMessage } from "../../telegram";
 import { AslzarIdError, AslzarIdNotConfiguredError, getProduct, listCategories, listProducts } from "../../integrations/aslzarid";
+import { besalesConfigured, sendInbound, type BesalesContact } from "../../integrations/besales";
+import { getUserSession } from "../../db";
+import { z } from "zod";
 
 /**
  * Catalogue proxy for the miniapp shop.
@@ -212,4 +215,108 @@ export async function prepareProductShareHandler(req: MiniAppAuthedRequest, res:
 	} catch (err) {
 		fail(res, `share ${productId}`, err);
 	}
+}
+
+/** The button label exactly as the customer saw it. The Mini App is Uzbek-only. */
+const ASK_BUTTON_LABEL = "Bu buyum haqida so'rash";
+
+const AskBodySchema = z.object({ variantId: z.string().min(1).max(100) }).strict();
+
+type ProductWithVariants = { productId: string; variants?: { id: string }[] };
+
+/** Trimmed non-empty string, or undefined. 1C fields arrive as unknown. */
+function text(v: unknown): string | undefined {
+	return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
+
+/**
+ * POST /v1/catalog/:productId/ask  { variantId }
+ *
+ * The customer taps "Bu buyum haqida so'rash" on one physical piece. We hand that to the Besales
+ * agent as an ordinary inbound message with the product in `metadata`; the agent answers in the
+ * customer's chat with the bot, not here.
+ *
+ * The Mini App sends only ids. The product is read from our own cache, so a customer cannot edit
+ * the price or the piece the agent is told about.
+ *
+ * Besales' three conditions (agreed with them):
+ *   - `text` is the button label in the customer's language, so the agent replies in it
+ *   - `variant.id` is one of `product.variants[].id` — they drop it from "other sizes" by id
+ *   - metadata rides only on this message, not every message
+ */
+export async function askAboutProductHandler(req: MiniAppAuthedRequest, res: Response): Promise<void> {
+	if (!besalesConfigured()) {
+		res.status(503).json({ error: "Besales is not configured" });
+		return;
+	}
+
+	const parsed = AskBodySchema.safeParse(req.body);
+	if (!parsed.success) {
+		res.status(400).json({ error: "Invalid request body", issues: parsed.error.issues });
+		return;
+	}
+	const { variantId } = parsed.data;
+	const productId = req.params.productId;
+	const user = req.miniAppUser!;
+	const userId = String(user.id);
+
+	let product: ProductWithVariants;
+	try {
+		const payload = (await cached(`product:${productId}`, () => getProduct(productId))) as { data?: ProductWithVariants };
+		if (!payload?.data) {
+			res.status(404).json({ error: "Product not found" });
+			return;
+		}
+		product = payload.data;
+	} catch (err) {
+		if (err instanceof AslzarIdError && err.status === 404) {
+			res.status(404).json({ error: "Product not found" });
+			return;
+		}
+		fail(res, `ask ${productId}`, err);
+		return;
+	}
+
+	// variant.id is unique within a product (checked against live data); `article` is not —
+	// every piece of one design shares it — so the id is the only way to name the exact piece.
+	const variant = product.variants?.find((v) => v.id === variantId);
+	if (!variant) {
+		// Most likely sold between the page loading and the tap. The cache can be up to an hour old.
+		res.status(409).json({ error: "variant_unavailable" });
+		return;
+	}
+
+	// Same precedence as the bot's buildContact (apps/bot/src/besales.ts): verified 1C names first,
+	// then the Telegram profile. Empty fields are omitted, never sent blank.
+	const session = await getUserSession(userId).catch(() => null);
+	const oneC = session?.user1CData;
+	const phoneDigits = session?.phone_number?.replace(/\D/g, "");
+	const contact: BesalesContact = Object.fromEntries(
+		Object.entries({
+			firstName: text(oneC?.imya) ?? text(user.first_name),
+			lastName: text(oneC?.familiya) ?? text(user.last_name),
+			username: text(user.username),
+			phone: phoneDigits ? `+${phoneDigits}` : undefined,
+			languageCode: text(user.language_code)
+		}).filter(([, v]) => v !== undefined)
+	);
+
+	const result = await sendInbound({
+		externalUserId: userId,
+		externalChatId: userId,
+		// Minute bucket: a double-tap lands as a Besales duplicate (200) instead of two questions.
+		externalMessageId: `catalog-ask:${userId}:${variantId}:${Math.floor(Date.now() / 60_000)}`,
+		sourceChannel: "telegram",
+		text: ASK_BUTTON_LABEL,
+		...(Object.keys(contact).length > 0 && { contact }),
+		// Sent as is — Besales reads what it needs and skips images, warehouse and internal ids.
+		metadata: { event: "product_ask", source: "miniapp_catalog", product, variant },
+		timestamp: Math.floor(Date.now() / 1000)
+	});
+
+	if (!result.ok) {
+		res.status(502).json({ error: "Failed to reach the assistant" });
+		return;
+	}
+	res.status(200).json({ ok: true });
 }

@@ -80,7 +80,7 @@ async function handleCallback(api: Api, req: http.IncomingMessage, res: http.Ser
 	const chatId = Number(payload.data.externalUserId);
 	stopTyping(chatId); // reply/followup arrived — drop the "typing…" indicator
 	console.log(`[besales] webhook ${payload.id} event=${payload.event} messages=${payload.data.messages?.length ?? 0} -> chat ${chatId}`);
-	void deliverBesalesMessages(api, chatId, payload.data.messages ?? []).catch((e) =>
+	void deliverBesalesMessages(api, chatId, payload.data.messages ?? [], payload.id).catch((e) =>
 		console.error(`[besales] delivery failed for webhook ${payload.id}:`, e)
 	);
 }

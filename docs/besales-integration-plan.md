@@ -2,6 +2,7 @@
 
 **Scope:** Integrate the Besales external AI dialog API into `apps/bot` only (Bot API, no Mini App).
 **Decisions locked:**
+
 - Location: `apps/bot` (grammY), self-contained.
 - AI routing: **fallback** — bot handles `/start`, contact sharing, referral, and known buttons first; any other free-text message falls through to the AI.
 - Eligibility: **everyone** (verified or not); contact attributes sent when available.
@@ -22,6 +23,7 @@ Customer → @aslzaruzbot ──(grammY message:text / callback_query)──► 
 - **Callback** (Besales → bot): one endpoint receives `message.reply` and `message.followup`; verify HMAC, ack 200 fast, then deliver `data.messages[]` in order via the Bot API.
 
 Identifier mapping:
+
 - `externalUserId` = Telegram user id (`ctx.from.id`) — also the chat id we deliver back to.
 - `externalMessageId` = Telegram message id (`ctx.message.message_id`) — idempotency key.
 - `externalChatId` = chat id (defaults to externalUserId).
@@ -32,12 +34,15 @@ Identifier mapping:
 ## Phase 0 — Provisioning (external, blocks testing)
 
 From Besales (×2 — one dev channel, one prod channel):
+
 - `channelId`, `apiKey`, `webhookSecret`, inbound host → `inboundUrl`.
 
 We provide to Besales:
+
 - `callbackUrl` (HTTPS) — dev + prod.
 
 Railway:
+
 - Enable a **public HTTPS domain** on each bot service (currently polling workers, likely no domain). Callback hits `https://<bot-domain>/besales/callback`.
 - Set the new env vars (below) on dev and prod bot services.
 
@@ -86,6 +91,7 @@ Added **after** `/start` and `:contact` so flows win first (fallback semantics):
 ## Phase 5 — Delivery mapping (callback → Telegram)
 
 For each item in `data.messages` (in order):
+
 - `text` → `bot.api.sendMessage(externalUserId, text, { reply_markup })`.
 - `buttons` (2D) → grammY `InlineKeyboard`: each `{label, value}` → `.text(label, value)`, rows preserved.
   - ⚠️ Telegram `callback_data` ≤ **64 bytes**. If a `value` exceeds it, store a short token → value map (Mongo) and send the token. Flag during integration.
@@ -105,6 +111,7 @@ For each item in `data.messages` (in order):
 ---
 
 ## Open items to confirm during build
+
 1. Railway public domain on the bot service(s) — required for callbacks.
 2. `callback_data` 64-byte limit → token map if Besales sends long button values.
 3. Dedup store: Mongo `besales_deliveries` w/ TTL (recommended) vs in-memory.
@@ -112,6 +119,7 @@ For each item in `data.messages` (in order):
 5. Do referral/menu deep-link flows ever collide with free text? (Fallback ordering should prevent it; verify.)
 
 ## Files
+
 - `apps/bot/src/besales.ts` (new) — client, types, signature verify, contact mapping.
 - `apps/bot/src/callback-server.ts` (new) — HTTP server, HMAC, dedup, delivery.
 - `apps/bot/src/bot.ts` (edit) — fallback `message:text` + `callback_query:data` handlers; start callback server in `bootstrap()`.
@@ -142,7 +150,7 @@ Every inbound we send carries a `contact` block built by `buildContact()`
 - **Unknown fields are omitted, not blanked.** `buildContact` strips `undefined` keys and
   returns `undefined` if nothing is known, so a user with no phone produces a payload with
   **no `phone` key at all** (not `""`, not `null`), and a fully unknown user produces no
-  `contact` object. Besales must test for *absence*, not for an empty string.
+  `contact` object. Besales must test for _absence_, not for an empty string.
 
 `session.phone_number` has exactly **one writer in the whole monorepo**: `bot.ts:109`, inside
 `bot.on(":contact")`. That handler fires only when Telegram delivers a contact card, and today
@@ -159,7 +167,7 @@ user sends. Nothing parses phone numbers out of message text.
    phone to the webapp — the docs confirm the callback yields only a boolean, and the
    `contactRequested` event only `status: "sent" | "cancelled"`. The webapp therefore polls
    `GET /v1/users/me` for 60s (`register/page.tsx:72-103`), which 404s (`api .../internal/users.ts:23`)
-   until the **bot** writes the phone. Any design where a pending Besales marker *consumes* a
+   until the **bot** writes the phone. Any design where a pending Besales marker _consumes_ a
    contact (skipping the session write) can silently hang registration.
 2. **Business rule.** ASLZAR registers clients in 1C only through the mini-app form, with a
    real first/last name typed by the user (`POST /v1/users/register` → 1C `createUser`).
@@ -187,7 +195,7 @@ The only safe shape is **additive, never consuming**:
 1. `:contact` always runs the existing onboarding block, unchanged — no flag, no early return.
    Registration then cannot break by construction; the worst failure is "Besales misses one
    phone".
-2. *Additionally* forward the number to Besales when a request is pending (timestamp + TTL,
+2. _Additionally_ forward the number to Besales when a request is pending (timestamp + TTL,
    not a boolean — a boolean never expires), fire-and-forget so the session write-back never
    waits on their network.
 3. Add the missing `contact.user_id === ctx.from.id` guard.
@@ -205,8 +213,58 @@ its own merits, independently of Besales.
   back as a phantom callback instead of opening a link. ~5 lines. Required before asking the
   agent to send a "Open the mini-app" button; until then the agent should give the link as text.
 - **No profile-update push.** The phone is attached per message at send time. A user who chats
-  first and registers afterwards is only revealed to Besales on their *next* message; if they
+  first and registers afterwards is only revealed to Besales on their _next_ message; if they
   never write again, Besales never learns the number. Fix would be a lightweight inbound after
   successful registration, or a contacts-update endpoint on their side.
 - `requestContact` remains unimplemented in `besales-docs.ts` / the OpenAPI spec — the wire
   contract we publish still describes `{label, value}` buttons only.
+
+# Events we send beyond chat messages (2.16.0, 2026-09-27)
+
+Requested by Besales after go-live. Both are ordinary inbound messages (same endpoint, same auth); the kind is in `metadata.event`.
+
+## `delivery_failed` — the agent's message never reached the user (bot)
+
+We ack every callback with `200` before delivering (their 10s budget), so without this Besales counts a message to someone who blocked the bot as delivered. When Telegram refuses a callback message, `besales-delivery.ts` stops delivering that callback and sends:
+
+```json
+{
+	"externalUserId": "766618738",
+	"externalChatId": "766618738",
+	"externalMessageId": "delivery-failed:<callback id>",
+	"sourceChannel": "telegram",
+	"metadata": { "event": "delivery_failed", "reason": "user_blocked_bot", "callbackId": "<callback id>" },
+	"timestamp": 1790514542
+}
+```
+
+- `reason`: `user_blocked_bot` | `user_not_started` | `user_deactivated` | `chat_not_found`. Only failures that mean "this person can't be reached" are reported; a network blip or a bad media URL is not.
+- No `text` — it is not something the user said. **The agent must not reply to it.**
+- **Loop guard:** if the agent did reply, that reply would fail the same way, forever. We report at most **once per user per hour** (key `delivery-failed:<chatId>:<UTC hour>` in `besales_deliveries`, 7-day TTL). If the guard write fails we skip the report rather than risk the loop.
+
+## `product_ask` — catalogue "Bu buyum haqida so'rash" (api)
+
+Sent by `apps/api` (`POST /v1/catalog/:productId/ask`, `src/integrations/besales.ts`), not the bot — the Mini App talks only to the API. The Mini App sends ids only; the API reads the product from its cache.
+
+```json
+{
+  "externalUserId": "766618738",
+  "externalChatId": "766618738",
+  "externalMessageId": "catalog-ask:<userId>:<variantId>:<unix minute>",
+  "sourceChannel": "telegram",
+  "text": "Bu buyum haqida so'rash",
+  "contact": { "firstName": "...", "phone": "+998...", "languageCode": "uz" },
+  "metadata": { "event": "product_ask", "source": "miniapp_catalog", "product": { ... }, "variant": { ... } },
+  "timestamp": 1790514542
+}
+```
+
+Besales' three conditions:
+
+- `text` is the button label in the customer's language (the Mini App is Uzbek-only), so the agent answers in it.
+- `variant.id` is one of `product.variants[].id` — they drop the open piece from "other sizes" by id. Both come from the same cached object.
+- `metadata` rides only on this message.
+
+`product` and `variant` are the ASLZAR ID objects as-is; Besales reads `category.name`, `model`, `productId`, `fineness`, `color`, `stone`, `inStock`, `variants[]` and on the variant `id`, `size`, `weightGrams`, `price`, `article`, `branch.name`. Note `category.name` and `branch.name` are `{ ru, uz }` objects, and `uz` is often the Russian name (`uzIsFallback: true`).
+
+The unix-minute in `externalMessageId` makes a double-tap a Besales duplicate (`200`) rather than two questions. The API returns `409` when the piece is gone, `503` when `BESALES_ENABLED` isn't `true` on the API service, `502` when Besales can't be reached.

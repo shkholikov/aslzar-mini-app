@@ -14,17 +14,17 @@ import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/comp
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import {
+	askAboutProduct,
 	displayName,
 	formatSom,
 	latinColor,
 	latinStone,
-	onAskAboutProduct,
 	priceLabel,
 	productShareUrl,
 	storyCaption,
 	variantLabel
 } from "@/lib/catalog";
-import { apiRequest } from "@/lib/api-client";
+import { ApiError, apiRequest } from "@/lib/api-client";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Camera, Loader2, MessageCircle, Send } from "lucide-react";
@@ -44,6 +44,7 @@ export default function ProductPage() {
 	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
 	const [photo, setPhoto] = React.useState(0);
 	const [sharing, setSharing] = React.useState(false);
+	const [asking, setAsking] = React.useState(false);
 
 	React.useEffect(() => {
 		if (!emblaApi) return;
@@ -115,6 +116,33 @@ export default function ProductPage() {
 			text: storyCaption(title, price),
 			widget_link: { url: productShareUrl(product.productId), name: "ASLZAR" }
 		});
+	};
+
+	// The agent's answer arrives in the chat with the bot, not in the Mini App — so on success we
+	// say where to look and close the app, rather than leaving a tap that seems to do nothing.
+	const askAboutThisPiece = async () => {
+		const variant = product.variants[selected];
+		if (!variant || asking) return;
+		tg?.HapticFeedback?.impactOccurred("medium");
+		setAsking(true);
+		try {
+			await askAboutProduct(product.productId, variant.id);
+			tg?.HapticFeedback?.notificationOccurred("success");
+			toast.success("Javob bot chatida keladi");
+			setTimeout(() => tg?.close?.(), 1200);
+			// Leave `asking` on: the button stays disabled until the app closes.
+		} catch (error) {
+			tg?.HapticFeedback?.notificationOccurred("error");
+			if (error instanceof ApiError && error.status === 409) {
+				// Sold since the page loaded. Refresh so the list stops offering it.
+				toast.error("Bu buyum hozirgina sotildi");
+				setSelected(0);
+				retry();
+			} else {
+				toast.error("Hozircha yuborib bo'lmadi, keyinroq urinib ko'ring");
+			}
+			setAsking(false);
+		}
 	};
 
 	return (
@@ -239,12 +267,10 @@ export default function ProductPage() {
 					<RippleButton
 						variant="outline"
 						className={`w-full h-14 text-[15px] ${goldButtonClass}`}
-						onClick={() => {
-							tg?.HapticFeedback?.impactOccurred("medium");
-							onAskAboutProduct(product, product.variants[selected]);
-						}}
+						disabled={asking}
+						onClick={askAboutThisPiece}
 					>
-						<MessageCircle className="size-4" />
+						{asking ? <Loader2 className="size-4 animate-spin" /> : <MessageCircle className="size-4" />}
 						Bu buyum haqida so&apos;rash
 					</RippleButton>
 				</div>
