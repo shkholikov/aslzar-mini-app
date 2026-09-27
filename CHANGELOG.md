@@ -10,6 +10,14 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-09-27
+
+### Added
+
+- The Besales AI assistant can now ask a customer for their phone number with Telegram's own "share my number" button. When the customer taps it, the bot recognises existing ASLZAR clients straight away — no Mini App registration needed — and processes a pending referral immediately. The assistant is told the number arrived and whether the person is already a client; people who aren't yet are pointed to the Mini App to register, since new clients are still created only there, with their real name.
+- The assistant can send a button that opens the ASLZAR Mini App inside Telegram, already signed in. Before, such a button would have opened a browser page that turned the customer away.
+- The assistant is told when someone presses Start, and whether they came through a customer's or an employee's invitation link — so it can greet people a customer invited. Nothing about how referrals are counted changes: they are still checked and recorded by the bot after the customer shares their number.
+
 ## [2.16.1] - 2026-09-27
 
 ### Security

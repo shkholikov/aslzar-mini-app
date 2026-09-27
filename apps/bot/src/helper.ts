@@ -25,7 +25,7 @@ async function getDefaultReferralLimit(): Promise<number> {
 	}
 }
 
-const WEBAPP_URL = process.env.WEBAPP_URL || "https://app.aslzarbot.uz";
+export const WEBAPP_URL = process.env.WEBAPP_URL || "https://app.aslzarbot.uz";
 const BOT_TELEGRAM_LINK = process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzardevbot";
 
 /**

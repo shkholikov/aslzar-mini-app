@@ -1,6 +1,8 @@
-import { Api, GrammyError, InlineKeyboard } from "grammy";
-import { sendInbound, type BesalesMedia, type BesalesOutboundMessage } from "./besales";
+import { Api, GrammyError, InlineKeyboard, Keyboard } from "grammy";
+import { sendInbound, type BesalesButton, type BesalesMedia, type BesalesOutboundMessage } from "./besales";
 import { besalesDeliveries } from "./db";
+import { WEBAPP_URL } from "./helper";
+import type { InlineKeyboardButton } from "grammy/types";
 
 /** Telegram limits inline callback_data to 64 bytes. */
 const CALLBACK_DATA_MAX_BYTES = 64;
@@ -21,14 +23,78 @@ function safeCallbackData(value: string): string {
 	return buf.toString("utf8", 0, end);
 }
 
-function buildKeyboard(buttons?: BesalesOutboundMessage["buttons"]): InlineKeyboard | undefined {
-	if (!buttons || buttons.length === 0) return undefined;
-	const kb = new InlineKeyboard();
-	for (const row of buttons) {
-		for (const b of row) kb.text(b.label, safeCallbackData(b.value));
-		kb.row();
+/**
+ * Hosts that serve our Mini App. A link to one of them is rendered as a web_app button so it opens
+ * inside Telegram with initData; a plain url button would open a browser, where the app's
+ * TelegramGuard turns the user away. The canonical production host is listed explicitly so this
+ * holds even if WEBAPP_URL points at another alias (e.g. the *.vercel.app one).
+ */
+const MINI_APP_HOSTS = new Set(
+	[WEBAPP_URL, "https://app.aslzarbot.uz"].flatMap((u) => {
+		try {
+			return [new URL(u).host];
+		} catch {
+			return [];
+		}
+	})
+);
+
+type InlineButton = InlineKeyboardButton;
+
+/**
+ * One inline button from a Besales button, or null when it can't be rendered:
+ *   url on a Mini App host -> web_app button (opens the Mini App inside Telegram)
+ *   other https url        -> url button
+ *   value                  -> callback button (as before)
+ */
+function toInlineButton(b: BesalesButton): InlineButton | null {
+	if (b.url) {
+		let parsed: URL;
+		try {
+			parsed = new URL(b.url);
+		} catch {
+			console.warn(`[besales] button "${b.label}" has an unparseable url, skipped: ${b.url}`);
+			return null;
+		}
+		if (parsed.protocol !== "https:") {
+			console.warn(`[besales] button "${b.label}" url is not https, skipped: ${b.url}`);
+			return null;
+		}
+		return MINI_APP_HOSTS.has(parsed.host) ? InlineKeyboard.webApp(b.label, b.url) : InlineKeyboard.url(b.label, b.url);
 	}
-	return kb;
+	if (b.value) return InlineKeyboard.text(b.label, safeCallbackData(b.value));
+	console.warn(`[besales] button "${b.label}" has neither url nor value, skipped`);
+	return null;
+}
+
+/**
+ * Builds the keyboard for one Besales message.
+ *
+ * A `requestContact` button can only live on a reply keyboard (bottom of the screen), and Telegram
+ * does not allow a reply keyboard and inline buttons on the same message. So when the message asks
+ * for the phone, that button is shown on its own and any other buttons are dropped. One-time: it
+ * hides after the tap. `requestsContact` tells the caller to remember the request, so the contact
+ * that comes back is reported to Besales (see the :contact handler).
+ *
+ * Inline rows are built whole, so a row whose buttons were all skipped never becomes an empty row.
+ */
+export function buildKeyboard(buttons?: BesalesOutboundMessage["buttons"]): {
+	markup?: InlineKeyboard | Keyboard;
+	requestsContact: boolean;
+} {
+	if (!buttons || buttons.length === 0) return { requestsContact: false };
+
+	const all = buttons.flat();
+	const contactButton = all.find((b) => b.requestContact);
+	if (contactButton) {
+		if (all.length > 1) {
+			console.warn(`[besales] requestContact must come alone; dropped ${all.length - 1} other button(s) in the same message`);
+		}
+		return { markup: new Keyboard().requestContact(contactButton.label).oneTime().resized(), requestsContact: true };
+	}
+
+	const rows = buttons.map((row) => row.map(toInlineButton).filter((b): b is InlineButton => b !== null)).filter((row) => row.length > 0);
+	return { markup: rows.length > 0 ? InlineKeyboard.from(rows) : undefined, requestsContact: false };
 }
 
 async function sendMedia(api: Api, chatId: number, media: BesalesMedia): Promise<void> {
@@ -126,12 +192,20 @@ export async function deliverBesalesMessages(
 ): Promise<void> {
 	for (const message of messages) {
 		try {
-			const keyboard = buildKeyboard(message.buttons);
+			const { markup, requestsContact } = buildKeyboard(message.buttons);
 
 			// Telegram requires text for sendMessage; if a message is buttons-only, use a minimal placeholder.
-			if (message.text || keyboard) {
+			if (message.text || markup) {
 				const text = message.text && message.text.length > 0 ? message.text : "…";
-				await api.sendMessage(chatId, text, keyboard ? { reply_markup: keyboard } : undefined);
+				await api.sendMessage(chatId, text, markup ? { reply_markup: markup } : undefined);
+
+				// Remember that the agent asked for the phone, so the contact that comes back is
+				// reported to Besales. Mini App registrations never set this, so they report nothing.
+				if (requestsContact) {
+					await besalesDeliveries
+						.updateOne({ _id: `contact-requested:${chatId}` }, { $set: { createdAt: new Date() } }, { upsert: true })
+						.catch((e) => console.error(`[besales] could not record contact request for ${chatId}:`, e));
+				}
 			}
 
 			for (const media of message.media ?? []) {
