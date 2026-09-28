@@ -104,3 +104,22 @@ The product page's button hands the selected piece to the Besales AI agent (2.16
 The piece is identified by `variant.id`, not `article` — every piece of one design shares the article. The agent's answer arrives in the customer's **chat with the bot**, so the Mini App says so and closes. Event shape and Besales' conditions: `docs/besales-integration-plan.md`.
 
 **Still true:** `/v1/product-interest` had exactly one caller, the old product card's "Sotib olish" button. The new flow goes to Besales, not AmoCRM, so no AmoCRM lead is created from the catalogue.
+
+## Sevimlilar (likes) — 2.18.0
+
+A customer can like a **design** (`productId`) with the ♡ on the product page (right of the title) or on a catalogue card, and see them under the «Sevimlilar» chip. What's liked is the design, not a piece: pieces sell and disappear, a design keeps its page when sold out, so a liked item stays in the list with the «Sotilgan» overlay.
+
+**Storage:** our database, collection `favorites` (`MONGO_DB_COLLECTION_FAVORITES`; locally `favorites_dev`), one row per user per design, unique on `{ userId, productId }`. It syncs across the customer's devices and is ASLZAR's own demand data (which designs people like).
+
+**Routes** (`apps/api/src/routes/internal/favorites.ts`, internal, initData auth):
+
+| Route                               |                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| `GET /v1/favorites`                 | liked ids, newest first — drives every heart                                         |
+| `PUT /v1/favorites/:productId`      | like — idempotent; `400` bad id, `404` unknown product, `409 favorites_limit` at 100 |
+| `DELETE /v1/favorites/:productId`   | unlike — idempotent                                                                  |
+| `GET /v1/favorites/products?page=N` | the liked products, 24 per page, same `{ data, meta }` shape as `/v1/catalog`        |
+
+**Why paged and capped:** ASLZAR ID can't filter by a list of ids, so the liked view loads each product by id through the catalogue's 1-hour cache (`getCatalogProduct`). Its 60 req/min limit is per key and shared by every user, so likes are capped at **100**, the view is paged at **24**, and cold products are fetched **4 at a time**. A product removed from the catalogue (404) is dropped and its like deleted; any other failure only skips it for that response.
+
+In the Mini App, likes are optimistic (the heart changes on tap and rolls back on error). Choosing a category, searching or applying filters leaves the «Sevimlilar» view — the liked list is small and has no server-side filtering.

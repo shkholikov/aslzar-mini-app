@@ -17,6 +17,12 @@ import {
 	prepareProductShareHandler,
 	askAboutProductHandler
 } from "./routes/internal/catalog";
+import {
+	addFavoriteHandler,
+	listFavoriteIdsHandler,
+	listFavoriteProductsHandler,
+	removeFavoriteHandler
+} from "./routes/internal/favorites";
 import { listNewsHandler } from "./routes/internal/news";
 import { listBranchesHandler } from "./routes/internal/branches";
 import { listBonusProgramsHandler } from "./routes/internal/bonus-programs";
@@ -47,7 +53,7 @@ app.use(
 			return cb(new Error(`Origin ${origin} not allowed by CORS`));
 		},
 		credentials: false,
-		methods: ["GET", "POST", "OPTIONS"],
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // PUT/DELETE: /v1/favorites/:productId
 		allowedHeaders: ["Content-Type", "Authorization"]
 	})
 );
@@ -98,6 +104,11 @@ app.get("/v1/catalog/:productId", requireMiniAppAuth, getCatalogProductHandler);
 app.post("/v1/catalog/:productId/share", requireMiniAppAuth, prepareProductShareHandler);
 // Hands a catalogue question to the Besales agent; the answer arrives in the customer's bot chat.
 app.post("/v1/catalog/:productId/ask", requireMiniAppAuth, askAboutProductHandler);
+// Catalogue likes ("Sevimlilar") — docs/aslzarid-catalog.md.
+app.get("/v1/favorites", requireMiniAppAuth, listFavoriteIdsHandler);
+app.get("/v1/favorites/products", requireMiniAppAuth, listFavoriteProductsHandler);
+app.put("/v1/favorites/:productId", requireMiniAppAuth, addFavoriteHandler);
+app.delete("/v1/favorites/:productId", requireMiniAppAuth, removeFavoriteHandler);
 app.get("/v1/news", requireMiniAppAuth, listNewsHandler);
 app.get("/v1/branches", requireMiniAppAuth, listBranchesHandler);
 app.get("/v1/bonus-programs", requireMiniAppAuth, listBonusProgramsHandler);

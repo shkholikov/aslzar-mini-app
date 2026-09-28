@@ -45,14 +45,19 @@ const COPY = {
 
 interface Props {
 	kind: CatalogStateKind;
+	/** Overrides the default copy — the liked list has its own empty message. */
+	title?: string;
+	description?: string;
 	/** Overrides the default action label — the empty state uses "Filtrlarni tozalash". */
 	actionLabel?: string;
 	onAction?: () => void;
 }
 
-export function CatalogState({ kind, actionLabel, onAction }: Props) {
+export function CatalogState({ kind, title: titleOverride, description: descriptionOverride, actionLabel, onAction }: Props) {
 	const tg = useTelegram();
-	const { Icon, title, description, action } = COPY[kind];
+	const { Icon, action } = COPY[kind];
+	const title = titleOverride ?? COPY[kind].title;
+	const description = descriptionOverride ?? COPY[kind].description;
 	const label = actionLabel ?? action;
 
 	return (

@@ -9,6 +9,8 @@ import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useTelegram } from "@/hooks/useTelegram";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CatalogState } from "@/components/common/catalog-state";
+import { CatalogImage, CatalogImagePlaceholder } from "@/components/common/catalog-image";
+import { FavoriteButton } from "@/components/common/favorite-button";
 import { SectionCard } from "@/components/common/section-card";
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
@@ -153,14 +155,14 @@ export default function ProductPage() {
 						<div className="flex">
 							{product.images.map((img, i) => (
 								<div key={img.medium} className="relative flex-[0_0_100%] aspect-square">
-									<Image src={img.medium} alt={title} fill className="object-cover" sizes="100vw" priority={i === 0} />
+									<CatalogImage src={img.medium} alt={title} fill className="object-cover" priority={i === 0} />
 								</div>
 							))}
 						</div>
 					</div>
 				) : (
-					<div className="aspect-square flex items-center justify-center">
-						<Image src="/icons/ring.webp" alt="" width={96} height={96} className="object-contain opacity-30" />
+					<div className="relative aspect-square">
+						<CatalogImagePlaceholder size={96} />
 					</div>
 				)}
 
@@ -182,7 +184,10 @@ export default function ProductPage() {
 			</div>
 
 			<div className="px-4 pt-4 flex flex-col gap-2">
-				<h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+				<div className="flex items-start justify-between gap-3">
+					<h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+					<FavoriteButton productId={product.productId} variant="inline" />
+				</div>
 				{price && <div className="text-lg font-bold text-[#be9941]">{price}</div>}
 				{specs.length > 0 && (
 					<div className="flex flex-wrap gap-1.5 pt-1">

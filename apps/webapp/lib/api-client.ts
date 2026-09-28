@@ -38,7 +38,7 @@ export class ApiError extends Error {
 }
 
 export type ApiRequestOptions = {
-	method?: "GET" | "POST";
+	method?: "GET" | "POST" | "PUT" | "DELETE";
 	body?: unknown;
 	query?: Record<string, string | number | undefined>;
 	signal?: AbortSignal;
@@ -73,7 +73,8 @@ export async function apiRequest<T = unknown>(path: string, options: ApiRequestO
 	const payload = isJson ? await res.json().catch(() => null) : await res.text().catch(() => "");
 
 	if (!res.ok) {
-		const message = (isJson && payload && typeof payload === "object" && "error" in payload && (payload as { error: unknown }).error) || res.statusText;
+		const message =
+			(isJson && payload && typeof payload === "object" && "error" in payload && (payload as { error: unknown }).error) || res.statusText;
 		throw new ApiError(res.status, payload, String(message));
 	}
 

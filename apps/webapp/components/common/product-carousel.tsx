@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useProducts } from "@/hooks/useProducts";
 import { displayName } from "@/lib/catalog";
-import Image from "next/image";
+import { CatalogImage } from "@/components/common/catalog-image";
 
 export function ProductCarousel() {
 	const router = useRouter();
@@ -61,7 +61,7 @@ export function ProductCarousel() {
 							onClick={() => handleCardClick(product.productId)}
 						>
 							<div className="relative aspect-[4/5]">
-								<Image src={product.images[0].medium} alt={displayName(product)} fill className="object-cover" sizes="42vw" />
+								<CatalogImage src={product.images[0].medium} alt={displayName(product)} fill className="object-cover" />
 							</div>
 						</div>
 					))}

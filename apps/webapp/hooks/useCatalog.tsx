@@ -43,7 +43,7 @@ function keyFor(params: Record<string, string | number | undefined>): string {
 	return `/v1/catalog?${sp.toString()}`;
 }
 
-export function useCatalogPage(query: CatalogQuery) {
+export function useCatalogPage(query: CatalogQuery, enabled = true) {
 	const tg = useTelegram();
 	const ready = Boolean(tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData);
 	const params = toParams(query);
@@ -51,7 +51,7 @@ export function useCatalogPage(query: CatalogQuery) {
 	// No keepPreviousData: the page accumulates pages itself, so holding the previous query's
 	// results here would append stale rows and show a stale `meta.total` after a filter change.
 	const { data, error, isLoading, mutate } = useSWR<CatalogListResponse>(
-		ready ? keyFor(params) : null,
+		ready && enabled ? keyFor(params) : null,
 		(path: string) => apiRequest<CatalogListResponse>(path),
 		{ revalidateOnFocus: false }
 	);
@@ -59,7 +59,7 @@ export function useCatalogPage(query: CatalogQuery) {
 	return {
 		products: data?.data ?? [],
 		meta: data?.meta,
-		loading: ready && isLoading && data === undefined,
+		loading: ready && enabled && isLoading && data === undefined,
 		failure: failureKind(error),
 		retry: () => void mutate()
 	};
@@ -70,7 +70,7 @@ export function useCatalogPage(query: CatalogQuery) {
  * key, 502 when the upstream answered badly or not at all. Either way it is not the customer's
  * filters, so the UI must not tell them nothing was found.
  */
-function failureKind(error: unknown): "unavailable" | "error" | null {
+export function failureKind(error: unknown): "unavailable" | "error" | null {
 	if (!error) return null;
 	if (error instanceof ApiError && (error.status === 502 || error.status === 503 || error.status === 504)) return "unavailable";
 	return "error";
