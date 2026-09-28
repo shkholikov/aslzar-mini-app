@@ -93,6 +93,17 @@ export type Sync1CJobDoc = {
 
 export type ApiCallStatus = "sent" | "user_not_registered" | "telegram_error" | "rate_limited" | "invalid_request";
 
+/**
+ * A customer's liked catalogue design ("Sevimlilar"). The design (1C productId), not a piece:
+ * pieces sell and disappear, a design keeps its page when sold out.
+ */
+export type FavoriteDoc = {
+	_id: ObjectId;
+	userId: string; // Telegram user id
+	productId: string; // 1C product id, e.g. 00-0007766
+	createdAt: Date;
+};
+
 export type ApiCallDoc = {
 	_id?: ObjectId;
 	apiKeyId: string;
@@ -108,6 +119,7 @@ export type ApiCallDoc = {
 let client: MongoClient | undefined;
 let apiKeysIndexEnsured = false;
 let apiCallsIndexEnsured = false;
+let favoritesIndexEnsured = false;
 
 async function getClient(): Promise<MongoClient> {
 	if (!client) {
@@ -253,11 +265,24 @@ export async function getSync1CJobsCollection(): Promise<Collection<Sync1CJobDoc
 	return db.collection<Sync1CJobDoc>(config.MONGO_DB_COLLECTION_SYNC_1C_JOBS);
 }
 
+export async function getFavoritesCollection(): Promise<Collection<FavoriteDoc>> {
+	const db = await getDb();
+	const col = db.collection<FavoriteDoc>(config.MONGO_DB_COLLECTION_FAVORITES);
+	if (!favoritesIndexEnsured) {
+		// Unique: a design can't be liked twice, which also makes "like" safe to retry.
+		await col.createIndex({ userId: 1, productId: 1 }, { unique: true });
+		await col.createIndex({ userId: 1, createdAt: -1 });
+		favoritesIndexEnsured = true;
+	}
+	return col;
+}
+
 export async function closeDb(): Promise<void> {
 	if (client) {
 		await client.close();
 		client = undefined;
 		apiKeysIndexEnsured = false;
 		apiCallsIndexEnsured = false;
+		favoritesIndexEnsured = false;
 	}
 }

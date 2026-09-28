@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useCatalogCategories, useCatalogPage } from "@/hooks/useCatalog";
+import { useFavoriteIds, useFavoriteProducts } from "@/hooks/useFavorites";
 import { useTelegram } from "@/hooks/useTelegram";
 import type { CatalogProduct } from "@/lib/catalog";
-import { LayoutGrid, List, Search, SlidersHorizontal } from "lucide-react";
+import { Heart, LayoutGrid, List, Search, SlidersHorizontal } from "lucide-react";
 
 const PER_PAGE = 24;
 const SEARCH_DEBOUNCE_MS = 350;
@@ -25,6 +26,8 @@ export default function CatalogPage() {
 	const [rawSearch, setRawSearch] = React.useState("");
 	const [search, setSearch] = React.useState("");
 	const [category, setCategory] = React.useState<string | undefined>();
+	// «Sevimlilar»: the liked designs instead of the catalogue query.
+	const [favoritesOnly, setFavoritesOnly] = React.useState(false);
 	const [filters, setFilters] = React.useState<Filters>(EMPTY_FILTERS);
 	const [sheetOpen, setSheetOpen] = React.useState(false);
 	const [page, setPage] = React.useState(1);
@@ -43,9 +46,12 @@ export default function CatalogPage() {
 	React.useEffect(() => {
 		setPage(1);
 		setLoaded([]);
-	}, [search, category, filters]);
+	}, [search, category, filters, favoritesOnly]);
 
-	const { products, meta, loading, failure, retry } = useCatalogPage({ ...filters, search, category, page, perPage: PER_PAGE });
+	const catalog = useCatalogPage({ ...filters, search, category, page, perPage: PER_PAGE }, !favoritesOnly);
+	const liked = useFavoriteProducts(page, favoritesOnly);
+	const { products, meta, loading, failure, retry } = favoritesOnly ? liked : catalog;
+	const { isLiked, count: likedCount } = useFavoriteIds();
 
 	React.useEffect(() => {
 		if (!products.length) return;
@@ -61,6 +67,7 @@ export default function CatalogPage() {
 	const ignored = meta?.search?.ignored ?? [];
 	const matched = meta?.search?.matched ?? [];
 	const firstLoad = loading && loaded.length === 0;
+	const visible = favoritesOnly ? loaded.filter((p) => isLiked(p.productId)) : loaded;
 
 	const pick = (fn: () => void) => () => {
 		tg?.HapticFeedback?.impactOccurred("light");
@@ -102,7 +109,10 @@ export default function CatalogPage() {
 						<Search className="size-4 text-muted-foreground shrink-0" />
 						<input
 							value={rawSearch}
-							onChange={(e) => setRawSearch(e.target.value)}
+							onChange={(e) => {
+								setRawSearch(e.target.value);
+								setFavoritesOnly(false);
+							}}
 							placeholder="Qidirish…"
 							className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 						/>
@@ -126,11 +136,36 @@ export default function CatalogPage() {
 				    sliced flat at the container edge. shadow-md reaches ~10px down. */}
 				{categories.length > 0 && (
 					<div className="flex gap-2 px-4 pt-2.5 pb-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-						<Chip active={!category} onClick={pick(() => setCategory(undefined))}>
+						<Chip
+							active={!category && !favoritesOnly}
+							onClick={pick(() => {
+								setCategory(undefined);
+								setFavoritesOnly(false);
+							})}
+						>
 							Hammasi
 						</Chip>
+						<Chip
+							active={favoritesOnly}
+							onClick={pick(() => {
+								setCategory(undefined);
+								setFavoritesOnly(true);
+							})}
+						>
+							<span className="inline-flex items-center gap-1">
+								<Heart className="size-3.5" fill={favoritesOnly ? "currentColor" : "none"} />
+								Sevimlilar
+							</span>
+						</Chip>
 						{categories.map((c) => (
-							<Chip key={c.id} active={category === c.slug} onClick={pick(() => setCategory(c.slug))}>
+							<Chip
+								key={c.id}
+								active={category === c.slug && !favoritesOnly}
+								onClick={pick(() => {
+									setCategory(c.slug);
+									setFavoritesOnly(false);
+								})}
+							>
 								{c.name.uz}
 							</Chip>
 						))}
@@ -152,13 +187,13 @@ export default function CatalogPage() {
 				{meta && !firstLoad && (
 					<div className="pb-2">
 						<Badge variant="default" className="bg-[#be9941] text-white">
-							{meta.total} ta mahsulot
+							{favoritesOnly ? likedCount : meta.total} ta mahsulot
 						</Badge>
 					</div>
 				)}
 
 				{/* An outage must not read as "we have nothing" — the customer would simply leave. */}
-				{failure && !firstLoad && loaded.length === 0 && <CatalogState kind={failure} onAction={retry} />}
+				{failure && !firstLoad && visible.length === 0 && <CatalogState kind={failure} onAction={retry} />}
 
 				<div className={compact ? "grid grid-cols-2 gap-2.5" : "grid grid-cols-1 gap-3"}>
 					{firstLoad &&
@@ -172,10 +207,20 @@ export default function CatalogPage() {
 							</div>
 						))}
 
-					{!firstLoad && loaded.map((p) => <ProductCard key={p.productId} product={p} compact={compact} />)}
+					{!firstLoad && visible.map((p) => <ProductCard key={p.productId} product={p} compact={compact} />)}
 				</div>
 
-				{!firstLoad && !failure && loaded.length === 0 && (
+				{!firstLoad && !failure && visible.length === 0 && favoritesOnly && (
+					<CatalogState
+						kind="empty"
+						title="Hali sevimli buyumlar yo'q"
+						description="Yoqqan buyumdagi ♡ tugmasini bosing"
+						actionLabel="Barcha mahsulotlar"
+						onAction={() => setFavoritesOnly(false)}
+					/>
+				)}
+
+				{!firstLoad && !failure && visible.length === 0 && !favoritesOnly && (
 					<CatalogState
 						kind="empty"
 						actionLabel="Filtrlarni tozalash"
@@ -196,7 +241,16 @@ export default function CatalogPage() {
 				)}
 			</div>
 
-			<CatalogFilters open={sheetOpen} onOpenChange={setSheetOpen} value={filters} onChange={setFilters} total={meta?.total} />
+			<CatalogFilters
+				open={sheetOpen}
+				onOpenChange={setSheetOpen}
+				value={filters}
+				onChange={(next) => {
+					setFilters(next);
+					setFavoritesOnly(false);
+				}}
+				total={meta?.total}
+			/>
 		</div>
 	);
 }

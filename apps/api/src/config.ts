@@ -51,6 +51,8 @@ export const config = {
 	MONGO_DB_COLLECTION_SUGGESTIONS: process.env.MONGO_DB_COLLECTION_SUGGESTIONS || "suggestions",
 	MONGO_DB_COLLECTION_SYNC_1C_JOBS: process.env.MONGO_DB_COLLECTION_SYNC_1C_JOBS || "sync_1c_jobs",
 	MONGO_DB_COLLECTION_SETTINGS: process.env.MONGO_DB_COLLECTION_SETTINGS || "settings",
+	// Catalogue likes ("Sevimlilar"). One row per user per liked design.
+	MONGO_DB_COLLECTION_FAVORITES: process.env.MONGO_DB_COLLECTION_FAVORITES || "favorites",
 	BOT_TOKEN: required("BOT_TOKEN"),
 	CHANNEL_ID: process.env.CHANNEL_ID || "@ASLZAR_tilla",
 	BOT_TELEGRAM_LINK: process.env.BOT_TELEGRAM_LINK || "https://t.me/aslzaruzbot",

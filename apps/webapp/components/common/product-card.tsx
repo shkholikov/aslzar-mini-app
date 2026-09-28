@@ -1,6 +1,7 @@
 "use client";
 
 import { CatalogImage, CatalogImagePlaceholder } from "@/components/common/catalog-image";
+import { FavoriteButton } from "@/components/common/favorite-button";
 import NextLink from "next/link";
 import { useTelegram } from "@/hooks/useTelegram";
 import { displayName, priceLabel, type CatalogProduct } from "@/lib/catalog";
@@ -44,6 +45,8 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 						<span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-background/90">Sotilgan</span>
 					</div>
 				)}
+				{/* Above the «Sotilgan» overlay: a sold-out design can still be unliked. */}
+				<FavoriteButton productId={product.productId} variant="overlay" className="absolute top-2 right-2 z-10" />
 			</div>
 
 			<div className={compact ? "p-2.5 flex flex-col gap-0.5" : "p-4 flex flex-col gap-1"}>

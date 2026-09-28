@@ -95,6 +95,14 @@ function fail(res: Response, tag: string, err: unknown): void {
 	res.status(500).json({ error: "Internal server error", details: err instanceof Error ? err.message : "Unknown error" });
 }
 
+/**
+ * One product through the same cache the detail page uses, so other routes (favourites) never
+ * add upstream calls of their own. Resolves to the upstream `{ data }` envelope.
+ */
+export function getCatalogProduct(productId: string): Promise<unknown> {
+	return cached(`product:${productId}`, () => getProduct(productId));
+}
+
 export async function listCatalogHandler(req: MiniAppAuthedRequest, res: Response): Promise<void> {
 	const query = new URLSearchParams();
 	for (const name of ALLOWED_PARAMS) {
