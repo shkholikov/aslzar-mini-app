@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { CatalogImage, CatalogImagePlaceholder } from "@/components/common/catalog-image";
 import NextLink from "next/link";
 import { useTelegram } from "@/hooks/useTelegram";
 import { displayName, priceLabel, type CatalogProduct } from "@/lib/catalog";
@@ -33,19 +33,11 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 		>
 			<div className="relative w-full aspect-square overflow-hidden bg-muted/30">
 				{cover ? (
-					<Image
-						src={cover.medium}
-						alt={title}
-						fill
-						className="object-cover"
-						sizes={compact ? "(max-width: 768px) 48vw, 300px" : "(max-width: 768px) 100vw, 560px"}
-					/>
+					<CatalogImage src={cover.medium} alt={title} fill className="object-cover" />
 				) : (
 					// A large part of the catalogue has no imagery in 1C at all. The grid filters
 					// these out by default, but a direct link or a cleared filter can still reach one.
-					<div className="absolute inset-0 flex items-center justify-center">
-						<Image src="/icons/ring.webp" alt="" width={56} height={56} className="object-contain opacity-30" />
-					</div>
+					<CatalogImagePlaceholder size={56} />
 				)}
 				{!product.inStock && (
 					<div className="absolute inset-0 bg-background/55 flex items-center justify-center">

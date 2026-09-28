@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.17.1] - 2026-09-28
+
+### Fixed
+
+- Product photos in the catalogue no longer show up as a broken-image "?". Photos were passed through Vercel's image optimiser, whose monthly allowance ran out once the catalogue grew to thousands of products; after that, any photo that hadn't been processed before was refused. The photos from ASLZAR ID already come in ready-made sizes, so they are now loaded directly — which also makes them appear a little faster. If a photo ever fails to load, the faded ring icon is shown instead, the same one used for products without photos.
+
 ## [2.17.0] - 2026-09-27
 
 ### Added
