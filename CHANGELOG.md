@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.18.1] - 2026-09-28
+
+### Fixed
+
+- The like button now clearly shows whether a design is liked: a light circle with a gold outline heart when it isn't, and a solid gold circle with a white filled heart when it is. Before, both looked like a gold circle with a small white heart.
+
 ## [2.18.0] - 2026-09-28
 
 ### Added
