@@ -52,7 +52,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
-		if (!hasPermission(admin, "users")) {
+		if (!hasPermission(admin, "referral")) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
@@ -61,7 +61,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 		const raw = body?.referralLimit;
 
 		if (raw !== null && (typeof raw !== "number" || !Number.isInteger(raw) || raw < 0 || raw > MAX_REFERRAL_LIMIT)) {
-			return NextResponse.json({ error: `referralLimit 0 dan ${MAX_REFERRAL_LIMIT} gacha butun son yoki null bo'lishi kerak` }, { status: 400 });
+			return NextResponse.json(
+				{ error: `referralLimit 0 dan ${MAX_REFERRAL_LIMIT} gacha butun son yoki null bo'lishi kerak` },
+				{ status: 400 }
+			);
 		}
 
 		const updated = await updateUserReferralLimit(id, raw, admin.username);

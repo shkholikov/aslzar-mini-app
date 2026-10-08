@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loading } from "@/components/common/loading";
 import { useAdminContext } from "@/components/common/admin-context";
+import { hasPermission } from "@/lib/auth-utils";
 import { num } from "@/lib/dashboard-format";
 import { FALLBACK_REFERRAL_LIMIT, type ReferralSettings, type ReferralStats } from "@/lib/referral";
 
@@ -99,7 +100,10 @@ export function ReferralSettingsView() {
 	if (loading) return <Loading />;
 	if (error) return <p className="text-sm text-destructive">{error}</p>;
 
-	const canEdit = !admin?.role || admin.role === "superadmin";
+	const canEdit = hasPermission(
+		{ username: admin.username ?? "", role: admin.role ?? undefined, permissions: admin.permissions },
+		"referral"
+	);
 	const updatedAt = settings?.updatedAt ? new Date(settings.updatedAt).toLocaleString("ru-RU") : null;
 
 	return (
@@ -141,7 +145,7 @@ export function ReferralSettingsView() {
 					</Button>
 				</form>
 
-				{!canEdit && <p className="mt-2 text-sm text-gray-600">Standart limitni faqat superadmin o&apos;zgartira oladi.</p>}
+				{!canEdit && <p className="mt-2 text-sm text-gray-600">Standart limitni o&apos;zgartirish uchun «Referal» ruxsati kerak.</p>}
 				{saveError && <p className="mt-2 text-sm text-destructive">{saveError}</p>}
 				{saved && <p className="mt-2 text-sm text-green-600">Saqlandi</p>}
 				{settings?.updatedBy && (

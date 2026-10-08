@@ -9,7 +9,6 @@ import { sendMessageHandler } from "./routes/send-message";
 import { openApiSpec } from "./openapi";
 // Internal routes (consumed by app.aslzarbot.uz only — intentionally undocumented in /docs)
 import { getBonusTokenHandler, getMeHandler, registerHandler } from "./routes/internal/users";
-import { listProductsHandler } from "./routes/internal/products";
 import {
 	getCatalogProductHandler,
 	listCatalogCategoriesHandler,
@@ -92,9 +91,7 @@ app.get("/v1/users/me", requireMiniAppAuth, getMeHandler);
 // screen bound to user data, or triggering a background 1C refresh each time.
 app.get("/v1/users/me/bonus-token", requireMiniAppAuth, getBonusTokenHandler);
 app.post("/v1/users/register", requireMiniAppAuth, registerHandler);
-app.get("/v1/products", requireMiniAppAuth, listProductsHandler);
-// Live catalogue proxied from ASLZAR ID (docs/aslzarid-catalog.md). Separate from /v1/products
-// above, which still serves the legacy admin-managed collection during the migration.
+// Live catalogue proxied from ASLZAR ID (docs/aslzarid-catalog.md).
 // Categories is registered before :productId so the literal segment is not read as an id.
 app.get("/v1/catalog", requireMiniAppAuth, listCatalogHandler);
 app.get("/v1/catalog/categories", requireMiniAppAuth, listCatalogCategoriesHandler);

@@ -6,7 +6,7 @@
  * sees the API key.
  */
 import { NextResponse, type NextRequest } from "next/server";
-import { getAuthenticatedAdmin, isSuperAdmin } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 const API_BASE_URL = process.env.API_BASE_URL || "https://api.aslzarbot.uz";
 const API_INTERNAL_KEY = process.env.API_INTERNAL_KEY || "";
@@ -21,7 +21,7 @@ function authHeaders(): Record<string, string> {
 async function ensureAuthorized(request: NextRequest): Promise<NextResponse | null> {
 	const admin = await getAuthenticatedAdmin(request);
 	if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-	if (!isSuperAdmin(admin)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+	if (!hasPermission(admin, "integrations")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 	if (!API_INTERNAL_KEY) {
 		return NextResponse.json({ error: "API_INTERNAL_KEY env var not configured" }, { status: 500 });
 	}

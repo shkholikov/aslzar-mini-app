@@ -2,10 +2,11 @@ import { MongoClient, ObjectId } from "mongodb";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import type { AdminRole, AdminPermission } from "./auth-utils";
+import { normalizePermissions } from "./auth-utils";
 
 // Re-export pure utilities so callers only need one import
 export type { AdminRole, AdminPermission } from "./auth-utils";
-export { isSuperAdmin, hasPermission, getFirstAllowedPath } from "./auth-utils";
+export { isSuperAdmin, hasPermission, getFirstAllowedPath, normalizePermissions } from "./auth-utils";
 
 // MongoDB configuration (reuse same DB, separate collection for admin users)
 const dbUri = process.env.MONGO_DB_CONNECTION_STRING || "";
@@ -175,7 +176,10 @@ export async function getAllAdminUsers(): Promise<Omit<AdminUser, "passwordHash"
 			.find({}, { projection: { passwordHash: 0 } })
 			.sort({ createdAt: 1 })
 			.toArray();
-		return users as Omit<AdminUser, "passwordHash">[];
+		// Retired permission keys (e.g. "products") are dropped here, so the Adminlar page never shows them.
+		return (users as Omit<AdminUser, "passwordHash">[]).map((u) =>
+			u.permissions ? { ...u, permissions: normalizePermissions(u.permissions) } : u
+		);
 	} finally {
 		await client.close();
 	}
@@ -221,20 +225,27 @@ export async function createAdminUser(input: {
 	}
 }
 
+/**
+ * Changes an admin's role and/or permissions. Permissions are kept only for staff: becoming
+ * superadmin clears them, and a permissions-only update applies to the admin's current role
+ * rather than wiping the list when `role` is omitted.
+ */
 export async function updateAdminUser(id: string, input: { role?: AdminRole; permissions?: AdminPermission[] }): Promise<boolean> {
 	const client = getMongoClient();
 	try {
 		await client.connect();
 		const db = client.db(dbName);
 		const coll = db.collection<AdminUser>(adminUsersCollection);
+		const filter = { _id: new ObjectId(id) as unknown as string };
 
-		const update: Partial<AdminUser> = {};
-		if (input.role !== undefined) update.role = input.role;
-		if (input.permissions !== undefined) {
-			update.permissions = input.role === "staff" ? input.permissions : undefined;
-		}
+		const current = await coll.findOne(filter, { projection: { role: 1 } });
+		if (!current) return false;
+		const role: AdminRole = input.role ?? (current.role === "staff" ? "staff" : "superadmin");
 
-		const result = await coll.updateOne({ _id: new ObjectId(id) as unknown as string }, { $set: update });
+		const set: Partial<AdminUser> = { role };
+		if (role === "staff" && input.permissions !== undefined) set.permissions = normalizePermissions(input.permissions);
+
+		const result = await coll.updateOne(filter, role === "superadmin" ? { $set: set, $unset: { permissions: "" } } : { $set: set });
 		return result.matchedCount > 0;
 	} finally {
 		await client.close();

@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAuthenticatedAdmin, isSuperAdmin, getAllAdminUsers, createAdminUser, type AdminRole, type AdminPermission } from "@/lib/auth";
-import { VALID_PERMISSIONS } from "@/lib/auth-utils";
+import { getAuthenticatedAdmin, isSuperAdmin, getAllAdminUsers, createAdminUser, normalizePermissions, type AdminRole } from "@/lib/auth";
 
 /**
  * GET /api/admin/users
@@ -47,10 +46,9 @@ export async function POST(request: NextRequest) {
 		const password = typeof body?.password === "string" ? body.password : "";
 		const firstName = typeof body?.firstName === "string" ? body.firstName.trim() : undefined;
 		const lastName = typeof body?.lastName === "string" ? body.lastName.trim() : undefined;
-		const role: AdminRole = body?.role === "staff" ? "staff" : "superadmin";
-		const permissions: AdminPermission[] = Array.isArray(body?.permissions)
-			? body.permissions.filter((p: unknown) => VALID_PERMISSIONS.has(p as AdminPermission))
-			: [];
+		// Superadmin only when asked for explicitly — a missing or mistyped role must not grant everything.
+		const role: AdminRole = body?.role === "superadmin" ? "superadmin" : "staff";
+		const permissions = normalizePermissions(body?.permissions);
 
 		if (!username || !password) {
 			return NextResponse.json({ error: "username va password majburiy" }, { status: 400 });

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAuthenticatedAdmin, isSuperAdmin } from "@/lib/auth";
+import { getAuthenticatedAdmin, isSuperAdmin, normalizePermissions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
 	const admin = await getAuthenticatedAdmin(request);
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 		{
 			authenticated: true,
 			role: isSuperAdmin(admin) ? "superadmin" : "staff",
-			permissions: admin.permissions ?? [],
+			permissions: normalizePermissions(admin.permissions),
 			username: admin.username,
 			firstName: admin.firstName ?? null,
 			lastName: admin.lastName ?? null

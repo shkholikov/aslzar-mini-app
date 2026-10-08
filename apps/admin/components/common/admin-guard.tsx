@@ -27,7 +27,7 @@ export function AdminGuard({ children, requiredPermission }: AdminGuardProps) {
 		if (requiredPermission) {
 			const admin = { username: username ?? "", role: role ?? undefined, permissions };
 			if (!hasPermission(admin, requiredPermission)) {
-				router.replace(getFirstAllowedPath(admin));
+				router.replace(getFirstAllowedPath());
 			}
 		}
 	}, [checking, authenticated, role, permissions, username, requiredPermission, router]);

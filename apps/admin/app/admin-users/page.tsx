@@ -10,10 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, UserCog, Trash2 } from "lucide-react";
+import { Download, UserCog, Trash2, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loading } from "@/components/common/loading";
 import { exportToExcel } from "@/lib/export";
-import { ALL_PERMISSIONS, type AdminPermission, type AdminRole } from "@/lib/auth-utils";
+import { ALL_PERMISSIONS, normalizePermissions, type AdminPermission, type AdminRole } from "@/lib/auth-utils";
 
 interface AdminUserRow {
 	_id: string;
@@ -42,6 +43,12 @@ function AdminUsersContent() {
 	const [newPermissions, setNewPermissions] = React.useState<AdminPermission[]>([]);
 	const [creating, setCreating] = React.useState(false);
 	const [createError, setCreateError] = React.useState("");
+
+	const [editing, setEditing] = React.useState<AdminUserRow | null>(null);
+	const [editRole, setEditRole] = React.useState<AdminRole>("staff");
+	const [editPermissions, setEditPermissions] = React.useState<AdminPermission[]>([]);
+	const [savingEdit, setSavingEdit] = React.useState(false);
+	const [editError, setEditError] = React.useState("");
 
 	React.useEffect(() => {
 		if (!isSuperadmin) {
@@ -117,6 +124,39 @@ function AdminUsersContent() {
 		setNewPermissions((prev) => (prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]));
 	}
 
+	function openEdit(user: AdminUserRow) {
+		setEditing(user);
+		setEditRole(user.role ?? "superadmin");
+		setEditPermissions(normalizePermissions(user.permissions));
+		setEditError("");
+	}
+
+	function toggleEditPermission(perm: AdminPermission) {
+		setEditPermissions((prev) => (prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]));
+	}
+
+	async function handleSaveEdit() {
+		if (!editing) return;
+		setSavingEdit(true);
+		setEditError("");
+		try {
+			const res = await fetch(`/api/admin/users/${editing._id}`, {
+				method: "PATCH",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ role: editRole, permissions: editRole === "staff" ? editPermissions : [] })
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				setEditError(data.error ?? "Saqlashda xatolik");
+				return;
+			}
+			setEditing(null);
+			await fetchUsers();
+		} finally {
+			setSavingEdit(false);
+		}
+	}
+
 	if (!isSuperadmin) return null;
 
 	function handleExport() {
@@ -171,8 +211,18 @@ function AdminUsersContent() {
 								className="flex-1 min-w-[160px]"
 								autoComplete="new-password"
 							/>
-							<Input placeholder="Ism" value={newFirstName} onChange={(e) => setNewFirstName(e.target.value)} className="flex-1 min-w-[120px]" />
-							<Input placeholder="Familiya" value={newLastName} onChange={(e) => setNewLastName(e.target.value)} className="flex-1 min-w-[120px]" />
+							<Input
+								placeholder="Ism"
+								value={newFirstName}
+								onChange={(e) => setNewFirstName(e.target.value)}
+								className="flex-1 min-w-[120px]"
+							/>
+							<Input
+								placeholder="Familiya"
+								value={newLastName}
+								onChange={(e) => setNewLastName(e.target.value)}
+								className="flex-1 min-w-[120px]"
+							/>
 							<select
 								value={newRole}
 								onChange={(e) => {
@@ -276,7 +326,17 @@ function AdminUsersContent() {
 											<TableCell className="text-muted-foreground text-xs">
 												{user.createdAt ? new Date(user.createdAt).toLocaleDateString("uz-UZ") : "—"}
 											</TableCell>
-											<TableCell className="text-right">
+											<TableCell className="text-right whitespace-nowrap">
+												<Button
+													variant="ghost"
+													size="icon"
+													disabled={isSelf}
+													title={isSelf ? "O'zingizni tahrirlay olmaysiz" : "Tahrirlash"}
+													onClick={() => openEdit(user)}
+													className="h-8 w-8"
+												>
+													<Pencil className="h-4 w-4" />
+												</Button>
 												<Button
 													variant="ghost"
 													size="icon"
@@ -296,6 +356,49 @@ function AdminUsersContent() {
 					</Table>
 				</div>
 			</div>
+
+			<Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+				<DialogContent className="max-w-md">
+					<DialogHeader>
+						<DialogTitle>Tahrirlash: {editing?.username}</DialogTitle>
+					</DialogHeader>
+					<div className="flex flex-col gap-3">
+						<select
+							value={editRole}
+							onChange={(e) => {
+								setEditRole(e.target.value as AdminRole);
+								if (e.target.value === "superadmin") setEditPermissions([]);
+							}}
+							className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+						>
+							<option value="staff">Staff</option>
+							<option value="superadmin">Superadmin</option>
+						</select>
+						{editRole === "staff" && (
+							<div>
+								<p className="text-sm font-medium mb-2">Ruxsatlar:</p>
+								<div className="flex flex-wrap gap-3">
+									{ALL_PERMISSIONS.map(({ value, label }) => (
+										<label key={value} className="flex items-center gap-1.5 cursor-pointer text-sm">
+											<Checkbox checked={editPermissions.includes(value)} onCheckedChange={() => toggleEditPermission(value)} />
+											{label}
+										</label>
+									))}
+								</div>
+							</div>
+						)}
+						{editError && <p className="text-sm text-destructive">{editError}</p>}
+					</div>
+					<DialogFooter>
+						<Button type="button" variant="outline" size="sm" onClick={() => setEditing(null)} disabled={savingEdit}>
+							Bekor qilish
+						</Button>
+						<Button type="button" size="sm" onClick={handleSaveEdit} disabled={savingEdit}>
+							{savingEdit ? "Saqlanmoqda..." : "Saqlash"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</main>
 	);
 }

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getReferralSettings, getReferralStats, updateReferralSettings } from "@/lib/db";
-import { getAuthenticatedAdmin, hasPermission, isSuperAdmin } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
 
 /** Same ceiling as the per-user limit — guards against a typo becoming an effectively unlimited cap. */
 const MAX_REFERRAL_LIMIT = 1000;
@@ -17,7 +17,8 @@ export async function GET(request: NextRequest) {
 		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
-		if (!hasPermission(admin, "users")) {
+		// Foydalanuvchilar reads the default too, to show each client's effective limit.
+		if (!hasPermission(admin, "users") && !hasPermission(admin, "referral")) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
@@ -48,7 +49,7 @@ export async function PATCH(request: NextRequest) {
 		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
-		if (!isSuperAdmin(admin)) {
+		if (!hasPermission(admin, "referral")) {
 			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 

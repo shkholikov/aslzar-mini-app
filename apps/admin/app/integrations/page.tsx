@@ -1,26 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { Plug, Clock } from "lucide-react";
 import { AdminGuard } from "@/components/common/admin-guard";
-import { useAdminContext } from "@/components/common/admin-context";
 import { Separator } from "@/components/ui/separator";
 import { Loading } from "@/components/common/loading";
 import { Sync1CHistoryTable, Sync1CLatestCard, useSync1CState } from "@/components/integrations/sync-1c";
 
 function IntegrationsContent() {
-	const { role } = useAdminContext();
-	const router = useRouter();
-	const isSuperadmin = role === "superadmin" || !role;
-
-	React.useEffect(() => {
-		if (!isSuperadmin) router.replace("/");
-	}, [isSuperadmin, router]);
-
 	const sync1C = useSync1CState();
-
-	if (!isSuperadmin) return null;
 
 	return (
 		<main className="flex min-h-screen w-full flex-col px-4 py-8 sm:px-6 lg:px-8">
@@ -51,7 +39,7 @@ function IntegrationsContent() {
 
 export default function IntegrationsPage() {
 	return (
-		<AdminGuard>
+		<AdminGuard requiredPermission="integrations">
 			<IntegrationsContent />
 		</AdminGuard>
 	);

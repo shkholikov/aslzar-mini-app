@@ -61,14 +61,14 @@ pnpm --filter admin lint
 1. **Bot** creates user sessions in MongoDB when users interact via Telegram
 2. **Webapp** is a thin client — it talks to `apps/api` (`api.aslzarbot.uz`) for every data operation. It does **not** touch MongoDB or 1C directly. Authentication is via Telegram WebApp `initData` (HMAC-verified by the API).
 3. **API** owns all integrations (1C, AmoCRM, Telegram Bot API, MongoDB) for the webapp. External partners use `/v1/external/*` (API-key auth, OpenAPI-documented). The webapp uses other `/v1/*` routes (initData HMAC auth, intentionally undocumented — never added to `apps/api/src/openapi.ts`).
-4. **Admin** manages users, products, broadcasts, employees, and suggestions
+4. **Admin** manages users, referrals, broadcasts, news, employees, suggestions and the 1C sync
 
 ### Key Shared Collections (MongoDB)
 
 - `users` - Telegram user sessions (created by bot, read/updated by webapp)
 - `broadcast_jobs` - Admin creates, bot processes and sends
 - `channel_posts` - Bot stores group messages, webapp displays as "Yangiliklar"
-- `products` - Admin CRUD, webapp catalog display
+- `products` - Legacy, no longer read (the catalogue comes from ASLZAR ID via `/v1/catalog`)
 - `employees` - Admin manages, bot validates referral codes (empN format)
 - `suggestions` - Webapp submits, admin views
 
@@ -95,6 +95,8 @@ Sessions use Telegram user ID as key. Key fields:
 ### Admin Authentication
 
 Cookie-based HMAC-signed sessions. Requires `ADMIN_SESSION_SECRET` env var.
+
+Roles: `superadmin` (everything) and `staff` (only ticked permissions). One permission per sidebar page — `users`, `referral`, `employees`, `broadcast`, `news`, `suggestions`, `integrations` (`apps/admin/lib/auth-utils.ts`). Dashboard is open to every admin; Adminlar is superadmin-only. Every API route re-checks the permission server-side; retired keys (e.g. `products`) are filtered out by `normalizePermissions`, not migrated.
 
 ## Environment Variables
 

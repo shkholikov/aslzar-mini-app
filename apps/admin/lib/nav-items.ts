@@ -1,7 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { Shield, Megaphone, MessageSquare, Package, Users, Newspaper, UserCog, Plug, LayoutDashboard, Share2 } from "lucide-react";
+import { Shield, Megaphone, MessageSquare, Users, Newspaper, UserCog, Plug, LayoutDashboard, Share2 } from "lucide-react";
 import type { AdminPermission, AdminRole } from "@/lib/auth-utils";
-import { PRODUCTS_ADMIN_ENABLED } from "@/lib/products-admin";
 
 export interface NavItem {
 	href: string;
@@ -12,16 +11,15 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-	{ href: "/", label: "Dashboard", icon: LayoutDashboard, permission: "users", superadminOnly: true },
-	{ href: "/users", label: "Foydalanuvchilar", icon: Shield, permission: "users", superadminOnly: true },
-	{ href: "/referral", label: "Referal", icon: Share2, permission: "users", superadminOnly: true },
+	{ href: "/", label: "Dashboard", icon: LayoutDashboard, permission: null },
+	{ href: "/users", label: "Foydalanuvchilar", icon: Shield, permission: "users" },
+	{ href: "/referral", label: "Referal", icon: Share2, permission: "referral" },
 	{ href: "/employees", label: "Xodimlar", icon: Users, permission: "employees" },
 	{ href: "/broadcast", label: "Broadcast", icon: Megaphone, permission: "broadcast" },
 	{ href: "/news", label: "Yangiliklar", icon: Newspaper, permission: "news" },
 	{ href: "/suggestions", label: "Takliflar", icon: MessageSquare, permission: "suggestions" },
-	{ href: "/products", label: "Mahsulotlar", icon: Package, permission: "products" },
 	{ href: "/admin-users", label: "Adminlar", icon: UserCog, permission: null, superadminOnly: true },
-	{ href: "/integrations", label: "Integratsiyalar", icon: Plug, permission: null, superadminOnly: true }
+	{ href: "/integrations", label: "Integratsiyalar", icon: Plug, permission: "integrations" }
 ];
 
 interface NavAccess {
@@ -35,11 +33,8 @@ export function visibleNavItems({ authenticated, role, permissions }: NavAccess)
 	const isSuperadmin = role === "superadmin" || !role;
 	return NAV_ITEMS.filter((item) => {
 		if (!authenticated) return false;
-		// Filtered rather than removed from NAV_ITEMS: navTitle() reads the same array to resolve
-		// the page header, so dropping the entry would blank the title on /products.
-		if (item.href === "/products" && !PRODUCTS_ADMIN_ENABLED) return false;
 		if (item.superadminOnly) return isSuperadmin;
-		if (item.permission === null) return isSuperadmin;
+		if (item.permission === null) return true; // open to every admin (Dashboard)
 		if (isSuperadmin) return true;
 		return permissions.includes(item.permission);
 	});
