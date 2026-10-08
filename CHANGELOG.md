@@ -10,6 +10,28 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-10-08
+
+### Changed
+
+- Admin permissions («Ruxsatlar») now match the pages in the sidebar, one permission per page: Foydalanuvchilar, Referal, Xodimlar, Broadcast, Yangiliklar, Takliflar and Integratsiyalar. Ticking a permission shows that page in the admin's menu and lets them use it fully — for Referal that includes the default referral limit and each client's own limit. Before, «Foydalanuvchilar» quietly covered the Dashboard, Foydalanuvchilar and Referal while hiding all three from the menu, so staff with it could reach those pages only by typing the address.
+- The Dashboard is open to every admin and is where everyone lands after logging in. A staff admin with no usable permission used to be sent back to the login page.
+- Integratsiyalar (the 1C sync) can be given to staff with its own permission; Adminlar stays superadmin-only.
+
+### Added
+
+- Superadmins can change an existing admin's role and permissions with the new «Tahrirlash» button on the Adminlar page. Before, the only way was to delete the admin and create them again. Nobody can change their own role.
+
+### Removed
+
+- The old «Mahsulotlar» section — its permission, page and product editor, and the Mini App API route that served it. The catalogue comes from ASLZAR ID and none of this was used any more. Admins who still had the permission simply no longer see it; nothing in the database needed changing.
+
+### Fixed
+
+- Uploading photos and videos now requires the permission of the page they are for (Broadcast or Yangiliklar). Before, any logged-in admin could upload files.
+- A new admin created without choosing a role is now Staff, not Superadmin.
+- Changing only an admin's permissions no longer risks wiping them.
+
 ## [2.18.1] - 2026-09-28
 
 ### Fixed

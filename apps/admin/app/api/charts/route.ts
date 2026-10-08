@@ -1,15 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getMonthlyUserGrowth } from "@/lib/db";
-import { getAuthenticatedAdmin, hasPermission } from "@/lib/auth";
+import { getAuthenticatedAdmin } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
 	try {
 		const admin = await getAuthenticatedAdmin(request);
 		if (!admin) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-		}
-		if (!hasPermission(admin, "users")) {
-			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 		}
 
 		const monthlyGrowth = await getMonthlyUserGrowth();

@@ -1,11 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { getAuthenticatedAdmin } from "@/lib/auth";
+import { getAuthenticatedAdmin, hasPermission, type AdminPermission } from "@/lib/auth";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm", "video/quicktime"];
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100 MB
+
+/** Each upload folder belongs to the page that uses it; uploading needs that page's permission. */
+const FOLDERS: Record<string, { folder: string; permission: AdminPermission }> = {
+	broadcasts: { folder: "broadcasts", permission: "broadcast" },
+	news: { folder: "news", permission: "news" }
+};
 
 const r2 = new S3Client({
 	region: "auto",
@@ -34,6 +40,14 @@ export async function POST(request: NextRequest) {
 			return NextResponse.json({ error: "filename and contentType are required" }, { status: 400 });
 		}
 
+		const target = typeof prefix === "string" ? FOLDERS[prefix] : undefined;
+		if (!target) {
+			return NextResponse.json({ error: "Noma'lum yuklash joyi" }, { status: 400 });
+		}
+		if (!hasPermission(admin, target.permission)) {
+			return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+		}
+
 		if (!ALLOWED_TYPES.includes(contentType)) {
 			return NextResponse.json(
 				{
@@ -43,7 +57,8 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		if (size && size > MAX_FILE_SIZE) {
+		// The client-reported size is the only check before the browser uploads straight to R2.
+		if (typeof size !== "number" || size <= 0 || size > MAX_FILE_SIZE) {
 			return NextResponse.json({ error: "Fayl hajmi juda katta. Maksimal 100 MB." }, { status: 400 });
 		}
 
@@ -51,13 +66,7 @@ export async function POST(request: NextRequest) {
 			String(filename)
 				.replace(/[^a-zA-Z0-9.-]/g, "_")
 				.slice(0, 80) || "file";
-		const FOLDERS: Record<string, string> = {
-			broadcasts: "broadcasts",
-			news: "news",
-			products: "products"
-		};
-		const folder = FOLDERS[prefix] ?? "products";
-		const key = `${folder}/${Date.now()}-${safeName}`;
+		const key = `${target.folder}/${Date.now()}-${safeName}`;
 
 		const uploadUrl = await getSignedUrl(
 			r2,

@@ -3,10 +3,8 @@
  * These can be imported in both server and client components.
  */
 
-import { PRODUCTS_ADMIN_ENABLED } from "@/lib/products-admin";
-
 export type AdminRole = "superadmin" | "staff";
-export type AdminPermission = "employees" | "products" | "news" | "broadcast" | "suggestions" | "users";
+export type AdminPermission = "users" | "referral" | "employees" | "broadcast" | "news" | "suggestions" | "integrations";
 
 export interface AdminUserBase {
 	username: string;
@@ -16,26 +14,30 @@ export interface AdminUserBase {
 	permissions?: AdminPermission[];
 }
 
+/**
+ * One permission per sidebar page. Dashboard needs none (every admin sees it) and Adminlar is
+ * superadmin-only, so neither is listed.
+ */
 export const ALL_PERMISSIONS: { value: AdminPermission; label: string }[] = [
 	{ value: "users", label: "Foydalanuvchilar" },
+	{ value: "referral", label: "Referal" },
 	{ value: "employees", label: "Xodimlar" },
 	{ value: "broadcast", label: "Broadcast" },
 	{ value: "news", label: "Yangiliklar" },
 	{ value: "suggestions", label: "Takliflar" },
-	{ value: "products", label: "Mahsulotlar" }
+	{ value: "integrations", label: "Integratsiyalar" }
 ];
 
 export const VALID_PERMISSIONS = new Set<AdminPermission>(ALL_PERMISSIONS.map((p) => p.value));
 
-/** Maps AdminPermission to the first page that permission grants access to */
-const PERMISSION_PATH_MAP: Record<AdminPermission, string> = {
-	users: "/",
-	employees: "/employees",
-	products: "/products",
-	news: "/news",
-	broadcast: "/broadcast",
-	suggestions: "/suggestions"
-};
+/**
+ * Keeps only permissions that still exist. Stored admins can carry retired keys (e.g. "products"
+ * from the old product editor); they are dropped here rather than migrated in the database.
+ */
+export function normalizePermissions(list: unknown): AdminPermission[] {
+	if (!Array.isArray(list)) return [];
+	return list.filter((p): p is AdminPermission => VALID_PERMISSIONS.has(p as AdminPermission));
+}
 
 export function isSuperAdmin(admin: AdminUserBase): boolean {
 	return !admin.role || admin.role === "superadmin";
@@ -46,15 +48,7 @@ export function hasPermission(admin: AdminUserBase, permission: AdminPermission)
 	return (admin.permissions ?? []).includes(permission);
 }
 
-/** Returns the first page this admin is allowed to access. Superadmins go to "/". */
-export function getFirstAllowedPath(admin: AdminUserBase): string {
-	if (isSuperAdmin(admin)) return "/";
-	const permissions = admin.permissions ?? [];
-	for (const perm of Object.keys(PERMISSION_PATH_MAP) as AdminPermission[]) {
-		// While the product editor is disabled, landing a products-only admin on it would strand
-		// them on a notice with nowhere else to go.
-		if (perm === "products" && !PRODUCTS_ADMIN_ENABLED) continue;
-		if (permissions.includes(perm)) return PERMISSION_PATH_MAP[perm];
-	}
-	return "/login"; // no permissions at all
+/** Where an admin lands after login or after being turned away from a page: the Dashboard, open to all. */
+export function getFirstAllowedPath(): string {
+	return "/";
 }

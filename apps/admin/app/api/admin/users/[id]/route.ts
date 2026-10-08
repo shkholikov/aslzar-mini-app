@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getAuthenticatedAdmin, isSuperAdmin, updateAdminUser, deleteAdminUser, type AdminRole, type AdminPermission } from "@/lib/auth";
-import { VALID_PERMISSIONS } from "@/lib/auth-utils";
+import { ObjectId } from "mongodb";
+import { getAuthenticatedAdmin, isSuperAdmin, updateAdminUser, deleteAdminUser, normalizePermissions, type AdminRole } from "@/lib/auth";
+
+/** Compares as ObjectIds: the id in the URL may differ in letter case from the stored one. */
+function isSelf(adminId: unknown, id: string): boolean {
+	return adminId != null && new ObjectId(id).equals(String(adminId));
+}
 
 interface RouteParams {
 	params: Promise<{ id: string }>;
@@ -22,15 +27,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 		}
 
 		const { id } = await params;
-		if (!id) {
-			return NextResponse.json({ error: "Missing id" }, { status: 400 });
+		if (!id || !ObjectId.isValid(id)) {
+			return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+		}
+
+		// Editing yourself could demote the last superadmin and lock everyone out of Adminlar.
+		if (isSelf(admin._id, id)) {
+			return NextResponse.json({ error: "O'zingizning rol va ruxsatlaringizni o'zgartira olmaysiz" }, { status: 400 });
 		}
 
 		const body = await request.json();
 		const role: AdminRole | undefined = body?.role === "staff" || body?.role === "superadmin" ? body.role : undefined;
-		const permissions: AdminPermission[] | undefined = Array.isArray(body?.permissions)
-			? body.permissions.filter((p: unknown) => VALID_PERMISSIONS.has(p as AdminPermission))
-			: undefined;
+		const permissions = Array.isArray(body?.permissions) ? normalizePermissions(body.permissions) : undefined;
 
 		const updated = await updateAdminUser(id, { role, permissions });
 		if (!updated) {
@@ -40,7 +48,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 		return NextResponse.json({ success: true }, { status: 200 });
 	} catch (error) {
 		console.error("Error updating admin user:", error);
-		return NextResponse.json({ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+		return NextResponse.json(
+			{ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
+			{ status: 500 }
+		);
 	}
 }
 
@@ -59,12 +70,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 		}
 
 		const { id } = await params;
-		if (!id) {
-			return NextResponse.json({ error: "Missing id" }, { status: 400 });
+		if (!id || !ObjectId.isValid(id)) {
+			return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 		}
 
 		// Prevent self-deletion by comparing _id
-		if (admin._id && admin._id.toString() === id) {
+		if (isSelf(admin._id, id)) {
 			return NextResponse.json({ error: "O'zingizni o'chira olmaysiz" }, { status: 400 });
 		}
 
@@ -76,6 +87,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 		return NextResponse.json({ success: true }, { status: 200 });
 	} catch (error) {
 		console.error("Error deleting admin user:", error);
-		return NextResponse.json({ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
+		return NextResponse.json(
+			{ error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
+			{ status: 500 }
+		);
 	}
 }

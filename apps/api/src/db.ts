@@ -41,17 +41,6 @@ export type UserSessionDoc = {
 	};
 };
 
-export type ProductDoc = {
-	_id?: ObjectId;
-	title: string;
-	description: string;
-	price?: number;
-	url?: string;
-	imageUrl?: string;
-	badgeLabel?: string;
-	createdAt?: Date;
-};
-
 export type NewsItemDoc = {
 	_id?: ObjectId;
 	title: string;
@@ -232,11 +221,6 @@ export async function updateUserChannelMember(userId: string, isChannelMember: b
 	const col = await getUsersCollection();
 	const result = await col.updateOne({ key: userId }, { $set: { "value.isChannelMember": isChannelMember } });
 	return result.matchedCount > 0;
-}
-
-export async function getProductsCollection(): Promise<Collection<ProductDoc>> {
-	const db = await getDb();
-	return db.collection<ProductDoc>(config.MONGO_DB_COLLECTION_PRODUCTS);
 }
 
 export async function getNewsCollection(): Promise<Collection<NewsItemDoc>> {

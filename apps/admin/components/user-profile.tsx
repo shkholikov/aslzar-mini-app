@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loading } from "@/components/common/loading";
+import { useAdminContext } from "@/components/common/admin-context";
+import { hasPermission } from "@/lib/auth-utils";
 import type { UserDocument } from "@/lib/db";
 import { num, som } from "@/lib/dashboard-format";
 import { FALLBACK_REFERRAL_LIMIT } from "@/lib/referral";
@@ -51,6 +53,12 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 
 export function UserProfile({ userKey }: { userKey: string }) {
 	const router = useRouter();
+	const admin = useAdminContext();
+	// Per-client limits belong to the Referal permission; Foydalanuvchilar alone sees them read-only.
+	const canEditLimit = hasPermission(
+		{ username: admin.username ?? "", role: admin.role ?? undefined, permissions: admin.permissions },
+		"referral"
+	);
 	const [user, setUser] = React.useState<UserDocument | null>(null);
 	// Platform default from the Referal settings page, used when this user has no individual limit.
 	const [defaultLimit, setDefaultLimit] = React.useState(FALLBACK_REFERRAL_LIMIT);
@@ -199,35 +207,37 @@ export function UserProfile({ userKey }: { userKey: string }) {
 							value={user.referralLimitUpdatedBy ? `${user.referralLimitUpdatedBy} · ${formatDate(user.referralLimitUpdatedAt)}` : "-"}
 						/>
 					</div>
-					<form onSubmit={handleSaveLimit} className="flex items-end gap-2">
-						<div className="flex-1">
-							<label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="referralLimit">
-								Yangi limit
-							</label>
-							<Input
-								id="referralLimit"
-								type="number"
-								min={0}
-								inputMode="numeric"
-								value={limitInput}
-								onChange={(e) => {
-									setLimitInput(e.target.value);
-									setSaved(false);
-								}}
-								placeholder=""
-							/>
-						</div>
-						<Button type="submit" disabled={saving}>
-							{saving ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Saqlanmoqda...
-								</>
-							) : (
-								"Saqlash"
-							)}
-						</Button>
-					</form>
+					{canEditLimit && (
+						<form onSubmit={handleSaveLimit} className="flex items-end gap-2">
+							<div className="flex-1">
+								<label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="referralLimit">
+									Yangi limit
+								</label>
+								<Input
+									id="referralLimit"
+									type="number"
+									min={0}
+									inputMode="numeric"
+									value={limitInput}
+									onChange={(e) => {
+										setLimitInput(e.target.value);
+										setSaved(false);
+									}}
+									placeholder=""
+								/>
+							</div>
+							<Button type="submit" disabled={saving}>
+								{saving ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										Saqlanmoqda...
+									</>
+								) : (
+									"Saqlash"
+								)}
+							</Button>
+						</form>
+					)}
 					{saveError && <p className="mt-2 text-sm text-destructive">{saveError}</p>}
 					{saved && <p className="mt-2 text-sm text-green-600">Saqlandi</p>}
 					{used >= effectiveLimit && (

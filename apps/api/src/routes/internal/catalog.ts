@@ -8,10 +8,7 @@ import { getUserSession } from "../../db";
 import { z } from "zod";
 
 /**
- * Catalogue proxy for the miniapp shop.
- *
- * Mounted at /v1/catalog/* rather than /v1/products so the legacy admin-managed catalogue keeps
- * serving during the migration — rolling back is a config change, not a restore.
+ * Catalogue proxy for the miniapp shop, mounted at /v1/catalog/*.
  *
  * Unlike the other internal routes (which return a bare domain payload) this passes the upstream
  * `{ data, meta }` envelope straight through. That is deliberate: the client needs meta.total,
