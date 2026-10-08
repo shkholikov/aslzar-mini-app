@@ -1,5 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { ObjectId } from "mongodb";
 import { getAuthenticatedAdmin, isSuperAdmin, updateAdminUser, deleteAdminUser, normalizePermissions, type AdminRole } from "@/lib/auth";
+
+/** Compares as ObjectIds: the id in the URL may differ in letter case from the stored one. */
+function isSelf(adminId: unknown, id: string): boolean {
+	return adminId != null && new ObjectId(id).equals(String(adminId));
+}
 
 interface RouteParams {
 	params: Promise<{ id: string }>;
@@ -21,12 +27,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 		}
 
 		const { id } = await params;
-		if (!id) {
-			return NextResponse.json({ error: "Missing id" }, { status: 400 });
+		if (!id || !ObjectId.isValid(id)) {
+			return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 		}
 
 		// Editing yourself could demote the last superadmin and lock everyone out of Adminlar.
-		if (admin._id && admin._id.toString() === id) {
+		if (isSelf(admin._id, id)) {
 			return NextResponse.json({ error: "O'zingizning rol va ruxsatlaringizni o'zgartira olmaysiz" }, { status: 400 });
 		}
 
@@ -64,12 +70,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 		}
 
 		const { id } = await params;
-		if (!id) {
-			return NextResponse.json({ error: "Missing id" }, { status: 400 });
+		if (!id || !ObjectId.isValid(id)) {
+			return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 		}
 
 		// Prevent self-deletion by comparing _id
-		if (admin._id && admin._id.toString() === id) {
+		if (isSelf(admin._id, id)) {
 			return NextResponse.json({ error: "O'zingizni o'chira olmaysiz" }, { status: 400 });
 		}
 
