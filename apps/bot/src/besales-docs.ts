@@ -89,7 +89,7 @@ export const openApiSpec = {
 					requestContact: {
 						type: "boolean",
 						description:
-							"Shows Telegram's 'share my phone number' button. When the user taps it we send you a contact_shared event with contact.phone and metadata.foundIn1C."
+							"Shows Telegram's 'share my phone number' button. When the user taps it we send you a contact_shared event with contact.phone, metadata.foundIn1C and the purchase flags (hasPurchases, contractsCount, lastPurchaseDate) that ride on every message."
 					}
 				}
 			},

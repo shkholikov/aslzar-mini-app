@@ -36,6 +36,27 @@ export function isAslzarCustomer(user1CData: Partial<I1CUserData> | undefined): 
 	return user1CData?.contractFirst === true;
 }
 
+/**
+ * Re-fetch the user's 1C data when the cached copy is older than `maxAgeMs` and we know their
+ * phone. Keeps the cache on any failure (1C down, slow, or not found) — never throws.
+ *
+ * Besales gets purchase flags on every message (purchases.ts); without this, a purchase made
+ * today showed up only after the nightly sync, which skips anyone refreshed in the last 24 h.
+ * The 1C call is capped at 3 s so a slow 1C can't hold a message back for long.
+ */
+export async function refresh1CIfStale(ctx: MyContext, maxAgeMs: number): Promise<void> {
+	const phone = ctx.session?.phone_number;
+	if (!phone) return;
+	const updatedAt = ctx.session.user1CDataUpdatedAt;
+	if (updatedAt && Date.now() - new Date(updatedAt).getTime() <= maxAgeMs) return;
+	const fresh = await searchUserByPhone(phone, 3000);
+	if (fresh) {
+		ctx.session.user1CData = fresh;
+		ctx.session.isVerified = true;
+		ctx.session.user1CDataUpdatedAt = new Date();
+	}
+}
+
 const warnedContractStatuses = new Set<string>();
 
 /**
