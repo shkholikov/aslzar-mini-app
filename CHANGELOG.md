@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.20.2] - 2026-10-13
+
+### Fixed
+
+- The Mini App's type check passes again. The registration and suggestion forms were checked against a different copy of the validation library (zod 4.0 vs 4.1) than the one they run with, which produced type errors. Nothing changes for users: both forms validate exactly as before.
+
 ## [2.20.1] - 2026-10-13
 
 ### Fixed
