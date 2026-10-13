@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.20.1] - 2026-10-13
+
+### Fixed
+
+- Asking about a piece in the catalogue («Bu buyum haqida so'rash») now first asks the customer to let the bot message them, if they opened the Mini App by a link and never pressed Start in the bot. Without that, the question reached the assistant but Telegram blocked its answer. If the customer refuses, the question isn't sent and they're asked to press Start in the bot.
+
 ## [2.20.0] - 2026-10-13
 
 ### Added
