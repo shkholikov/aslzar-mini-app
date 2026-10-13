@@ -47,6 +47,8 @@ export default function ProductPage() {
 	const [photo, setPhoto] = React.useState(0);
 	const [sharing, setSharing] = React.useState(false);
 	const [asking, setAsking] = React.useState(false);
+	// initData is fixed at launch, so a permission granted in this session isn't reflected in it.
+	const writeAllowed = React.useRef(false);
 
 	React.useEffect(() => {
 		if (!emblaApi) return;
@@ -89,6 +91,8 @@ export default function ProductPage() {
 		shareToStory?: (url: string, p?: unknown) => void;
 		shareMessage?: (id: string, cb?: (sent: boolean) => void) => void;
 		isVersionAtLeast?: (v: string) => boolean;
+		requestWriteAccess?: (cb?: (granted: boolean) => void) => void;
+		initDataUnsafe?: { user?: { allows_write_to_pm?: boolean } };
 	} | null;
 	const hasPhoto = product.images.length > 0;
 	// shareToStory needs a public media URL, and throws on clients older than Bot API 7.8.
@@ -120,6 +124,22 @@ export default function ProductPage() {
 		});
 	};
 
+	// The answer goes to the bot chat, and Telegram won't let the bot write to someone who opened
+	// the Mini App by a link and never pressed Start ("bot can't initiate conversation"). So ask for
+	// permission first (Bot API 6.9+). Older clients, or a failing call, send as before.
+	const botCanWrite = async (): Promise<boolean> => {
+		if (writeAllowed.current || tgAny?.initDataUnsafe?.user?.allows_write_to_pm === true) return true;
+		if (!tgAny?.requestWriteAccess || !tgAny.isVersionAtLeast?.("6.9")) return true;
+		const webApp = tgAny;
+		try {
+			const granted = await new Promise<boolean>((resolve) => webApp.requestWriteAccess!((ok) => resolve(Boolean(ok))));
+			writeAllowed.current = granted;
+			return granted;
+		} catch {
+			return true;
+		}
+	};
+
 	// The agent's answer arrives in the chat with the bot, not in the Mini App — so on success we
 	// say where to look and close the app, rather than leaving a tap that seems to do nothing.
 	const askAboutThisPiece = async () => {
@@ -127,6 +147,13 @@ export default function ProductPage() {
 		if (!variant || asking) return;
 		tg?.HapticFeedback?.impactOccurred("medium");
 		setAsking(true);
+		// Refused: the question would reach the agent but its answer never reach the customer.
+		if (!(await botCanWrite())) {
+			tg?.HapticFeedback?.notificationOccurred("warning");
+			toast.error("Javob olish uchun botga yozishga ruxsat bering yoki botda «Start» tugmasini bosing");
+			setAsking(false);
+			return;
+		}
 		try {
 			await askAboutProduct(product.productId, variant.id);
 			tg?.HapticFeedback?.notificationOccurred("success");

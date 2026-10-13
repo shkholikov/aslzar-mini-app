@@ -262,6 +262,8 @@ Besales' three conditions:
 
 `product` and `variant` are the ASLZAR ID objects as-is; Besales reads `category.name`, `model`, `productId`, `fineness`, `color`, `stone`, `inStock`, `variants[]` and on the variant `id`, `size`, `weightGrams`, `price`, `article`, `branch.name`. Note `category.name` and `branch.name` are `{ ru, uz }` objects, and `uz` is often the Russian name (`uzIsFallback: true`).
 
+Since 2.20.1 the Mini App first calls `requestWriteAccess` (Bot API 6.9+) when `initDataUnsafe.user.allows_write_to_pm` isn't `true` — someone who opened the Mini App by a link and never pressed Start can't be written to, so the agent's answer would fail with `user_not_started`. On refusal the question isn't sent and the customer is told to press Start; older clients send as before.
+
 The unix-minute in `externalMessageId` makes a double-tap a Besales duplicate (`200`) rather than two questions. The API returns `409` when the piece is gone, `503` when `BESALES_ENABLED` isn't `true` on the API service, `502` when Besales can't be reached.
 
 # Phase 2 (2.17.0, 2026-09-27): `/start`, "share phone" button, Mini App buttons
