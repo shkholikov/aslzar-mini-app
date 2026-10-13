@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.20.3] - 2026-10-13
+
+### Fixed
+
+- The Mini App builds on Vercel again. 2.20.2 fixed the type check locally but broke it on Vercel, because the form library picked up whichever copy of zod the install happened to put first — a different one on each machine. It is now tied to the Mini App's own zod everywhere. 2.20.2 never went live; users saw no change.
+
 ## [2.20.2] - 2026-10-13
 
 ### Fixed

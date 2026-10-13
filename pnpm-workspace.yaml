@@ -1,3 +1,11 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# @hookform/resolvers imports zod's types without declaring zod, so pnpm resolved it to whichever
+# zod was hoisted — 4.1 locally, 3.25 (with a 4.0 core) on Vercel — and the forms failed the type
+# check in one place or the other. As a peer it gets the webapp's own zod everywhere.
+packageExtensions:
+  "@hookform/resolvers":
+    peerDependencies:
+      zod: "*"
