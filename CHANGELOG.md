@@ -10,6 +10,16 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-10-13
+
+### Added
+
+- The Besales agent can now tell buyers from newcomers. Every message we pass to it — chat messages, button taps, Start, a shared phone number and catalogue questions — now says whether the person is an ASLZAR client in 1C (`foundIn1C`), whether they ever bought anything (`hasPurchases`), how many purchases they have (`contractsCount`) and the date of the latest one (`lastPurchaseDate`). A purchase is any 1C contract that wasn't returned, cash sales included. Before, the agent only learned whether the person was in 1C, which is also true for anyone who just registered in the Mini App.
+
+### Changed
+
+- The bot refreshes a client's 1C data when it is more than an hour old, before answering Start or passing a message to Besales, so a purchase made today shows up the next time the client writes. Before, it refreshed only on Start and only after 24 hours, and the nightly sync could leave the data almost two days old.
+
 ## [2.19.0] - 2026-10-08
 
 ### Changed

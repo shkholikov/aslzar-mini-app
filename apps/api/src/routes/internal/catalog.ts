@@ -4,6 +4,7 @@ import { config } from "../../config";
 import { savePreparedInlineMessage } from "../../telegram";
 import { AslzarIdError, AslzarIdNotConfiguredError, getProduct, listCategories, listProducts } from "../../integrations/aslzarid";
 import { besalesConfigured, sendInbound, type BesalesContact } from "../../integrations/besales";
+import { purchaseMetadata } from "../../integrations/purchases";
 import { getUserSession } from "../../db";
 import { z } from "zod";
 
@@ -247,7 +248,7 @@ function text(v: unknown): string | undefined {
  * Besales' three conditions (agreed with them):
  *   - `text` is the button label in the customer's language, so the agent replies in it
  *   - `variant.id` is one of `product.variants[].id` — they drop it from "other sizes" by id
- *   - metadata rides only on this message, not every message
+ *   - the product and variant ride only on this message, not every message
  */
 export async function askAboutProductHandler(req: MiniAppAuthedRequest, res: Response): Promise<void> {
 	if (!besalesConfigured()) {
@@ -315,7 +316,9 @@ export async function askAboutProductHandler(req: MiniAppAuthedRequest, res: Res
 		text: ASK_BUTTON_LABEL,
 		...(Object.keys(contact).length > 0 && { contact }),
 		// Sent as is — Besales reads what it needs and skips images, warehouse and internal ids.
-		metadata: { event: "product_ask", source: "miniapp_catalog", product, variant },
+		// Purchase flags ride on every Besales message (bot too). No 1C call here: the open Mini App
+		// keeps the session fresh through /v1/users/me.
+		metadata: { event: "product_ask", source: "miniapp_catalog", product, variant, ...purchaseMetadata(oneC) },
 		timestamp: Math.floor(Date.now() / 1000)
 	});
 

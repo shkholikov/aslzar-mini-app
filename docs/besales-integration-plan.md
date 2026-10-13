@@ -290,7 +290,7 @@ When a message with a `requestContact` button is delivered, we record `contact-r
 	"externalMessageId": "contact:<message id>",
 	"sourceChannel": "telegram",
 	"contact": { "firstName": "...", "phone": "+998...", "languageCode": "uz" },
-	"metadata": { "event": "contact_shared", "foundIn1C": true }
+	"metadata": { "event": "contact_shared", "foundIn1C": true, "hasPurchases": true, "contractsCount": 2, "lastPurchaseDate": "2026-05-14" }
 }
 ```
 
@@ -315,3 +315,24 @@ Sent at the end of `bot.command("start")`, after our own referral handling and w
 - `referralCode` only for employees. For client links it is the inviter's Telegram id, which the agent doesn't need.
 - Informational only. The referral is stored here and **decided later** in `:contact` (it can still be rejected — already a customer, inviter over the limit, self-referral), so the agent shouldn't promise a bonus at `/start`.
 - Our welcome message with the Mini App button always goes out too; if the agent writes first, the user gets two messages.
+
+# Purchase flags on every message (2.20.0, 2026-10-13)
+
+Requested by Besales: the agent treats buyers (ask for a rating, offer something personal) and newcomers (explain ASLZAR, invite to a branch) differently. `foundIn1C` can't tell them apart — registering in the Mini App creates the 1C client, so it is `true` for people who never bought.
+
+Every inbound we send for something the user did — text, button tap, `start`, `contact_shared`, `product_ask` — now carries in `metadata`:
+
+```json
+{ "foundIn1C": true, "hasPurchases": true, "contractsCount": 2, "lastPurchaseDate": "2026-05-14" }
+```
+
+- `foundIn1C` — the user is a 1C client (matched by phone). When `false`, the other three are **omitted**. Together with `contact.phone` that gives three states: no phone (`contact.phone` absent), phone but not a client (`foundIn1C: false`), client (`true`).
+- `hasPurchases` / `contractsCount` — 1C contracts (`contract.ids`) whose `status` is not `returned`. 1C creates a contract for cash sales too (`closed`, `months: 0`, empty schedule), so they count. A re-issued contract leaves the old one `returned` and the new one counts. A missing status (records cached before 1C added the field) counts.
+- `lastPurchaseDate` — `YYYY-MM-DD` of the latest such contract. 1C sends `YYYY-MM-DDT00:00:00`, Tashkent-local; omitted when there is none.
+- Not on `delivery_failed` — that isn't a user message.
+
+Checked against production (2026-10-13, 15 863 1C clients): this matches 1C's own `contractFirst` ("had any contract") for everyone except 113 clients whose only contracts are returned — those get `hasPurchases: false` on purpose. The account-level counters `contract.active/ended/returned` are 0 for everyone and are not used.
+
+**Freshness.** Before forwarding a text, a button tap or `/start`, the bot re-fetches 1C when the cached copy is older than 1 hour and the phone is known (`refresh1CIfStale` in `helper.ts`, 3 s cap; on failure the cached flags go out). `product_ask` makes no extra call: the open Mini App refreshes the session through `/v1/users/me`. Before this, the bot refreshed only on `/start` (24 h) and the nightly sync skips anyone refreshed in the last 24 h, so flags could lag almost two days.
+
+Code: `purchaseMetadata` in `apps/bot/src/purchases.ts` and its copy in `apps/api/src/integrations/purchases.ts` (no shared package — keep them in sync).

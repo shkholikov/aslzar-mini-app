@@ -3,8 +3,9 @@ import { Bot, GrammyError, HttpError, session } from "grammy";
 import { besalesDeliveries, connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
-import { handleEmployeeReferralCode, handleReferralCode, initializeSession, sendWebApp } from "./helper";
+import { handleEmployeeReferralCode, handleReferralCode, initializeSession, refresh1CIfStale, sendWebApp } from "./helper";
 import { searchUserByPhone } from "./api";
+import { purchaseMetadata } from "./purchases";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
 import { besalesEnabled, buildContact, sendInbound, startReferral } from "./besales";
@@ -20,6 +21,9 @@ if (!BOT_TOKEN) {
 }
 
 const bot = new Bot<MyContext>(BOT_TOKEN);
+
+/** Older 1C data is re-fetched before we answer or forward to Besales (purchase flags stay current). */
+const ONE_C_MAX_AGE_MS = 60 * 60 * 1000;
 
 async function bootstrap() {
 	// Connects to DB
@@ -84,17 +88,7 @@ async function bootstrap() {
 			initializeSession(ctx);
 			await sendWebApp(ctx, rawCode ?? undefined);
 		} else {
-			const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-			const updatedAt = ctx.session.user1CDataUpdatedAt;
-			const isStale = !updatedAt || Date.now() - new Date(updatedAt).getTime() > TWENTY_FOUR_HOURS;
-			if (isStale) {
-				const fresh1C = await searchUserByPhone(ctx.session.phone_number);
-				if (fresh1C) {
-					ctx.session.user1CData = fresh1C;
-					ctx.session.isVerified = true;
-					ctx.session.user1CDataUpdatedAt = new Date();
-				}
-			}
+			await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
 			await sendWebApp(ctx, rawCode ?? undefined);
 		}
 
@@ -110,7 +104,7 @@ async function bootstrap() {
 				sourceChannel: "telegram",
 				text: "/start",
 				contact: buildContact(ctx),
-				metadata: { event: "start", ...startReferral(rawCode) },
+				metadata: { event: "start", ...startReferral(rawCode), ...purchaseMetadata(ctx.session.user1CData) },
 				timestamp: ctx.message?.date
 			});
 		}
@@ -164,7 +158,8 @@ async function bootstrap() {
 		// besales-delivery.ts), hand it back so the agent can carry on. Only then: a Mini App
 		// registration leaves no marker and reports nothing. The marker is consumed, so this fires
 		// once per request. foundIn1C tells the agent whether this is an existing client or a new
-		// person who still has to register in the Mini App to become one.
+		// person who still has to register in the Mini App to become one; the purchase flags say
+		// whether that client ever bought anything. 1C was queried just above, so they're fresh.
 		if (besalesEnabled && ctx.from && ctx.chat) {
 			const requested = await besalesDeliveries
 				.findOneAndDelete({
@@ -183,7 +178,7 @@ async function bootstrap() {
 					externalMessageId: `contact:${ctx.message?.message_id}`,
 					sourceChannel: "telegram",
 					contact: buildContact(ctx),
-					metadata: { event: "contact_shared", foundIn1C: Boolean(ctx.session.user1CData) },
+					metadata: { event: "contact_shared", ...purchaseMetadata(ctx.session.user1CData) },
 					timestamp: ctx.message?.date
 				});
 			}
@@ -196,6 +191,7 @@ async function bootstrap() {
 		if (!besalesEnabled) return;
 		if (ctx.message.text.startsWith("/")) return; // defensive: unknown commands stay silent
 		startTyping(ctx.api, ctx.chat.id);
+		await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
 		await sendInbound({
 			externalUserId: String(ctx.from.id),
 			externalMessageId: String(ctx.message.message_id),
@@ -203,6 +199,7 @@ async function bootstrap() {
 			sourceChannel: "telegram",
 			text: ctx.message.text,
 			contact: buildContact(ctx),
+			metadata: { ...purchaseMetadata(ctx.session.user1CData) },
 			timestamp: ctx.message.date
 		});
 	});
@@ -214,6 +211,7 @@ async function bootstrap() {
 		if (!besalesEnabled) return;
 		const chatId = ctx.chat?.id ?? ctx.from.id;
 		startTyping(ctx.api, chatId);
+		await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
 		const data = ctx.callbackQuery.data;
 		const label = ctx.callbackQuery.message?.reply_markup?.inline_keyboard
 			?.flat()
@@ -225,7 +223,8 @@ async function bootstrap() {
 			sourceChannel: "telegram",
 			buttonPayload: data,
 			text: label,
-			contact: buildContact(ctx)
+			contact: buildContact(ctx),
+			metadata: { ...purchaseMetadata(ctx.session.user1CData) }
 		});
 	});
 

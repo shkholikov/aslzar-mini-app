@@ -9,9 +9,10 @@ const API_PASSWORD = process.env.API_PASSWORD || "";
 /**
  * Searches for a user in 1C API by phone number
  * @param phone - Phone number (with or without + prefix)
+ * @param timeoutMs - Give up after this long (returns null). Unset = no limit, as before.
  * @returns User data if found (status code === 0), null otherwise
  */
-export async function searchUserByPhone(phone: string): Promise<Partial<I1CUserData> | null> {
+export async function searchUserByPhone(phone: string, timeoutMs?: number): Promise<Partial<I1CUserData> | null> {
 	try {
 		// Validate environment variables
 		if (!API_BASE_URL || !API_USERNAME || !API_PASSWORD) {
@@ -38,7 +39,8 @@ export async function searchUserByPhone(phone: string): Promise<Partial<I1CUserD
 			headers,
 			body: JSON.stringify({
 				phone: formattedPhone
-			})
+			}),
+			...(timeoutMs && { signal: AbortSignal.timeout(timeoutMs) })
 		});
 
 		if (!response.ok) {
