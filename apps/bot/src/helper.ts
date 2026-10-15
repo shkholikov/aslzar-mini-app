@@ -2,7 +2,7 @@ import { InlineKeyboard } from "grammy";
 import { infoText, referralAddedText, referralLimitReachedText } from "./messages";
 import { I1CUserData, ISessionData, MyContext } from "./types";
 import { users, employees, settings } from "./db";
-import { addReferral, searchUserByPhone } from "./api";
+import { addReferral, lookupUserByPhone, searchUserByPhone } from "./api";
 
 /**
  * Fallback cap, used only when the admin `settings` document doesn't exist yet or can't be read.
@@ -43,18 +43,22 @@ export function isAslzarCustomer(user1CData: Partial<I1CUserData> | undefined): 
  * Besales gets purchase flags on every message (purchases.ts); without this, a purchase made
  * today showed up only after the nightly sync, which skips anyone refreshed in the last 24 h.
  * The 1C call is capped at 3 s so a slow 1C can't hold a message back for long.
+ *
+ * `lookupFailed` is true when we asked 1C and it didn't answer — pass it to purchaseMetadata so a
+ * user with nothing cached isn't reported to Besales as "not a client".
  */
-export async function refresh1CIfStale(ctx: MyContext, maxAgeMs: number): Promise<void> {
+export async function refresh1CIfStale(ctx: MyContext, maxAgeMs: number): Promise<{ lookupFailed: boolean }> {
 	const phone = ctx.session?.phone_number;
-	if (!phone) return;
+	if (!phone) return { lookupFailed: false };
 	const updatedAt = ctx.session.user1CDataUpdatedAt;
-	if (updatedAt && Date.now() - new Date(updatedAt).getTime() <= maxAgeMs) return;
-	const fresh = await searchUserByPhone(phone, 3000);
-	if (fresh) {
-		ctx.session.user1CData = fresh;
+	if (updatedAt && Date.now() - new Date(updatedAt).getTime() <= maxAgeMs) return { lookupFailed: false };
+	const result = await lookupUserByPhone(phone, 3000);
+	if (result.status === "found") {
+		ctx.session.user1CData = result.data;
 		ctx.session.isVerified = true;
 		ctx.session.user1CDataUpdatedAt = new Date();
 	}
+	return { lookupFailed: result.status === "error" };
 }
 
 const warnedContractStatuses = new Set<string>();

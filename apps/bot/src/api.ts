@@ -7,17 +7,31 @@ const API_USERNAME = process.env.API_USERNAME || "";
 const API_PASSWORD = process.env.API_PASSWORD || "";
 
 /**
+ * Result of a 1C phone lookup. `not_found` means 1C answered that there is no such client;
+ * `error` means we don't know (1C unreachable, timed out, or answered with an HTTP error).
+ * Callers that report "is a client" to someone else must not turn `error` into "no".
+ */
+export type LookupResult = { status: "found"; data: Partial<I1CUserData> } | { status: "not_found" } | { status: "error" };
+
+/**
  * Searches for a user in 1C API by phone number
  * @param phone - Phone number (with or without + prefix)
  * @param timeoutMs - Give up after this long (returns null). Unset = no limit, as before.
- * @returns User data if found (status code === 0), null otherwise
+ * @returns User data if found (status code === 0), null otherwise — "not found" and "1C failed"
+ * look the same here; use lookupUserByPhone when the difference matters.
  */
 export async function searchUserByPhone(phone: string, timeoutMs?: number): Promise<Partial<I1CUserData> | null> {
+	const result = await lookupUserByPhone(phone, timeoutMs);
+	return result.status === "found" ? result.data : null;
+}
+
+/** Like searchUserByPhone, but tells "not a client" apart from "1C didn't answer". Never throws. */
+export async function lookupUserByPhone(phone: string, timeoutMs?: number): Promise<LookupResult> {
 	try {
 		// Validate environment variables
 		if (!API_BASE_URL || !API_USERNAME || !API_PASSWORD) {
 			console.error("1C API configuration is missing");
-			return null;
+			return { status: "error" };
 		}
 
 		// Format phone number with + prefix
@@ -45,22 +59,25 @@ export async function searchUserByPhone(phone: string, timeoutMs?: number): Prom
 
 		if (!response.ok) {
 			const errorText = await response.text();
-			console.error("1C API error:", errorText);
-			return null;
+			console.error(`1C API error (search) status=${response.status}:`, errorText);
+			return { status: "error" };
 		}
 
 		const data = (await response.json()) as Partial<I1CUserData>;
 
 		// Check if status code === 0 (user exists)
 		if (data.code === 0) {
-			return data;
+			return { status: "found", data };
 		}
 
-		// User not found or other status code
-		return null;
+		// 1C answered: no client with this phone
+		return { status: "not_found" };
 	} catch (error) {
-		console.error("Error searching user in 1C API:", error);
-		return null;
+		// "fetch failed" hides the real reason (refused, reset, DNS, TLS) in `cause`.
+		// The bot's tsconfig lib predates Error.cause (ES2022); Node sets it all the same.
+		const cause = (error as { cause?: unknown } | null)?.cause;
+		console.error("Error searching user in 1C API:", error, ...(cause ? ["cause:", cause] : []));
+		return { status: "error" };
 	}
 }
 

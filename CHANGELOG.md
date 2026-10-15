@@ -10,6 +10,21 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.21.0] - 2026-10-15
+
+### Added
+
+- Every message the bot passes to Besales now says where it came from: `source: "bot_chat"` for the chat with the bot. Questions from the Mini App product card already carried `source: "miniapp_catalog"`.
+
+### Fixed
+
+- Messages written in a Telegram group the bot is in are no longer passed to the Besales agent. The bot is an admin of the ASLZAR group and sees every message there, and it forwarded them as if they were private chats. The agent's answer goes to the person's private chat, so anyone who had never started the bot got nothing; this is the most likely source of the "user not started" failures Besales reported. The bot also no longer shows "typing…" in a group. Skipped messages are logged with the group they came from, which will confirm or rule this out.
+- When 1C doesn't answer, Besales is no longer told that the person isn't an ASLZAR client. Before, a slow or unreachable 1C made the bot report "not a client" for anyone without cached data, and Besales cleared that person's purchase details. Now the bot leaves those fields out, and Besales keeps what it had. A question from the Mini App product card checks 1C once when nothing is cached instead of guessing.
+
+### Changed
+
+- 1C connection errors in the bot's log now include the underlying reason, so outages can be shown to the 1C developer.
+
 ## [2.20.3] - 2026-10-13
 
 ### Fixed

@@ -89,7 +89,7 @@ export const openApiSpec = {
 					requestContact: {
 						type: "boolean",
 						description:
-							"Shows Telegram's 'share my phone number' button. When the user taps it we send you a contact_shared event with contact.phone, metadata.foundIn1C and the purchase flags (hasPurchases, contractsCount, lastPurchaseDate) that ride on every message."
+							"Shows Telegram's 'share my phone number' button. When the user taps it we send you a contact_shared event with contact.phone, metadata.foundIn1C and the purchase flags (hasPurchases, contractsCount, lastPurchaseDate) that ride on every message. If 1C was unreachable and we have nothing cached, these fields are left out rather than sent as false."
 					}
 				}
 			},

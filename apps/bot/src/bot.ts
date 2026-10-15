@@ -4,11 +4,11 @@ import { besalesDeliveries, connectToDb, users } from "./db";
 import { MyContext } from "./types";
 import { MongoDBAdapter } from "@grammyjs/storage-mongodb";
 import { handleEmployeeReferralCode, handleReferralCode, initializeSession, refresh1CIfStale, sendWebApp } from "./helper";
-import { searchUserByPhone } from "./api";
+import { lookupUserByPhone } from "./api";
 import { purchaseMetadata } from "./purchases";
 import { startPaymentReminderScheduler } from "./scheduler";
 import { startBroadcastScheduler } from "./broadcast";
-import { besalesEnabled, buildContact, sendInbound, startReferral } from "./besales";
+import { besalesEnabled, buildContact, isPrivateChat, sendInbound, startReferral } from "./besales";
 import { startBesalesCallbackServer } from "./callback-server";
 import { startTyping } from "./besales-typing";
 import { ownContactOnlyText } from "./messages";
@@ -24,6 +24,14 @@ const bot = new Bot<MyContext>(BOT_TOKEN);
 
 /** Older 1C data is re-fetched before we answer or forward to Besales (purchase flags stay current). */
 const ONE_C_MAX_AGE_MS = 60 * 60 * 1000;
+
+/** `metadata.source` for everything the user does in the chat with the bot (the Mini App sends its own). */
+const BOT_SOURCE = "bot_chat";
+
+/** One line per group message we don't forward — shows which group, and who wrote there. */
+function logSkippedChat(ctx: MyContext, messageId: number | undefined): void {
+	console.log(`[besales] skipped ${ctx.chat?.type ?? "unknown"} chat ${ctx.chat?.id ?? "?"} from ${ctx.from?.id ?? "?"} msg ${messageId ?? "?"}`);
+}
 
 async function bootstrap() {
 	// Connects to DB
@@ -84,11 +92,12 @@ async function bootstrap() {
 			}
 		}
 
+		let lookupFailed = false;
 		if (!ctx.session?.phone_number) {
 			initializeSession(ctx);
 			await sendWebApp(ctx, rawCode ?? undefined);
 		} else {
-			await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
+			({ lookupFailed } = await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS));
 			await sendWebApp(ctx, rawCode ?? undefined);
 		}
 
@@ -96,7 +105,7 @@ async function bootstrap() {
 		// first to people a client invited. A copy only: the referral itself is stored above and
 		// decided later in the :contact handler, exactly as before. Our welcome has already gone out,
 		// and sendInbound never throws, so Besales being slow or down can't affect /start.
-		if (besalesEnabled) {
+		if (besalesEnabled && isPrivateChat(ctx)) {
 			void sendInbound({
 				externalUserId: String(ctx.from?.id),
 				externalChatId: String(ctx.chat.id),
@@ -104,7 +113,12 @@ async function bootstrap() {
 				sourceChannel: "telegram",
 				text: "/start",
 				contact: buildContact(ctx),
-				metadata: { event: "start", ...startReferral(rawCode), ...purchaseMetadata(ctx.session.user1CData) },
+				metadata: {
+					event: "start",
+					source: BOT_SOURCE,
+					...startReferral(rawCode),
+					...purchaseMetadata(ctx.session.user1CData, { lookupFailed })
+				},
 				timestamp: ctx.message?.date
 			});
 		}
@@ -132,9 +146,9 @@ async function bootstrap() {
 		ctx.session.phone_number = normalizedPhone;
 
 		// Load 1C user data once when phone is received
-		const user1CData = await searchUserByPhone(normalizedPhone);
-		if (user1CData) {
-			ctx.session.user1CData = user1CData;
+		const lookup = await lookupUserByPhone(normalizedPhone);
+		if (lookup.status === "found") {
+			ctx.session.user1CData = lookup.data;
 			ctx.session.isVerified = true;
 			ctx.session.user1CDataUpdatedAt = new Date();
 		}
@@ -178,7 +192,11 @@ async function bootstrap() {
 					externalMessageId: `contact:${ctx.message?.message_id}`,
 					sourceChannel: "telegram",
 					contact: buildContact(ctx),
-					metadata: { event: "contact_shared", ...purchaseMetadata(ctx.session.user1CData) },
+					metadata: {
+						event: "contact_shared",
+						source: BOT_SOURCE,
+						...purchaseMetadata(ctx.session.user1CData, { lookupFailed: lookup.status === "error" })
+					},
 					timestamp: ctx.message?.date
 				});
 			}
@@ -190,8 +208,10 @@ async function bootstrap() {
 	bot.on("message:text", async (ctx) => {
 		if (!besalesEnabled) return;
 		if (ctx.message.text.startsWith("/")) return; // defensive: unknown commands stay silent
+		// Before startTyping: in a group that would show "typing…" to everyone there.
+		if (!isPrivateChat(ctx)) return logSkippedChat(ctx, ctx.message.message_id);
 		startTyping(ctx.api, ctx.chat.id);
-		await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
+		const { lookupFailed } = await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
 		await sendInbound({
 			externalUserId: String(ctx.from.id),
 			externalMessageId: String(ctx.message.message_id),
@@ -199,7 +219,7 @@ async function bootstrap() {
 			sourceChannel: "telegram",
 			text: ctx.message.text,
 			contact: buildContact(ctx),
-			metadata: { ...purchaseMetadata(ctx.session.user1CData) },
+			metadata: { source: BOT_SOURCE, ...purchaseMetadata(ctx.session.user1CData, { lookupFailed }) },
 			timestamp: ctx.message.date
 		});
 	});
@@ -209,9 +229,11 @@ async function bootstrap() {
 	bot.on("callback_query:data", async (ctx) => {
 		await ctx.answerCallbackQuery().catch(() => {}); // always clear the client spinner first
 		if (!besalesEnabled) return;
+		// Besales buttons only ever sit in the private chat; a tap anywhere else isn't theirs.
+		if (!isPrivateChat(ctx)) return logSkippedChat(ctx, ctx.callbackQuery.message?.message_id);
 		const chatId = ctx.chat?.id ?? ctx.from.id;
 		startTyping(ctx.api, chatId);
-		await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
+		const { lookupFailed } = await refresh1CIfStale(ctx, ONE_C_MAX_AGE_MS);
 		const data = ctx.callbackQuery.data;
 		const label = ctx.callbackQuery.message?.reply_markup?.inline_keyboard
 			?.flat()
@@ -224,7 +246,7 @@ async function bootstrap() {
 			buttonPayload: data,
 			text: label,
 			contact: buildContact(ctx),
-			metadata: { ...purchaseMetadata(ctx.session.user1CData) }
+			metadata: { source: BOT_SOURCE, ...purchaseMetadata(ctx.session.user1CData, { lookupFailed }) }
 		});
 	});
 

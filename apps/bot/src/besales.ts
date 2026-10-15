@@ -104,6 +104,16 @@ export function startReferral(rawCode?: string): { referral: "client" | "employe
 }
 
 /**
+ * Only a private chat with the bot is a conversation Besales can answer. The agent's reply is
+ * delivered to the user's private chat (callback-server.ts), so a message from a group the bot
+ * administers — a comment in the ASLZAR group, say — got a reply the user never saw, and
+ * `user_not_started` whenever they hadn't started the bot.
+ */
+export function isPrivateChat(ctx: MyContext): boolean {
+	return ctx.chat?.type === "private";
+}
+
+/**
  * Map a grammY context to Besales contact attributes (best-effort; omit unknowns).
  * Names prefer verified 1C data, then fall back to the Telegram profile.
  * languageCode is not persisted in the session — read it live from ctx.from.
