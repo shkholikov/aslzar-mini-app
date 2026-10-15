@@ -77,6 +77,7 @@ Added **after** `/start` and `:contact` so flows win first (fallback semantics):
   - `sendInbound({ externalUserId, externalMessageId, externalChatId, text, sourceChannel:"telegram", contact: buildContact(ctx.session) })`.
 - `bot.on("callback_query:data", ...)` — `ctx.answerCallbackQuery()`, then forward as inbound with `buttonPayload = ctx.callbackQuery.data` (and `text` = button label if available). New `externalMessageId` (use callback_query id).
 - Guard: gate everything on `BESALES_ENABLED`.
+- Private chats only (2.21.0): text, button taps and the `start` event are forwarded only from `chat.type === "private"`. The bot is admin of the ASLZAR group and saw every message there; it forwarded them, the agent's reply went to the user's private chat, and anyone who never started the bot came back as `user_not_started`. Likely source of the 10 such failures in 29.09–10.10: their message ids (2892–2922) follow one supergroup's counter, not the bot's private-chat counter (~235 000–263 000). Not yet confirmed. Skipped messages log `[besales] skipped <type> chat <id> from <user> msg <id>`.
 
 (Voice/media is Phase 6 — optional.)
 
@@ -338,3 +339,13 @@ Checked against production (2026-10-13, 15 863 1C clients): this matches 1C's ow
 **Freshness.** Before forwarding a text, a button tap or `/start`, the bot re-fetches 1C when the cached copy is older than 1 hour and the phone is known (`refresh1CIfStale` in `helper.ts`, 3 s cap; on failure the cached flags go out). `product_ask` makes no extra call: the open Mini App refreshes the session through `/v1/users/me`. Before this, the bot refreshed only on `/start` (24 h) and the nightly sync skips anyone refreshed in the last 24 h, so flags could lag almost two days.
 
 Code: `purchaseMetadata` in `apps/bot/src/purchases.ts` and its copy in `apps/api/src/integrations/purchases.ts` (no shared package — keep them in sync).
+
+## 1C failures and `source` (2.21.0, 2026-10-15)
+
+Prompted by Besales seeing `foundIn1C: false` with a phone (15.10, a repeat `/start`): at that second the bot's 1C lookup timed out, and with nothing cached it reported "not a client". Besales clears a contact's purchase flags on `false`, so a 1C outage wiped real data. Over 13–15.10 the bot logged about 46 failed 1C lookups (about 29 `fetch failed`, about 17 timeouts at 3 s), in bursts; no HTTP errors.
+
+- `lookupUserByPhone` (`apps/bot/src/api.ts`) returns `found` / `not_found` / `error`. `searchUserByPhone` stays as a wrapper for callers that don't care (reminders, referrals, backfill). The error log now includes `error.cause`, which names the real reason behind `fetch failed`.
+- When the lookup fails **and** nothing is cached, `purchaseMetadata(..., { lookupFailed: true })` returns `{}`: no `foundIn1C`, no purchase fields, so Besales keeps the previous values. With cached data the cached flags still go out. So `foundIn1C: false` always means 1C answered "no such client" (or there is no phone). Four states in total: no phone; phone, not a client; client; unknown (fields omitted).
+- `product_ask` (API): the session stores only found clients, so a phone without data is ambiguous. The API asks 1C once (3 s cap), saves a found result to the session, and omits the flags if 1C fails.
+- `metadata.source`: `"bot_chat"` on text, button taps, `start` and `contact_shared`; `"miniapp_catalog"` on `product_ask` (the product card — the only Mini App screen that writes to the agent).
+

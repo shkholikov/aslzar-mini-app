@@ -35,12 +35,13 @@ function ensureConfigured(): void {
 	}
 }
 
-async function call1C<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<T> {
+async function call1C<T>(method: "GET" | "POST", path: string, body?: unknown, timeoutMs?: number): Promise<T> {
 	ensureConfigured();
 	const url = `${config.ASLZAR_1C_BASE_URL}${path}`;
 	const init: RequestInit = {
 		method,
-		headers: authHeaders()
+		headers: authHeaders(),
+		...(timeoutMs && { signal: AbortSignal.timeout(timeoutMs) })
 	};
 	if (body !== undefined) init.body = JSON.stringify(body);
 
@@ -57,8 +58,9 @@ function withPlus(phone: string): string {
 	return phone.startsWith("+") ? phone : `+${phone}`;
 }
 
-export async function searchUserByPhone(phone: string): Promise<Record<string, unknown> & { code?: number }> {
-	return call1C("POST", "search", { phone: withPlus(phone) });
+/** `timeoutMs` unset = no limit, as before. A timeout rejects like any network error. */
+export async function searchUserByPhone(phone: string, timeoutMs?: number): Promise<Record<string, unknown> & { code?: number }> {
+	return call1C("POST", "search", { phone: withPlus(phone) }, timeoutMs);
 }
 
 export async function createUser(input: { phone: string; familiya: string; imya: string }): Promise<Record<string, unknown>> {

@@ -5,7 +5,8 @@ import { savePreparedInlineMessage } from "../../telegram";
 import { AslzarIdError, AslzarIdNotConfiguredError, getProduct, listCategories, listProducts } from "../../integrations/aslzarid";
 import { besalesConfigured, sendInbound, type BesalesContact } from "../../integrations/besales";
 import { purchaseMetadata } from "../../integrations/purchases";
-import { getUserSession } from "../../db";
+import { searchUserByPhone } from "../../integrations/aslzar1c";
+import { getUserSession, updateUserSession1CData } from "../../db";
 import { z } from "zod";
 
 /**
@@ -295,8 +296,25 @@ export async function askAboutProductHandler(req: MiniAppAuthedRequest, res: Res
 	// Same precedence as the bot's buildContact (apps/bot/src/besales.ts): verified 1C names first,
 	// then the Telegram profile. Empty fields are omitted, never sent blank.
 	const session = await getUserSession(userId).catch(() => null);
-	const oneC = session?.user1CData;
+	let oneC = session?.user1CData;
 	const phoneDigits = session?.phone_number?.replace(/\D/g, "");
+
+	// A phone with no 1C data means either "not a client" or "never fetched / 1C was down" — the
+	// session only ever stores found clients. Ask once (3 s cap) so the agent isn't told "not a
+	// client" by mistake; if 1C doesn't answer, the flags are left out and Besales keeps its own.
+	let lookupFailed = false;
+	if (phoneDigits && !oneC) {
+		try {
+			const data = await searchUserByPhone(phoneDigits, 3000);
+			if (data?.code === 0) {
+				oneC = data;
+				await updateUserSession1CData(userId, data, true).catch((e) => console.error("[catalog/ask] session 1C save failed", e));
+			}
+		} catch (err) {
+			console.error("[catalog/ask] 1C lookup failed", err);
+			lookupFailed = true;
+		}
+	}
 	const contact: BesalesContact = Object.fromEntries(
 		Object.entries({
 			firstName: text(oneC?.imya) ?? text(user.first_name),
@@ -316,9 +334,9 @@ export async function askAboutProductHandler(req: MiniAppAuthedRequest, res: Res
 		text: ASK_BUTTON_LABEL,
 		...(Object.keys(contact).length > 0 && { contact }),
 		// Sent as is — Besales reads what it needs and skips images, warehouse and internal ids.
-		// Purchase flags ride on every Besales message (bot too). No 1C call here: the open Mini App
-		// keeps the session fresh through /v1/users/me.
-		metadata: { event: "product_ask", source: "miniapp_catalog", product, variant, ...purchaseMetadata(oneC) },
+		// Purchase flags ride on every Besales message (bot too). The open Mini App keeps cached data
+		// fresh through /v1/users/me; 1C is asked here only when nothing is cached (above).
+		metadata: { event: "product_ask", source: "miniapp_catalog", product, variant, ...purchaseMetadata(oneC, { lookupFailed }) },
 		timestamp: Math.floor(Date.now() / 1000)
 	});
 

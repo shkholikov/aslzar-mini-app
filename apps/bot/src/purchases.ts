@@ -12,9 +12,13 @@ import type { I1CUserData } from "./types";
  *
  * Not `isActiveContract` (helper.ts): that one also excludes `closed`, which here is a finished
  * purchase. The same rule lives in apps/api/src/integrations/purchases.ts — keep them in sync.
+ *
+ * When 1C didn't answer and nothing is cached we don't know, so every field is left out:
+ * Besales keeps a contact's previous values for missing fields, while `foundIn1C: false` would
+ * wipe them. `false` therefore always means 1C answered (or we have no phone to ask with).
  */
 export interface PurchaseMetadata {
-	foundIn1C: boolean;
+	foundIn1C?: boolean;
 	hasPurchases?: boolean;
 	contractsCount?: number;
 	/** YYYY-MM-DD of the latest purchase contract; 1C dates are already Tashkent-local. */
@@ -23,9 +27,12 @@ export interface PurchaseMetadata {
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
-export function purchaseMetadata(user1CData: Partial<I1CUserData> | undefined): PurchaseMetadata {
+export function purchaseMetadata(
+	user1CData: Partial<I1CUserData> | undefined,
+	{ lookupFailed = false }: { lookupFailed?: boolean } = {}
+): PurchaseMetadata {
 	// Only code === 0 responses are stored (api.ts), so this matches the old Boolean(user1CData).
-	if (!user1CData || user1CData.code !== 0) return { foundIn1C: false };
+	if (!user1CData || user1CData.code !== 0) return lookupFailed ? {} : { foundIn1C: false };
 
 	const contracts = Array.isArray(user1CData.contract?.ids) ? user1CData.contract.ids : [];
 	const purchases = contracts.filter((c) => {
