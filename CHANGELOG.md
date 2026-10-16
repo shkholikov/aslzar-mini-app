@@ -10,6 +10,17 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.21.1] - 2026-10-16
+
+### Added
+
+- Code review setup: `REVIEW.md` (what reviews look for and which files are high risk), `incidents.md` (production bugs, each turned into a review rule), a CI workflow, a Claude review on every pull request and a pull request template.
+- `pnpm typecheck` and `pnpm lint` at the root, run for every app through Turborepo.
+
+### Fixed
+
+- `pnpm dev` and `pnpm build` at the root work again. Turborepo had no `turbo.json`, so both commands stopped with "Could not find turbo.json".
+
 ## [2.21.0] - 2026-10-15
 
 ### Added

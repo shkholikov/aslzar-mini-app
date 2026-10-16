@@ -8,7 +8,8 @@
 		"build": "tsc",
 		"start": "NODE_ENV=production ts-node src/index.ts",
 		"create-key": "ts-node scripts/create-key.ts",
-		"verify-bonus-token": "ts-node scripts/verify-bonus-token.ts"
+		"verify-bonus-token": "ts-node scripts/verify-bonus-token.ts",
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"cors": "^2.8.6",
