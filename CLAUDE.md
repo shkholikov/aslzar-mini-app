@@ -159,3 +159,15 @@ Priority order in `apps/bot/src/config.ts`:
 ```
 
 Defaults to `development` if `NODE_ENV` is unset.
+
+## Checks and review
+
+Run before saying a change is done, and paste the output:
+
+```bash
+pnpm typecheck                                   # all 4 apps
+pnpm lint                                        # admin and webapp; known errors, see ci.yml
+pnpm --filter ./apps/api --filter ./apps/bot build
+```
+
+There are no tests yet. Review rules and risk tiers live in `REVIEW.md`; production bugs go in `incidents.md`.
