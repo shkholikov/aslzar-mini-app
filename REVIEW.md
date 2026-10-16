@@ -41,6 +41,7 @@ One High file makes the whole PR High.
 ## Skip
 
 - `pnpm-lock.yaml`, `dist/`, `.next/`, generated OpenAPI output.
+- `scratchpad/` and other local scratch files.
 
 ## Rules from incidents
 
