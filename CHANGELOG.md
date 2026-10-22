@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.22.3] - 2026-10-23
+
+### Changed
+
+- The Level, Shartnoma and Bonus stats on the Mini App home and profile pages are back to the earlier design: three separate cards with large icons and gold value badges. The header with the photo, greeting, name and verified mark stays as in 2.22.0.
+
 ## [2.22.2] - 2026-10-23
 
 ### Fixed

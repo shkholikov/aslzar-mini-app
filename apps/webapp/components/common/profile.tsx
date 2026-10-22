@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { BadgeCheckIcon, ChevronRightIcon, UserIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 import { useUser } from "@/hooks/useUser";
 import { useTelegram } from "@/hooks/useTelegram";
@@ -86,7 +87,7 @@ export function Profile() {
 	);
 }
 
-/** Level, contracts and bonus in one card. Shared by the home header and /profile. */
+/** Level, contracts and bonus as three cards (the pre-2.22 design). Shared by the home header and /profile. */
 export function ProfileStats({ className }: { className?: string }) {
 	const tg = useTelegram();
 	const router = useRouter();
@@ -105,18 +106,21 @@ export function ProfileStats({ className }: { className?: string }) {
 	// Stats exist only for ASLZAR customers; unregistered users get RegisterPromptCard instead.
 	if (!loading && !verified) return null;
 	return (
-		<div
-			className={cn(
-				"grid grid-cols-3 divide-x divide-border border-2 backdrop-blur-[10px] rounded-4xl bg-muted/50 bg-transparent shadow-md py-3",
-				className
-			)}
-		>
-			<StatCell icon="/icons/crown.webp" label="Level" loading={loading} value={uroven ?? "—"} />
-			<StatCell icon="/icons/contract.webp" label="Shartnoma" loading={loading} value={`${contracts} ta`} onClick={() => go("/finance")} />
-			<StatCell
+		<div className={cn("grid grid-cols-3 gap-2 w-full", className)}>
+			<StatCard icon="/icons/crown.webp" label="Level" loading={loading} skeletonClassName="w-14" value={uroven ?? "—"} />
+			<StatCard
+				icon="/icons/contract.webp"
+				label="Shartnoma"
+				loading={loading}
+				skeletonClassName="w-8"
+				value={`${contracts} ta`}
+				onClick={() => go("/finance")}
+			/>
+			<StatCard
 				icon="/icons/bonus.webp"
 				label="Bonus"
 				loading={loading}
+				skeletonClassName="w-20"
 				value={`${bonus.toLocaleString("uz-UZ")} so'm`}
 				onClick={() => go("/referral")}
 			/>
@@ -124,27 +128,31 @@ export function ProfileStats({ className }: { className?: string }) {
 	);
 }
 
-interface StatCellProps {
+interface StatCardProps {
 	icon: string;
 	label: string;
 	value: string;
 	loading: boolean;
+	skeletonClassName: string;
 	onClick?: () => void;
 }
 
-function StatCell({ icon, label, value, loading, onClick }: StatCellProps) {
+function StatCard({ icon, label, value, loading, skeletonClassName, onClick }: StatCardProps) {
 	const content = (
 		<>
-			<Image src={icon} alt="" width={36} height={36} className="object-contain" priority sizes="36px" />
+			<Image src={icon} alt={label} width={64} height={64} className="object-contain" priority sizes="64px" />
+			<div className="text-sm font-semibold text-center">{label}</div>
 			{loading ? (
-				<Skeleton className="h-5 w-16 rounded-full" />
+				<Skeleton className={cn("h-5 rounded-full", skeletonClassName)} />
 			) : (
-				<span className="text-sm font-bold text-[#be9941] dark:text-[#d4b85a] truncate max-w-full">{value}</span>
+				<Badge variant="default" className="bg-[#be9941] text-white w-fit">
+					{value}
+				</Badge>
 			)}
-			<span className="text-xs text-muted-foreground">{label}</span>
 		</>
 	);
-	const className = "flex flex-col items-center gap-1 px-1 min-w-0";
+	const className =
+		"backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-2 pt-2 pb-3 flex flex-col items-center gap-1";
 
 	if (!onClick) return <div className={className}>{content}</div>;
 	return (
