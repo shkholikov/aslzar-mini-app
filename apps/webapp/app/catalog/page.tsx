@@ -29,9 +29,13 @@ export default function CatalogPage() {
 	// «Sevimlilar»: the liked designs instead of the catalogue query.
 	const [favoritesOnly, setFavoritesOnly] = React.useState(false);
 	// /catalog?favorites=1 (the profile page link) opens straight on «Sevimlilar». Read once from
-	// window: useSearchParams would need a Suspense boundary around the whole page.
+	// window after mount: useSearchParams would need a Suspense boundary around the whole page, and a
+	// lazy initial state would differ between server and client render. Until it is read, neither
+	// list is requested, so the full catalogue never flashes first.
+	const [urlRead, setUrlRead] = React.useState(false);
 	React.useEffect(() => {
 		if (new URLSearchParams(window.location.search).get("favorites") === "1") setFavoritesOnly(true);
+		setUrlRead(true);
 	}, []);
 	const [filters, setFilters] = React.useState<Filters>(EMPTY_FILTERS);
 	const [sheetOpen, setSheetOpen] = React.useState(false);
@@ -53,8 +57,8 @@ export default function CatalogPage() {
 		setLoaded([]);
 	}, [search, category, filters, favoritesOnly]);
 
-	const catalog = useCatalogPage({ ...filters, search, category, page, perPage: PER_PAGE }, !favoritesOnly);
-	const liked = useFavoriteProducts(page, favoritesOnly);
+	const catalog = useCatalogPage({ ...filters, search, category, page, perPage: PER_PAGE }, urlRead && !favoritesOnly);
+	const liked = useFavoriteProducts(page, urlRead && favoritesOnly);
 	const { products, meta, loading, failure, retry } = favoritesOnly ? liked : catalog;
 	const { isLiked, count: likedCount } = useFavoriteIds();
 

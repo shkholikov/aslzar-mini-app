@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { BadgeCheckIcon, UserIcon } from "lucide-react";
 import { SectionCard } from "@/components/common/section-card";
 import { Link } from "@/components/common/link";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
+import { UserLoadError } from "@/components/common/user-load-error";
 import { BonusCard } from "@/components/common/bonus-card";
 import { ProfileStats } from "@/components/common/profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/hooks/useUser";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { useFavoriteIds } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 
@@ -22,36 +22,19 @@ const TIER_RING: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-	const { data, loading } = useUser();
+	const { data, loading, error } = useUser();
 	const tg = useTelegram();
-	const router = useRouter();
 
-	// Reached from the home avatar and the Telegram gear (not only via <Link>), so wire the
-	// BackButton here, as /settings did.
-	useEffect(() => {
-		if (!tg?.BackButton) return;
-
-		const onBack = () => {
-			tg.HapticFeedback?.impactOccurred("heavy");
-			router.back();
-			tg.BackButton.hide?.();
-		};
-
-		tg.BackButton.show?.();
-		tg.BackButton.onClick?.(onBack);
-
-		return () => {
-			tg.BackButton.offClick?.(onBack);
-			tg.BackButton.hide?.();
-		};
-	}, [tg, router]);
+	useTelegramBackButton();
 
 	const tgUser = tg?.initDataUnsafe?.user;
 	const verified = data?.code === 0;
+	// useUser maps 404 (not a customer) to data: null with no error, so error without data is a failed call.
+	const failed = !loading && !data && Boolean(error);
 
 	return (
 		<div className="pt-12">
-			<ProfileHero data={verified ? data : null} loading={loading} />
+			<ProfileHero data={verified ? data : null} loading={loading || failed} />
 
 			{/* Shows its own skeletons while loading and nothing for non-customers. */}
 			<div className="mx-2 my-2">
@@ -65,6 +48,8 @@ export default function ProfilePage() {
 					<Activity data={data} />
 					<PersonalData data={data} />
 				</>
+			) : failed ? (
+				<UserLoadError />
 			) : !loading ? (
 				<RegisterPromptCard />
 			) : null}
@@ -91,8 +76,11 @@ function ProfileHero({ data, loading }: { data: any | null; loading: boolean }) 
 	const fullName = data
 		? [data.familiya, data.imya].filter(Boolean).join(" ")
 		: [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(" ");
-	const initials = [tgUser?.first_name, tgUser?.last_name]
-		.map((part) => part?.trim().charAt(0))
+	// Same source as the title, so "Aliyev Vali" never sits over a "J" from the Telegram name.
+	const initials = fullName
+		.split(/\s+/)
+		.slice(0, 2)
+		.map((part) => part.charAt(0))
 		.filter(Boolean)
 		.join("")
 		.toUpperCase();

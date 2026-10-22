@@ -5,6 +5,7 @@ import { Header } from "@/components/common/header";
 import { SectionCard } from "@/components/common/section-card";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 import { apiRequest } from "@/lib/api-client";
 import { Copy, Map, Phone, Send } from "lucide-react";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ const branchesFetcher = (path: string): Promise<Branch[]> => apiRequest<Branch[]
 
 export default function BranchesPage() {
 	const tg = useTelegram();
+	useTelegramBackButton();
 	const swrKey = tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData ? "/v1/branches" : null;
 	const { data, isLoading } = useSWR(swrKey, branchesFetcher, {
 		revalidateOnFocus: false,

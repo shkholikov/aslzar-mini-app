@@ -10,9 +10,9 @@ import { useTelegram } from "./useTelegram";
  * On iOS Telegram draws this as an ✕ rather than a chevron — that is their chrome and there is
  * no API to restyle it.
  *
- * Modelled on app/settings/page.tsx, which is the correct version: it removes the handler and
- * hides the button on unmount. The copy inside components/common/link.tsx does not — it
- * registers a new onClick on every click and never calls offClick, so handlers accumulate.
+ * Removes the handler and hides the button on unmount. Every page reached by an in-app link
+ * (/profile, /branches, /suggestions, product pages) calls this; components/common/link.tsx
+ * no longer touches the BackButton, because its handlers were never removed and piled up.
  */
 export function useTelegramBackButton(enabled = true): void {
 	const tg = useTelegram();

@@ -10,6 +10,15 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.22.1] - 2026-10-22
+
+### Fixed
+
+- When `/v1/users/me` fails (1C slow or down), the Mini App home and profile pages show "Ma'lumotlarni yuklab bo'lmadi" with a retry button. Before, a real customer was shown the register card and "ASLZAR mijozi emas".
+- One tap on Telegram's Back button went back two screens (for example Boshqa, then Profil, then Back landed on the home page). The shared link component added a Back handler on every tap and never removed it. Pages now own the Back button: `/profile`, `/branches` and `/suggestions` use `useTelegramBackButton`.
+- `/catalog?favorites=1` no longer loads the full catalogue before switching to «Sevimlilar».
+- The profile avatar initials come from the same 1C name as the title.
+
 ## [2.22.0] - 2026-10-22
 
 ### Added
