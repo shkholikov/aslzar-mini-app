@@ -28,6 +28,11 @@ export default function CatalogPage() {
 	const [category, setCategory] = React.useState<string | undefined>();
 	// «Sevimlilar»: the liked designs instead of the catalogue query.
 	const [favoritesOnly, setFavoritesOnly] = React.useState(false);
+	// /catalog?favorites=1 (the profile page link) opens straight on «Sevimlilar». Read once from
+	// window: useSearchParams would need a Suspense boundary around the whole page.
+	React.useEffect(() => {
+		if (new URLSearchParams(window.location.search).get("favorites") === "1") setFavoritesOnly(true);
+	}, []);
 	const [filters, setFilters] = React.useState<Filters>(EMPTY_FILTERS);
 	const [sheetOpen, setSheetOpen] = React.useState(false);
 	const [page, setPage] = React.useState(1);

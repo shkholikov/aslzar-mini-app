@@ -10,6 +10,25 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.22.0] - 2026-10-22
+
+### Added
+
+- Mini App profile page (`/profile`): photo, full name, a blue verified mark, the level, contracts and bonus card, the bonus QR card, links to contracts, referrals and liked items, and personal and Telegram details. It opens from the home header, the Telegram gear and "Profil" on the Boshqa page.
+- `/catalog?favorites=1` opens the catalogue on «Sevimlilar».
+
+### Changed
+
+- The Mini App home header is one row: photo, a greeting by Tashkent time ("Xayrli tong", "Xayrli kun", "Xayrli kech", "Xayrli tun") and the name. The level, contracts and bonus sit in one card; tapping contracts opens `/finance` and bonus opens `/referral`.
+- The avatar ring follows the level colour (Silver, Gold, Diamond). The blue and amber "Tasdiqlangan / Tasdiqlanmagan Mijoz" badges are replaced by a blue verified mark next to the name.
+- Users who are not ASLZAR customers no longer see an empty stats card on the home page; they see only the register card.
+- `/settings` redirects to `/profile`.
+
+### Fixed
+
+- Users without a Telegram profile photo saw a spinner in place of their avatar forever. They now see their initials.
+- An empty Telegram name no longer renders "Salom  👋" with a double space.
+
 ## [2.21.1] - 2026-10-16
 
 ### Added

@@ -37,7 +37,7 @@ export default function OtherPage() {
 	return (
 		<div className="pt-12">
 			<Header title="Boshqa" description="Platformadagi boshqa imkoniyatlar" iconImage="/icons/box.webp" />
-			<Link title="Shaxsiy ma'lumotlar" href="/settings" iconImage="/icons/user-info.webp" />
+			<Link title="Profil" href="/profile" iconImage="/icons/user-info.webp" />
 			<Link title="Filiallar va manzillar" href="/branches" iconImage="/icons/location.webp" />
 			<Link title="Taklif va shikoyatlar" href="/suggestions" iconImage="/icons/discussion.webp" />
 			<Link title="ASLZAR Instagram rasmiy sahifasi" href="https://www.instagram.com/aslzar.uz/" icon={Instagram} />
