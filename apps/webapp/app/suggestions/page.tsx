@@ -2,8 +2,11 @@
 
 import { Header } from "@/components/common/header";
 import { SuggestionsForm } from "../other/components/suggestions-form";
+import { useTelegramBackButton } from "@/hooks/useTelegramBackButton";
 
 export default function SuggestionsPage() {
+	useTelegramBackButton();
+
 	return (
 		<div className="pt-12">
 			<Header
@@ -15,4 +18,3 @@ export default function SuggestionsPage() {
 		</div>
 	);
 }
-

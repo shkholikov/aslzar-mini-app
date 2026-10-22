@@ -8,12 +8,15 @@ import { useUser } from "@/hooks/useUser";
 import { PlatformInfo } from "@/components/platform-info";
 import { News } from "@/components/news";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
+import { UserLoadError } from "@/components/common/user-load-error";
 import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
 import { BonusCard } from "@/components/common/bonus-card";
 
 export default function HomePage() {
-	const { data, loading } = useUser();
+	const { data, loading, error } = useUser();
+	// useUser maps 404 (not a customer) to data: null with no error, so error without data is a failed call.
+	const failed = !loading && !data && Boolean(error);
 	const tg = useTelegram();
 	const pathname = usePathname();
 	const router = useRouter();
@@ -31,7 +34,8 @@ export default function HomePage() {
 			<>
 				<Profile />
 				<div className="w-full overflow-hidden">
-					{!loading && !(data && data.code === 0) && <RegisterPromptCard />}
+					{failed && <UserLoadError />}
+					{!loading && !failed && !(data && data.code === 0) && <RegisterPromptCard />}
 					{/* Bonus card is for ASLZAR customers only — same gate as the referral programme. */}
 					{!loading && data?.code === 0 && data.contractFirst === true && data.bonusToken && <BonusCard />}
 					<PlatformInfo />
