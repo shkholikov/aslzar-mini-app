@@ -33,13 +33,12 @@ export default function ProfilePage() {
 	const failed = !loading && !data && Boolean(error);
 
 	return (
-		<div className="pt-12">
+		// gap-3 on top of each section's my-2: the page stacks 6 sections, and 16px between them read as one block.
+		<div className="pt-12 flex flex-col gap-3">
 			<ProfileHero data={verified ? data : null} loading={loading || failed} />
 
 			{/* Shows its own skeletons while loading and nothing for non-customers. */}
-			<div className="mx-2 my-2">
-				<ProfileStats />
-			</div>
+			<ProfileStats className="mx-2 my-2" />
 
 			{verified ? (
 				<>
@@ -86,7 +85,7 @@ function ProfileHero({ data, loading }: { data: any | null; loading: boolean }) 
 		.toUpperCase();
 
 	return (
-		<div className="mx-2 mt-2 mb-5 flex flex-col items-center gap-2 text-center">
+		<div className="mx-2 mt-2 mb-2 flex flex-col items-center gap-2 text-center">
 			<Avatar
 				className={cn(
 					"size-24 ring-[3px] ring-offset-4 ring-offset-background",
@@ -124,7 +123,7 @@ function Activity({ data }: { data: any }) {
 
 	return (
 		<SectionCard iconImage="/icons/star-folder.webp" title="Faoliyat" bare>
-			<div className="-m-2">
+			<div className="-mx-2">
 				<Link
 					title={title("Shartnomalar", ended ? `${active} faol, ${ended} yopilgan` : `${active} faol`)}
 					href="/finance"

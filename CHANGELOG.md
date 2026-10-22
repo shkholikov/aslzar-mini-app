@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.22.2] - 2026-10-23
+
+### Fixed
+
+- Sections on the Mini App profile page sat too close together. The «Faoliyat» heading touched its first row, and the last row touched the next heading. Every section now has the same, larger gap.
+
 ## [2.22.1] - 2026-10-22
 
 ### Fixed
