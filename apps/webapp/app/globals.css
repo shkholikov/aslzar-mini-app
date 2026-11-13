@@ -137,8 +137,11 @@
 	}
 }
 
+/* `backwards`, not `both`: with `both` the wrapper keeps `transform: scale(1)` after the animation,
+   and any transform turns position:fixed inside the page into "fixed to the page" (a fixed bar
+   would sit at the end of the content instead of the bottom of the screen). */
 .page-transition {
-	animation: page-enter 200ms cubic-bezier(0.26, 0.08, 0.25, 1) both;
+	animation: page-enter 200ms cubic-bezier(0.26, 0.08, 0.25, 1) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

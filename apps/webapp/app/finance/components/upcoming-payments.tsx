@@ -1,105 +1,39 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SectionCard } from "@/components/common/section-card";
-import { Badge } from "@/components/ui/badge";
-import { ClockAlert } from "lucide-react";
-import { format1CDate, parse1CDate } from "@/lib/format1cDate";
-import { isActiveContract } from "@/lib/contract-status";
-
-interface ScheduleItem {
-	status: boolean;
-	step: number;
-	date: string;
-	sumToPay: number;
-	sumPayed: number;
-}
-
-interface ContractWithSchedule {
-	id?: string | number;
-	contractId?: string | number;
-	status?: string;
-	schedule?: ScheduleItem[];
-	[key: string]: any;
-}
+import { ListGroup, type ListGroupRow } from "@/components/common/list-group";
+import { formatSom } from "@/lib/format";
+import { format1CDate } from "@/lib/format1cDate";
+import { daysLeftLabel, getUpcomingPayments, type Contract1C } from "@/lib/payments";
 
 interface UpcomingPaymentsProps {
-	contracts: ContractWithSchedule[];
+	contracts: Contract1C[];
 }
 
-interface UpcomingPayment {
-	contractId: string | number;
-	step: number;
-	date: string;
-	sumToPay: number;
-	sumPayed: number;
-}
-
-function isInCurrentMonth(dateStr: string): boolean {
-	const d = parse1CDate(dateStr);
-	if (!d) return false;
-	const now = new Date();
-	return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-}
-
-function getUpcomingPayments(contracts: ContractWithSchedule[]): UpcomingPayment[] {
-	const upcomingPayments: UpcomingPayment[] = [];
-
-	contracts.forEach((contract) => {
-		// Closed and returned contracts keep an unpaid-looking schedule in 1C forever.
-		if (!isActiveContract(contract.status)) {
-			return;
-		}
-
-		if (!contract.schedule || !Array.isArray(contract.schedule)) {
-			return;
-		}
-
-		const contractId = contract.contractId || contract.id || "N/A";
-
-		contract.schedule.forEach((item: ScheduleItem) => {
-			if (item.status === true && isInCurrentMonth(item.date)) {
-				upcomingPayments.push({
-					contractId,
-					step: item.step,
-					date: item.date,
-					sumToPay: item.sumToPay,
-					sumPayed: item.sumPayed
-				});
-			}
-		});
-	});
-
-	return upcomingPayments;
-}
-
+/** This month's unpaid instalments of active contracts, one full-width row each. */
 export function UpcomingPayments({ contracts }: UpcomingPaymentsProps) {
 	const upcomingPayments = getUpcomingPayments(contracts);
 
 	if (upcomingPayments.length === 0) return null;
 
+	const rows: ListGroupRow[] = upcomingPayments.map((payment) => ({
+		id: `${payment.contractId}-${payment.step}`,
+		title: <span className="text-[17px] font-bold">{formatSom(payment.left)} so&apos;m</span>,
+		subtitle: `${format1CDate(payment.date, { day: "numeric", month: "long" })} · Shartnoma ${payment.contractId} · ${payment.step}-to'lov`,
+		badge: daysLeftLabel(payment.daysLeft)
+	}));
+
+	// Matches REMINDER_DAYS (0, 3, 5) in apps/bot/src/scheduler.ts.
+	rows.push({
+		id: "reminder-note",
+		title: (
+			<span className="text-xs font-normal text-muted-foreground">
+				Bot to&apos;lovdan 5 va 3 kun oldin hamda to&apos;lov kuni eslatadi.
+			</span>
+		)
+	});
+
 	return (
 		<SectionCard iconImage="/icons/paper.webp" title="Kutilayotgan to'lovlar" bare>
-			<div className="flex flex-wrap gap-2">
-				{upcomingPayments.map((payment, idx) => (
-					<div
-						key={idx}
-						className="flex-1 min-w-[calc(50%-0.5rem)] backdrop-blur-[10px] bg-muted/50 bg-transparent rounded-4xl shadow-md border-2 px-4 py-3 flex flex-col items-center gap-1"
-					>
-						<ClockAlert className="w-12 h-12 text-[#be9941]" />
-						<div className="text-xs font-semibold text-center">Shartnoma {payment.contractId}</div>
-						<div className="text-xs text-muted-foreground text-center">{payment.step}-to&apos;lov</div>
-						<div className="text-xs text-muted-foreground text-center">
-							{format1CDate(payment.date, {
-								year: "numeric",
-								month: "long",
-								day: "numeric"
-							})}
-						</div>
-						<Badge variant="default" className="bg-[#be9941] text-white">
-							{payment.sumToPay.toLocaleString("uz-UZ")} so&apos;m
-						</Badge>
-					</div>
-				))}
-			</div>
+			<ListGroup rows={rows} className="m-0" />
 		</SectionCard>
 	);
 }

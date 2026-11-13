@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { QRCode } from "@/components/ui/shadcn-io/qr-code";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
-import { goldButtonClass } from "@/components/common/button-variants";
+import { goldButtonLgClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useBonusToken } from "@/hooks/useBonusToken";
 import { BonusCardOverlay } from "./bonus-card-overlay";
@@ -35,13 +35,11 @@ export function BonusCard() {
 		<>
 			<div className="mx-2 my-2">
 				<div className="rounded-4xl border-2 border-[#be9941]/25 bg-gradient-to-br from-[#2e2a25] to-[#1c1a17] p-4 shadow-md">
-					<div className="flex items-start gap-4">
+					<div className="flex items-center gap-4">
 						<div className="min-w-0 flex-1">
 							<p className="text-xs font-bold uppercase tracking-[0.15em] text-[#d4b055]">ASLZAR BONUS KARTASI</p>
-							<h3 className="mt-2 text-lg font-bold leading-snug text-white">Do&apos;konda skanerlash uchun QR kod</h3>
-							<p className="mt-2 text-sm leading-snug text-white/60">
-								Bonuslaringizni ishlatish uchun ushbu kodni ASLZAR do&apos;konlarida xodimga ko&apos;rsating.
-							</p>
+							<h3 className="mt-2 text-lg font-bold leading-snug text-white">Do&apos;konda xodimga ko&apos;rsating</h3>
+							<p className="mt-1.5 text-[13px] leading-snug text-white/70">Kod har 5 daqiqada yangilanadi.</p>
 						</div>
 
 						{/* Hardcoded black-on-white: the theme's --foreground/--background would follow the
@@ -58,7 +56,7 @@ export function BonusCard() {
 					</div>
 
 					{scannable ? (
-						<RippleButton variant="outline" className={`${goldButtonClass} mt-4 w-full`} onClick={open}>
+						<RippleButton variant="outline" className={`${goldButtonLgClass} mt-3.5 w-full`} onClick={open}>
 							<Maximize2 className="size-4" /> QR kodni kattalashtirish
 						</RippleButton>
 					) : (

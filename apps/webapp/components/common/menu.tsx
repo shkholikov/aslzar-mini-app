@@ -4,6 +4,7 @@ import { navigationItems } from "@/lib/navigation";
 import { useRouter, usePathname } from "next/navigation";
 import { MenuDock } from "@/components/ui/shadcn-io/menu-dock";
 import { useTelegram } from "@/hooks/useTelegram";
+import { useDockHidden } from "@/lib/dock";
 
 /** Sub-routes that should keep a top-level tab highlighted in the dock. */
 const SUB_ROUTE_PARENTS: Record<string, string> = {
@@ -11,6 +12,8 @@ const SUB_ROUTE_PARENTS: Record<string, string> = {
 	"/suggestions": "/other",
 	"/settings": "/other",
 	"/profile": "/other",
+	"/faq": "/other",
+	"/bonus-levels": "/other",
 	"/register": "/"
 };
 
@@ -18,6 +21,7 @@ export function Menu() {
 	const router = useRouter();
 	const pathname = usePathname();
 	const tg = useTelegram();
+	const dockHidden = useDockHidden();
 
 	// Warm the router cache for every top-level tab so bottom-nav switches feel instant.
 	useEffect(() => {
@@ -47,6 +51,9 @@ export function Menu() {
 			router.push(item.path);
 		}
 	}));
+
+	// The product page hides the dock while its own bottom bar is up.
+	if (dockHidden) return null;
 
 	return (
 		<div className="flex items-end justify-center min-h-[120px] fixed bottom-6 pointer-events-none">

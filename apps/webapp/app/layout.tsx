@@ -67,7 +67,7 @@ export default function RootLayout({
 				<link rel="preload" as="image" href="/icons/box.webp" type="image/webp" />
 				{/* Preload home-page above-fold icons */}
 				<link rel="preload" as="image" href="/icons/user-info.webp" type="image/webp" />
-				<link rel="preload" as="image" href="/icons/info.webp" type="image/webp" />
+				<link rel="preload" as="image" href="/icons/calendar.webp" type="image/webp" />
 				<link rel="preload" as="image" href="/icons/news.webp" type="image/webp" />
 				<link rel="preload" as="image" href="/icons/discussion.webp" type="image/webp" />
 				<link rel="preload" as="image" href="/icons/crown.webp" type="image/webp" />

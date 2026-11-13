@@ -10,6 +10,31 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.0] - 2026-11-13
+
+### Added
+
+- Mini App home shows the next instalment («Keyingi to'lov») with its date, amount and the days left; tapping it opens Moliyaviy.
+- New page «Ko'p so'raladigan savollar» (`/faq`), reached from Boshqa. A «Bonus darajalari» page (`/bonus-levels`) is built but not linked yet, until ASLZAR confirms the level rules.
+- Product page: once a piece is selected, a bar at the bottom shows it with its price and the «Bu buyum haqida so'rash» button, and the bottom menu hides until the selection is cleared or the page is left.
+
+### Changed
+
+- Home: the profile header is a card with a «Profil» link, the «Level» stat is now «Daraja», the bonus card has shorter text, the product strip is titled «Yangi kolleksiya» with an arrow that opens the catalogue and shows 6 different in-stock products picked at random on every app launch (before, always the same 3), and a card for the next payment sits under the stats. The «Platforma haqida» card is gone.
+- Moliyaviy: one card with the total debt and a paid-vs-total bar, then four tiles (this month, overdue, active contracts, bonuses). Upcoming payments are full-width rows with the days left and a note on when the bot reminds. Contracts are rows with paid instalments and a progress bar, split by «Faol» / «Yopilgan» chips (shown only when the customer has both) instead of a paged table. A customer with no contracts sees a card inviting them to the catalogue instead of an empty list. The product strip moved to the end.
+- Moliyaviy figures are now worked out from the contracts' schedules and payments, because 1C leaves the account-level debt, this-month and overdue fields at 0.
+- Katalog: the product count sits in the header instead of the grid/list switch, the grid is always two columns, each card has one specs line and «n dona mavjud», the favourites chip shows its count, and the heart on a photo has a larger tap area.
+- Product page: specs as one line above the title, a «1 / 3» photo counter, pieces with a radio mark under «Buyumni tanlang», tapping the selected piece clears it, the page opens with no piece selected, and once one is chosen the dock is replaced by a floating «Bu buyum haqida so'rash» button, and one share button next to the heart (a sheet when both chat and story sharing are available).
+- Boshqa: a profile card with photo and name, then grouped rows for Sevimlilar, Filiallar, Yordam and Ijtimoiy tarmoqlar. The FAQ moved to its own page.
+
+### Removed
+
+- The grid/list switch on Katalog and the page buttons under the contracts list.
+
+### Fixed
+
+- The Mini App profile page scrolled sideways: the three stat cards were 16px wider than the screen (since 2.22.2).
+
 ## [2.22.3] - 2026-10-23
 
 ### Changed
