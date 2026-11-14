@@ -38,7 +38,11 @@ export default function ProfilePage() {
 			<ProfileHero data={verified ? data : null} loading={loading || failed} />
 
 			{/* Shows its own skeletons while loading and nothing for non-customers. */}
-			<ProfileStats className="mx-2 my-2" />
+			{/* Margin on a wrapper, not on the grid: ProfileStats is w-full, and w-full plus mx-2 is
+			    16px wider than the screen, which made the whole page scroll sideways. */}
+			<div className="mx-2 my-2">
+				<ProfileStats />
+			</div>
 
 			{verified ? (
 				<>

@@ -14,22 +14,23 @@ import { FavoriteButton } from "@/components/common/favorite-button";
 import { SectionCard } from "@/components/common/section-card";
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
-import { goldButtonClass } from "@/components/common/button-variants";
+import { goldButtonLgClass } from "@/components/common/button-variants";
+import { ListGroup } from "@/components/common/list-group";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
 	askAboutProduct,
 	displayName,
 	formatSom,
-	latinColor,
-	latinStone,
 	priceLabel,
+	productSpecs,
 	productShareUrl,
 	storyCaption,
 	variantLabel
 } from "@/lib/catalog";
 import { ApiError, apiRequest } from "@/lib/api-client";
-import { Badge } from "@/components/ui/badge";
+import { setDockHidden } from "@/lib/dock";
 import { toast } from "sonner";
-import { Camera, Loader2, MessageCircle, Send } from "lucide-react";
+import { Camera, Loader2, MessageCircle, Send, Share } from "lucide-react";
 
 export default function ProductPage() {
 	const params = useParams<{ productId: string }>();
@@ -41,11 +42,14 @@ export default function ProductPage() {
 
 	// Index, not article: 1C gives every piece of a design the SAME article, so selecting
 	// by article would select all of them at once.
-	const [selected, setSelected] = React.useState(0);
+	// Nothing is selected on arrival: the bottom bar (and the hidden dock) appear only once the
+	// customer has picked a piece, so the dock stays usable while they are just looking.
+	const [selected, setSelected] = React.useState<number | null>(null);
 	// Real swipe rather than tap-only dots — embla is already used by the home carousel.
 	const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: "start" });
 	const [photo, setPhoto] = React.useState(0);
 	const [sharing, setSharing] = React.useState(false);
+	const [shareSheetOpen, setShareSheetOpen] = React.useState(false);
 	const [asking, setAsking] = React.useState(false);
 	// initData is fixed at launch, so a permission granted in this session isn't reflected in it.
 	const writeAllowed = React.useRef(false);
@@ -57,11 +61,17 @@ export default function ProductPage() {
 		return () => void emblaApi.off("select", onSelect);
 	}, [emblaApi]);
 
-	// Cheapest piece is first upstream, so index 0 is a sensible default and the action bar is
-	// never ambiguous about which piece it would ask about.
 	React.useEffect(() => {
-		setSelected(0);
+		setSelected(null);
 	}, [productId]);
+
+	// The bottom bar replaces the dock while a piece is selected; the dock comes back when the
+	// selection is cleared and when the customer leaves the page.
+	const hasSelection = selected !== null && Boolean(product?.variants[selected]);
+	React.useEffect(() => {
+		setDockHidden(hasSelection);
+	}, [hasSelection]);
+	React.useEffect(() => () => setDockHidden(false), []);
 
 	if (loading) return <ProductSkeleton />;
 
@@ -81,9 +91,7 @@ export default function ProductPage() {
 
 	const title = displayName(product);
 	const price = priceLabel(product.variants);
-	const specs = [product.fineness && `${product.fineness} proba`, latinColor(product.color), latinStone(product.stone)].filter(
-		Boolean
-	) as string[];
+	const specs = productSpecs(product);
 
 	// Both share paths are version-gated, and each is hidden rather than disabled when the client
 	// is too old — a greyed-out button the customer can never enable explains nothing.
@@ -143,7 +151,7 @@ export default function ProductPage() {
 	// The agent's answer arrives in the chat with the bot, not in the Mini App — so on success we
 	// say where to look and close the app, rather than leaving a tap that seems to do nothing.
 	const askAboutThisPiece = async () => {
-		const variant = product.variants[selected];
+		const variant = selected !== null ? product.variants[selected] : undefined;
 		if (!variant || asking) return;
 		tg?.HapticFeedback?.impactOccurred("medium");
 		setAsking(true);
@@ -165,7 +173,7 @@ export default function ProductPage() {
 			if (error instanceof ApiError && error.status === 409) {
 				// Sold since the page loaded. Refresh so the list stops offering it.
 				toast.error("Bu buyum hozirgina sotildi");
-				setSelected(0);
+				setSelected(null);
 				retry();
 			} else {
 				toast.error("Hozircha yuborib bo'lmadi, keyinroq urinib ko'ring");
@@ -174,8 +182,23 @@ export default function ProductPage() {
 		}
 	};
 
+	// One share icon: a sheet when both routes exist, the route itself when only one does, and no
+	// icon at all on a client that supports neither.
+	const openShare = () => {
+		if (canShareChat && canShareStory) {
+			tg?.HapticFeedback?.impactOccurred("light");
+			setShareSheetOpen(true);
+		} else if (canShareChat) {
+			void shareToChat();
+		} else if (canShareStory) {
+			shareToStory();
+		}
+	};
+
+	const selectedVariant = selected !== null ? product.variants[selected] : undefined;
+
 	return (
-		<div className="pb-2">
+		<div className={selectedVariant ? "pb-28" : "pb-2"}>
 			<div className="relative w-full bg-muted/30">
 				{product.images.length > 0 ? (
 					<div className="overflow-hidden" ref={emblaRef}>
@@ -194,111 +217,97 @@ export default function ProductPage() {
 				)}
 
 				{product.images.length > 1 && (
-					<div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-						{product.images.map((img, i) => (
-							<button
-								key={img.small}
-								aria-label={`${i + 1}-rasm`}
-								onClick={() => {
-									tg?.HapticFeedback?.impactOccurred("light");
-									emblaApi?.scrollTo(i);
-								}}
-								className={`h-1.5 rounded-full transition-all ${i === photo ? "w-4.5 bg-[#be9941]" : "w-1.5 bg-foreground/25"}`}
-							/>
-						))}
-					</div>
+					<span
+						aria-live="polite"
+						className="absolute bottom-3 right-4 rounded-full bg-[#373736]/75 px-2 py-0.5 text-xs font-medium text-white"
+					>
+						{photo + 1} / {product.images.length}
+					</span>
 				)}
 			</div>
 
-			<div className="px-4 pt-4 flex flex-col gap-2">
-				<div className="flex items-start justify-between gap-3">
-					<h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+			<div className="px-4 pt-4 flex flex-col gap-1.5">
+				<div className="flex items-start gap-2">
+					<div className="min-w-0 flex-1">
+						{specs && <p className="text-[13px] text-muted-foreground">{specs}</p>}
+						<h1 className="mt-0.5 text-2xl font-bold leading-tight tracking-tight">{title}</h1>
+					</div>
+					{(canShareChat || canShareStory) && (
+						<button
+							type="button"
+							aria-label="Ulashish"
+							disabled={sharing}
+							onClick={openShare}
+							className="size-11 shrink-0 rounded-full border-2 border-[#be9941] bg-background/90 text-[#7a5f1f] flex items-center justify-center disabled:opacity-60"
+						>
+							{sharing ? <Loader2 className="size-5 animate-spin" /> : <Share className="size-5" />}
+						</button>
+					)}
 					<FavoriteButton productId={product.productId} variant="inline" />
 				</div>
-				{price && <div className="text-lg font-bold text-[#be9941]">{price}</div>}
-				{specs.length > 0 && (
-					<div className="flex flex-wrap gap-1.5 pt-1">
-						{/* The app's own gold badge, not a bespoke grey pill — grey on the marble
-						    background is effectively invisible. */}
-						{specs.map((s) => (
-							<Badge key={s} variant="default" className="bg-[#be9941] text-white px-3 py-1">
-								{s}
-							</Badge>
-						))}
-					</div>
-				)}
+				{price && <div className="text-xl font-bold text-[#7a5f1f]">{price}</div>}
 			</div>
 
 			{/* The point of the page. Each row is one physical piece with its own weight and
 			    therefore its own price — there is no quantity field upstream, so the number of
-			    rows IS the stock. */}
-			<SectionCard
-				iconImage="/icons/box.webp"
-				title={product.inStock ? `Mavjud buyumlar (${product.variantCount})` : "Hozirda mavjud emas"}
-			>
-				<div className="flex flex-col gap-2.5">
-					{product.variants.map((v, i) => {
-						const active = selected === i;
-						const label = variantLabel(v);
-						return (
-							<button
-								key={`${v.article}-${i}`}
-								onClick={() => {
-									tg?.HapticFeedback?.impactOccurred("light");
-									setSelected(i);
-								}}
-								className={`flex items-center justify-between rounded-[1.25rem] border-2 px-4 py-3 text-left transition-colors ${
-									active ? "border-[#be9941] bg-[#be9941]/10" : "border-border bg-muted/40"
-								}`}
-							>
-								<span className="text-sm font-semibold">{label || v.article}</span>
-								<span className={`text-sm font-bold ${active ? "text-[#be9941]" : ""}`}>{formatSom(v.price)} so&apos;m</span>
-							</button>
-						);
-					})}
+			    rows IS the stock. Tapping the selected row clears it. */}
+			<div className="mt-2">
+				<SectionCard
+					iconImage="/icons/box.webp"
+					title={product.inStock ? `Buyumni tanlang (${product.variantCount})` : "Hozirda mavjud emas"}
+				>
+					<div className="flex flex-col gap-2.5" role="radiogroup" aria-label="Buyumni tanlang">
+						{product.variants.map((v, i) => {
+							const active = selected === i;
+							const label = variantLabel(v);
+							return (
+								<button
+									type="button"
+									role="radio"
+									aria-checked={active}
+									key={`${v.article}-${i}`}
+									onClick={() => {
+										tg?.HapticFeedback?.impactOccurred("light");
+										setSelected(active ? null : i);
+									}}
+									className={`flex min-h-14 items-center gap-3 rounded-[1.25rem] border-2 px-4 py-3 text-left transition-colors ${
+										active ? "border-[#be9941] bg-[#be9941]/10" : "border-border bg-muted/40"
+									}`}
+								>
+									<span
+										aria-hidden
+										className={`size-5 shrink-0 rounded-full border-2 flex items-center justify-center ${
+											active ? "border-[#be9941]" : "border-muted-foreground/70"
+										}`}
+									>
+										{active && <span className="size-2.5 rounded-full bg-[#be9941]" />}
+									</span>
+									<span className="flex-1 text-[15px] font-semibold">{label || v.article}</span>
+									<span className="text-[15px] font-bold">{formatSom(v.price)} so&apos;m</span>
+								</button>
+							);
+						})}
 
-					{!product.inStock && (
-						<p className="text-sm text-muted-foreground">
-							Bu dizayn bo&apos;yicha hozircha buyum yo&apos;q. Yangi kelganda shu sahifada ko&apos;rinadi.
-						</p>
-					)}
-				</div>
-			</SectionCard>
+						{product.inStock ? (
+							<p className="mx-1 mt-0.5 text-xs text-muted-foreground">
+								Har bir buyum og&apos;irligiga qarab narxlanadi. Javob bot chatida keladi.
+							</p>
+						) : (
+							<p className="text-sm text-muted-foreground">
+								Bu dizayn bo&apos;yicha hozircha buyum yo&apos;q. Yangi kelganda shu sahifada ko&apos;rinadi.
+							</p>
+						)}
+					</div>
+				</SectionCard>
+			</div>
 
-			{/* Sharing sits above the CTA rather than in a corner icon: it is a deliberate act, and
-			    an icon over the photo is easy to miss. Same gold pill as every other primary button
-			    in the app, just shorter — the app has one button style, not three. Both routes lead
-			    back into the bot, so a share is also an invite. `mx-2` aligns with SectionCard. */}
-			{(canShareChat || canShareStory) && (
-				<div className="mx-2 mt-1 flex gap-2">
-					{canShareChat && (
-						<RippleButton
-							variant="outline"
-							className={`flex-1 h-12 text-[14px] ${goldButtonClass}`}
-							disabled={sharing}
-							onClick={shareToChat}
-						>
-							{sharing ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-							Ulashish
-						</RippleButton>
-					)}
-					{canShareStory && (
-						<RippleButton variant="outline" className={`flex-1 h-12 text-[14px] ${goldButtonClass}`} onClick={shareToStory}>
-							<Camera className="size-4" />
-							Storyga
-						</RippleButton>
-					)}
-				</div>
-			)}
-
-			{/* Flows after the list rather than floating. A product has a handful of pieces, so the
-			    page fits one screen — pinning the button just left a void under short lists and
-			    needed a hardcoded offset to clear the dock. `mx-2` aligns it with SectionCard. */}
-			{product.inStock && (
-				<div className="mx-2 mt-2">
+			{/* Replaces the dock while a piece is selected (setDockHidden above): a floating button in
+			    the dock's place, no bar behind it. */}
+			{selectedVariant && (
+				<div className="fixed inset-x-0 bottom-6 z-40 px-4 pointer-events-none">
 					<RippleButton
 						variant="outline"
-						className={`w-full h-14 text-[15px] ${goldButtonClass}`}
+						className={`pointer-events-auto w-full h-[52px] text-[15px] shadow-[0_10px_30px_-6px_rgba(0,0,0,0.25)] ${goldButtonLgClass}`}
 						disabled={asking}
 						onClick={askAboutThisPiece}
 					>
@@ -307,6 +316,41 @@ export default function ProductPage() {
 					</RippleButton>
 				</div>
 			)}
+
+			<Sheet open={shareSheetOpen} onOpenChange={setShareSheetOpen}>
+				<SheetContent
+					side="bottom"
+					aria-describedby={undefined}
+					className="rounded-t-[2rem] px-3 pb-8 bg-background/95 backdrop-blur-[20px] border-t-2"
+				>
+					<SheetHeader className="px-2 pb-0">
+						<SheetTitle className="text-lg">Ulashish</SheetTitle>
+					</SheetHeader>
+					<ListGroup
+						className="m-0"
+						rows={[
+							{
+								id: "chat",
+								icon: Send,
+								title: "Chatga yuborish",
+								onClick: () => {
+									setShareSheetOpen(false);
+									void shareToChat();
+								}
+							},
+							{
+								id: "story",
+								icon: Camera,
+								title: "Storyga joylash",
+								onClick: () => {
+									setShareSheetOpen(false);
+									shareToStory();
+								}
+							}
+						]}
+					/>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }
@@ -316,12 +360,9 @@ function ProductSkeleton() {
 		<div className="pb-28">
 			<Skeleton className="w-full aspect-square rounded-none" />
 			<div className="px-4 pt-4 flex flex-col gap-2.5">
+				<Skeleton className="h-3.5 w-2/5" />
 				<Skeleton className="h-7 w-1/2" />
-				<Skeleton className="h-5 w-2/5" />
-				<div className="flex gap-2 pt-1">
-					<Skeleton className="h-7 w-20 rounded-full" />
-					<Skeleton className="h-7 w-16 rounded-full" />
-				</div>
+				<Skeleton className="h-6 w-2/5" />
 			</div>
 			<div className="px-4 pt-6 flex flex-col gap-2.5">
 				<Skeleton className="h-4 w-40" />

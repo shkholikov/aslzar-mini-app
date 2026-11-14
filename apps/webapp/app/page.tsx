@@ -5,13 +5,13 @@ import { Profile } from "@/components/common/profile";
 import { usePathname, useRouter } from "next/navigation";
 import { useTelegram } from "@/hooks/useTelegram";
 import { useUser } from "@/hooks/useUser";
-import { PlatformInfo } from "@/components/platform-info";
 import { News } from "@/components/news";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
 import { UserLoadError } from "@/components/common/user-load-error";
 import { ChannelSubscribeCard } from "@/components/common/channel-subscribe-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
 import { BonusCard } from "@/components/common/bonus-card";
+import { NextPaymentCard } from "@/components/common/next-payment-card";
 
 export default function HomePage() {
 	const { data, loading, error } = useUser();
@@ -34,12 +34,12 @@ export default function HomePage() {
 			<>
 				<Profile />
 				<div className="w-full overflow-hidden">
-					{failed && <UserLoadError />}
-					{!loading && !failed && !(data && data.code === 0) && <RegisterPromptCard />}
+					<NextPaymentCard />
 					{/* Bonus card is for ASLZAR customers only — same gate as the referral programme. */}
 					{!loading && data?.code === 0 && data.contractFirst === true && data.bonusToken && <BonusCard />}
-					<PlatformInfo />
-					<ProductCarousel />
+					{failed && <UserLoadError />}
+					{!loading && !failed && !(data && data.code === 0) && <RegisterPromptCard />}
+					<ProductCarousel title="Yangi kolleksiya" />
 					<ChannelSubscribeCard />
 					<News />
 				</div>

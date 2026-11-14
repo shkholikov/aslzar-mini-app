@@ -7,6 +7,7 @@
  */
 
 import { apiRequest } from "@/lib/api-client";
+import { formatSom } from "@/lib/format";
 
 /** One physical piece. Not a size option — an actual ring in an actual display case. */
 export interface CatalogVariant {
@@ -132,9 +133,12 @@ export function latinStone(stone: string | null | undefined): string | null {
 	return STONE_UZ[stone.trim().toLowerCase()] ?? stone;
 }
 
-/** `1 250 000` — the app formats money as uz-UZ everywhere else too. */
-export function formatSom(amount: number): string {
-	return new Intl.NumberFormat("uz-UZ").format(Math.round(amount));
+/** Lives in lib/format.ts now; re-exported so catalogue code keeps one import. */
+export { formatSom };
+
+/** «750 proba · Oq · Sapfir»: fineness, colour and stone as one line, empty parts dropped. */
+export function productSpecs(p: Pick<CatalogProduct, "fineness" | "color" | "stone">): string {
+	return [p.fineness && `${p.fineness} proba`, latinColor(p.color), latinStone(p.stone)].filter(Boolean).join(" · ");
 }
 
 /**

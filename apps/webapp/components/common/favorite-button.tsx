@@ -1,5 +1,6 @@
 "use client";
 
+import type * as React from "react";
 import { Heart } from "lucide-react";
 import { useFavoriteIds } from "@/hooks/useFavorites";
 
@@ -24,22 +25,40 @@ export function FavoriteButton({
 	const { isLiked, toggle } = useFavoriteIds();
 	const liked = isLiked(productId);
 
-	const size = variant === "inline" ? "size-11 shrink-0 border-2 border-[#be9941]" : "size-8";
 	const state = liked ? "bg-[#be9941] text-white" : "bg-background/90 text-[#be9941]";
+	const label = liked ? "Sevimlilardan olib tashlash" : "Sevimlilarga qo'shish";
+	const onClick = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		void toggle(productId);
+	};
+
+	if (variant === "overlay") {
+		// 44px hit area for a thumb, 32px visible circle so the photo stays uncovered.
+		return (
+			<button
+				type="button"
+				aria-label={label}
+				aria-pressed={liked}
+				onClick={onClick}
+				className={`size-11 rounded-full flex items-center justify-center ${className}`}
+			>
+				<span className={`size-8 ${state} rounded-full shadow-sm flex items-center justify-center transition-colors`}>
+					<Heart className="size-4" fill={liked ? "currentColor" : "none"} />
+				</span>
+			</button>
+		);
+	}
 
 	return (
 		<button
 			type="button"
-			aria-label={liked ? "Sevimlilardan olib tashlash" : "Sevimlilarga qo'shish"}
+			aria-label={label}
 			aria-pressed={liked}
-			onClick={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				void toggle(productId);
-			}}
-			className={`${size} ${state} rounded-full flex items-center justify-center transition-colors ${className}`}
+			onClick={onClick}
+			className={`size-11 shrink-0 border-2 border-[#be9941] ${state} rounded-full flex items-center justify-center transition-colors ${className}`}
 		>
-			<Heart className={variant === "inline" ? "size-5" : "size-4"} fill={liked ? "currentColor" : "none"} />
+			<Heart className="size-5" fill={liked ? "currentColor" : "none"} />
 		</button>
 	);
 }

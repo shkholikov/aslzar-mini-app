@@ -1,5 +1,6 @@
 "use client";
 
+import { GLASS_CARD } from "@/lib/styles";
 import { Header } from "@/components/common/header";
 import { FinancialStatistics } from "./components/financial-statistics";
 import { Contracts } from "./components/contracts";
@@ -10,6 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
 
+const GLASS = GLASS_CARD;
+
 export default function FinancePage() {
 	const { data, loading } = useUser();
 
@@ -19,24 +22,44 @@ export default function FinancePage() {
 			<div>
 				{loading ? (
 					<>
-						<SectionCard iconImage="/icons/statistics.webp" title="Moliyaviy Statistika">
-							<div className="flex flex-wrap gap-2">
-								{[0, 1, 2, 3, 4].map((i) => (
-									<div key={i} className="flex-1 min-w-[calc(50%-0.5rem)] rounded-4xl border-2 px-4 py-3 flex flex-col items-center gap-2">
-										<Skeleton className="w-12 h-12 rounded-md" />
-										<Skeleton className="h-3 w-full" />
-										<Skeleton className="h-5 w-16 rounded-full" />
+						<div className="mx-2 my-2">
+							<div className={`${GLASS} p-4 flex flex-col gap-2.5`}>
+								<div className="flex items-center gap-3">
+									<Skeleton className="size-[50px] rounded-xl shrink-0" />
+									<div className="flex-1 flex flex-col gap-2">
+										<Skeleton className="h-3 w-28" />
+										<Skeleton className="h-6 w-44" />
 									</div>
-								))}
+								</div>
+								<Skeleton className="h-1.5 w-full rounded-full" />
+								<div className="flex justify-between">
+									<Skeleton className="h-3 w-28" />
+									<Skeleton className="h-3 w-24" />
+								</div>
 							</div>
-						</SectionCard>
-						<SectionCard iconImage="/icons/contract.webp" title="Shartnomalar">
-							<div className="flex flex-col gap-2 mt-2">
-								{[0, 1, 2].map((i) => (
-									<div key={i} className="flex gap-4">
-										<Skeleton className="h-4 flex-1" />
-										<Skeleton className="h-4 w-12" />
-										<Skeleton className="h-4 w-20" />
+						</div>
+						<div className="mx-2 my-2 grid grid-cols-2 gap-2">
+							{[0, 1, 2, 3].map((i) => (
+								<div key={i} className={`${GLASS} px-4 py-3 flex flex-col items-center gap-2`}>
+									<Skeleton className="size-[50px] rounded-xl" />
+									<Skeleton className="h-3 w-3/4" />
+									<Skeleton className="h-5 w-16 rounded-full" />
+								</div>
+							))}
+						</div>
+						<SectionCard iconImage="/icons/contract.webp" title="Shartnomalar" bare>
+							<div className={`${GLASS} overflow-hidden`}>
+								{[0, 1].map((i) => (
+									<div key={i} className="px-4 py-3 flex flex-col gap-2 border-t border-border/80 first:border-t-0">
+										<div className="flex justify-between">
+											<Skeleton className="h-4 w-28" />
+											<Skeleton className="h-4 w-24" />
+										</div>
+										<Skeleton className="h-1.5 w-full rounded-full" />
+										<div className="flex justify-between">
+											<Skeleton className="h-3 w-24" />
+											<Skeleton className="h-3 w-16" />
+										</div>
 									</div>
 								))}
 							</div>
@@ -46,8 +69,8 @@ export default function FinancePage() {
 					<>
 						<FinancialStatistics data={data} />
 						<UpcomingPayments contracts={data?.contract?.ids || []} />
-						<ProductCarousel />
 						<Contracts contracts={data?.contract?.ids || []} />
+						<ProductCarousel />
 					</>
 				) : (
 					<RegisterPromptCard />

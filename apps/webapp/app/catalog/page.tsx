@@ -6,14 +6,14 @@ import { ProductCard } from "@/components/common/product-card";
 import { CatalogState } from "@/components/common/catalog-state";
 import { CatalogFilters, type Filters, activeFilterCount } from "./components/catalog-filters";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useCatalogCategories, useCatalogPage } from "@/hooks/useCatalog";
 import { useFavoriteIds, useFavoriteProducts } from "@/hooks/useFavorites";
 import { useTelegram } from "@/hooks/useTelegram";
-import type { CatalogProduct } from "@/lib/catalog";
-import { Heart, LayoutGrid, List, Search, SlidersHorizontal } from "lucide-react";
+import { formatSom, type CatalogProduct } from "@/lib/catalog";
+import { Chip } from "@/components/common/chip";
+import { Heart, Search, SlidersHorizontal } from "lucide-react";
 
 const PER_PAGE = 24;
 const SEARCH_DEBOUNCE_MS = 350;
@@ -22,7 +22,6 @@ const EMPTY_FILTERS: Filters = { hasPhotos: true, inStock: true };
 
 export default function CatalogPage() {
 	const tg = useTelegram();
-	const [compact, setCompact] = React.useState(true);
 	const [rawSearch, setRawSearch] = React.useState("");
 	const [search, setSearch] = React.useState("");
 	const [category, setCategory] = React.useState<string | undefined>();
@@ -91,22 +90,11 @@ export default function CatalogPage() {
 				iconImage="/icons/ring.webp"
 				compact
 				actions={
-					<div className="flex gap-1">
-						<button
-							onClick={pick(() => setCompact(true))}
-							aria-label="Ikki ustunli ko'rinish"
-							className={`p-1.5 rounded-md transition-colors ${compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground"}`}
-						>
-							<LayoutGrid className="size-4" />
-						</button>
-						<button
-							onClick={pick(() => setCompact(false))}
-							aria-label="Ro'yxat ko'rinishi"
-							className={`p-1.5 rounded-md transition-colors ${!compact ? "bg-[#be9941]/20 text-[#be9941]" : "text-muted-foreground"}`}
-						>
-							<List className="size-4" />
-						</button>
-					</div>
+					meta && !firstLoad ? (
+						<span className="text-[13px] text-muted-foreground whitespace-nowrap">
+							{formatSom(favoritesOnly ? likedCount : meta.total)} ta mahsulot
+						</span>
+					) : null
 				}
 			/>
 
@@ -122,7 +110,7 @@ export default function CatalogPage() {
 								setRawSearch(e.target.value);
 								setFavoritesOnly(false);
 							}}
-							placeholder="Qidirish…"
+							placeholder="Uzuk, sirg'a, sapfir…"
 							className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 						/>
 					</div>
@@ -140,9 +128,7 @@ export default function CatalogPage() {
 					</button>
 				</div>
 
-				{/* pb-3 is not spacing — overflow-x-auto makes this a clipping box on every side
-				    (CSS forces overflow-y to auto), so without room below, the chips' shadow is
-				    sliced flat at the container edge. shadow-md reaches ~10px down. */}
+				{/* Horizontal scroll row of category chips (components/common/chip.tsx). */}
 				{categories.length > 0 && (
 					<div className="flex gap-2 px-4 pt-2.5 pb-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 						<Chip
@@ -163,7 +149,7 @@ export default function CatalogPage() {
 						>
 							<span className="inline-flex items-center gap-1">
 								<Heart className="size-3.5" fill={favoritesOnly ? "currentColor" : "none"} />
-								Sevimlilar
+								Sevimlilar · {likedCount}
 							</span>
 						</Chip>
 						{categories.map((c) => (
@@ -193,30 +179,23 @@ export default function CatalogPage() {
 					</div>
 				)}
 
-				{meta && !firstLoad && (
-					<div className="pb-2">
-						<Badge variant="default" className="bg-[#be9941] text-white">
-							{favoritesOnly ? likedCount : meta.total} ta mahsulot
-						</Badge>
-					</div>
-				)}
-
 				{/* An outage must not read as "we have nothing" — the customer would simply leave. */}
 				{failure && !firstLoad && visible.length === 0 && <CatalogState kind={failure} onAction={retry} />}
 
-				<div className={compact ? "grid grid-cols-2 gap-2.5" : "grid grid-cols-1 gap-3"}>
+				<div className="grid grid-cols-2 gap-2.5">
 					{firstLoad &&
-						(compact ? [0, 1, 2, 3, 4, 5] : [0, 1, 2]).map((i) => (
+						[0, 1, 2, 3, 4, 5].map((i) => (
 							<div key={i} className="border-2 rounded-4xl overflow-hidden">
 								<Skeleton className="w-full aspect-square" />
-								<div className="p-2.5 flex flex-col gap-1.5">
-									<Skeleton className="h-3 w-3/4" />
-									<Skeleton className="h-3 w-1/2" />
+								<div className="px-3 pt-2.5 pb-3 flex flex-col gap-1.5">
+									<Skeleton className="h-3.5 w-3/4" />
+									<Skeleton className="h-3 w-2/3" />
+									<Skeleton className="h-4 w-1/2" />
 								</div>
 							</div>
 						))}
 
-					{!firstLoad && visible.map((p) => <ProductCard key={p.productId} product={p} compact={compact} />)}
+					{!firstLoad && visible.map((p) => <ProductCard key={p.productId} product={p} />)}
 				</div>
 
 				{!firstLoad && !failure && visible.length === 0 && favoritesOnly && (
@@ -261,18 +240,5 @@ export default function CatalogPage() {
 				total={meta?.total}
 			/>
 		</div>
-	);
-}
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-	return (
-		<button
-			onClick={onClick}
-			className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold border-2 shadow-md transition-colors ${
-				active ? "bg-[#be9941] border-[#be9941] text-white" : "bg-muted/50 border-border text-muted-foreground"
-			}`}
-		>
-			{children}
-		</button>
 	);
 }

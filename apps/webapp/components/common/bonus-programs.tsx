@@ -58,7 +58,10 @@ export function BonusPrograms() {
 			try {
 				const responseData = await apiRequest<IBonusProgram[]>("/v1/bonus-programs");
 				const order = ["Silver", "Gold", "Diamond"];
-				const sorted = [...responseData].sort((a, b) => order.indexOf(a.uroven) - order.indexOf(b.uroven));
+				// Only levels this file has copy for: an unknown level from 1C would otherwise crash the tab.
+				const sorted = [...responseData]
+					.filter((p) => p.uroven in programs)
+					.sort((a, b) => order.indexOf(a.uroven) - order.indexOf(b.uroven));
 				setBonusProgramList(sorted);
 			} catch (error) {
 				console.error("Error fetching bonus programs data from 1C:", error);

@@ -8,6 +8,8 @@ import { Skeleton } from "../ui/skeleton";
 import { useUser } from "@/hooks/useUser";
 import { useTelegram } from "@/hooks/useTelegram";
 import { cn } from "@/lib/utils";
+import { GLASS_CARD } from "@/lib/styles";
+import { formatSom } from "@/lib/format";
 
 /** Avatar ring per 1C level; an unknown level keeps the neutral border. */
 const TIER_RING: Record<string, string> = {
@@ -27,24 +29,56 @@ function greetingForNow(): string {
 	return "Xayrli tun";
 }
 
+/** Up to two initials from a full name: "Karimova Dilnoza" → "KD". */
+function initialsOf(name: string): string {
+	return name
+		.split(/\s+/)
+		.slice(0, 2)
+		.map((part) => part.trim().charAt(0))
+		.filter(Boolean)
+		.join("")
+		.toUpperCase();
+}
+
+/**
+ * Telegram photo with initials as the fallback, ringed in the colour of the customer's 1C level.
+ * `name` drives the initials and alt text, so pass the same name the screen shows next to it.
+ */
+export function UserAvatar({ name, className, textClassName }: { name: string; className?: string; textClassName?: string }) {
+	const tg = useTelegram();
+	const { data } = useUser();
+	const photoUrl = tg?.initDataUnsafe?.user?.photo_url || "";
+	const uroven = data?.code === 0 ? (data.bonusInfo?.uroven ?? null) : null;
+	const initials = initialsOf(name);
+
+	return (
+		<Avatar
+			className={cn(
+				"size-12 ring-2 ring-offset-2 ring-offset-background",
+				uroven ? (TIER_RING[uroven] ?? "ring-border") : "ring-border",
+				className
+			)}
+		>
+			<AvatarImage src={photoUrl} alt={name || "Profil"} />
+			<AvatarFallback className={cn("bg-[#be9941]/15 text-[#7a5f1f] text-base font-semibold", textClassName)}>
+				{initials || <UserIcon className="size-5" />}
+			</AvatarFallback>
+		</Avatar>
+	);
+}
+
 export function Profile() {
 	const tg = useTelegram();
 	const router = useRouter();
 	const { data } = useUser();
 
 	const userData = tg?.initDataUnsafe?.user;
-	const photoUrl = userData?.photo_url || "";
 	const firstName = userData?.first_name || userData?.last_name || "";
-	const initials = [userData?.first_name, userData?.last_name]
-		.map((part) => part?.trim().charAt(0))
-		.filter(Boolean)
-		.join("")
-		.toUpperCase();
+	const telegramName = [userData?.first_name, userData?.last_name].filter(Boolean).join(" ");
 
 	const greeting = useMemo(greetingForNow, []);
 
 	const verified = data?.code === 0;
-	const uroven = verified ? (data.bonusInfo?.uroven ?? null) : null;
 
 	const go = (path: string) => {
 		tg?.HapticFeedback?.impactOccurred("medium");
@@ -52,42 +86,33 @@ export function Profile() {
 	};
 
 	return (
-		<section className="w-full px-2 mb-4">
+		<section className="w-full px-2 mb-2">
 			<button
 				type="button"
 				onClick={() => go("/profile")}
-				className="flex w-full items-center gap-3 px-2 text-left active:opacity-60 transition-opacity"
+				className={cn(GLASS_CARD, "flex w-full items-center gap-3 px-4 py-3 text-left active:opacity-60 transition-opacity")}
 			>
-				<Avatar
-					className={cn(
-						"size-14 ring-2 ring-offset-2 ring-offset-background",
-						uroven ? (TIER_RING[uroven] ?? "ring-border") : "ring-border"
-					)}
-				>
-					<AvatarImage src={photoUrl} alt={firstName || "Profil"} />
-					<AvatarFallback className="bg-[#be9941]/15 text-[#be9941] text-lg font-semibold">
-						{initials || <UserIcon className="size-6" />}
-					</AvatarFallback>
-				</Avatar>
+				<UserAvatar name={telegramName} className="m-1 shrink-0" />
 
 				<div className="min-w-0 flex-1">
-					<p className="text-sm text-muted-foreground">{firstName ? `${greeting},` : `${greeting}!`}</p>
+					<p className="text-[13px] text-muted-foreground">{firstName ? `${greeting},` : `${greeting}!`}</p>
 					{firstName && (
-						<p className="flex items-center gap-1.5 text-xl font-bold leading-tight">
+						<p className="flex items-center gap-1.5 text-lg font-bold leading-tight">
 							<span className="truncate">{firstName}</span>
-							{verified && <BadgeCheckIcon aria-label="Tasdiqlangan mijoz" className="size-5 shrink-0 fill-blue-500 text-white" />}
+							{verified && <BadgeCheckIcon aria-label="Tasdiqlangan mijoz" className="size-[18px] shrink-0 fill-blue-500 text-white" />}
 						</p>
 					)}
 				</div>
-				<ChevronRightIcon className="size-5 shrink-0 text-muted-foreground" />
+				<span className="text-[13px] font-semibold text-[#7a5f1f]">Profil</span>
+				<ChevronRightIcon aria-hidden className="size-[18px] shrink-0 text-muted-foreground" />
 			</button>
 
-			<ProfileStats className="mt-4" />
+			<ProfileStats className="mt-2" />
 		</section>
 	);
 }
 
-/** Level, contracts and bonus as three cards (the pre-2.22 design). Shared by the home header and /profile. */
+/** Daraja (1C level), contracts and bonus as three cards (the pre-2.22 design). Shared by the home header and /profile. */
 export function ProfileStats({ className }: { className?: string }) {
 	const tg = useTelegram();
 	const router = useRouter();
@@ -107,7 +132,7 @@ export function ProfileStats({ className }: { className?: string }) {
 	if (!loading && !verified) return null;
 	return (
 		<div className={cn("grid grid-cols-3 gap-2 w-full", className)}>
-			<StatCard icon="/icons/crown.webp" label="Level" loading={loading} skeletonClassName="w-14" value={uroven ?? "—"} />
+			<StatCard icon="/icons/crown.webp" label="Daraja" loading={loading} skeletonClassName="w-14" value={uroven ?? "—"} />
 			<StatCard
 				icon="/icons/contract.webp"
 				label="Shartnoma"
@@ -121,7 +146,7 @@ export function ProfileStats({ className }: { className?: string }) {
 				label="Bonus"
 				loading={loading}
 				skeletonClassName="w-20"
-				value={`${bonus.toLocaleString("uz-UZ")} so'm`}
+				value={`${formatSom(bonus)} so'm`}
 				onClick={() => go("/referral")}
 			/>
 		</div>
