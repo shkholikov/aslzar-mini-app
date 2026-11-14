@@ -176,9 +176,11 @@ export function getUpcomingPayments(contracts: Contract1C[] | null | undefined):
 }
 
 /**
- * The earliest unpaid instalment of any active contract that is due today or later, or null.
- * Overdue rows are left out on purpose: the home card says "next payment", and overdue money is
- * shown on Finance under «Kechikkan to'lovlar».
+ * The instalment the customer should pay next, or null when nothing is owed.
+ *
+ * Overdue first: if any instalment of an active contract is past due and not covered, the oldest
+ * one is returned (negative `daysLeft`), because that is when the reminder matters most.
+ * Otherwise the earliest instalment due today or later.
  */
 export function nextPayment(contracts: Contract1C[] | null | undefined): UpcomingPayment | null {
 	const today = todayKey();
@@ -189,7 +191,7 @@ export function nextPayment(contracts: Contract1C[] | null | undefined): Upcomin
 			const key = dayKey(item.date);
 			if (!key) continue;
 			const daysLeft = daysBetween(today, key);
-			if (daysLeft < 0) continue;
+			// Smallest daysLeft wins: the oldest overdue if there is one, else the nearest upcoming.
 			if (!best || daysLeft < best.daysLeft) {
 				best = {
 					contractId: contractIdOf(contract),

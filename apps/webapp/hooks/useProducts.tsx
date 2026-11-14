@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { apiRequest } from "@/lib/api-client";
 import { useTelegram } from "./useTelegram";
@@ -36,6 +36,8 @@ const CAROUSEL_PAGES = 20;
 const CAROUSEL_PER_PAGE = 24;
 /** Distinct products shown in the strip. */
 export const CAROUSEL_SIZE = 6;
+/** Stable empty list, so the context value does not change identity on every render. */
+const NO_PRODUCTS: CatalogProduct[] = [];
 
 function carouselQuery(page: number): string {
 	const category = CAROUSEL_CATEGORY ? `&category=${encodeURIComponent(CAROUSEL_CATEGORY)}` : "";
@@ -86,12 +88,20 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 		if (page !== 1 && data && data.data.length < CAROUSEL_SIZE) setPage(1);
 	}, [page, data]);
 
+	// Shuffled once per page, not on every revalidation: a new `data` object for the same page
+	// would otherwise reorder the strip while the customer moves between tabs.
+	const picked = useRef<{ page: number; products: CatalogProduct[] } | null>(null);
+	if (data?.data && data.data.length > 0 && picked.current?.page !== page) {
+		picked.current = { page, products: shuffle(data.data).slice(0, CAROUSEL_SIZE) };
+	}
+	const products = picked.current?.page === page ? picked.current.products : NO_PRODUCTS;
+
 	const value = useMemo<ProductsContextType>(
 		() => ({
-			products: data?.data ? shuffle(data.data).slice(0, CAROUSEL_SIZE) : [],
+			products,
 			loading: Boolean(ready) && isLoading && data === undefined
 		}),
-		[ready, data, isLoading]
+		[ready, data, isLoading, products]
 	);
 
 	return <ProductsContext.Provider value={value}>{children}</ProductsContext.Provider>;

@@ -24,6 +24,7 @@ export function NextPaymentCard() {
 	if (loading || !payment) return null;
 
 	const date = format1CDate(payment.date, { day: "numeric", month: "long" });
+	const overdue = payment.daysLeft < 0;
 
 	return (
 		<div className="mx-2 my-2">
@@ -34,10 +35,12 @@ export function NextPaymentCard() {
 			>
 				<Image src="/icons/calendar.webp" alt="" width={48} height={48} className="size-12 object-contain shrink-0" />
 				<div className="min-w-0 flex-1 flex flex-col gap-0.5">
-					<span className="text-xs text-muted-foreground">Keyingi to&apos;lov · {date}</span>
+					<span className="text-xs text-muted-foreground">
+						{overdue ? "Kechikkan to'lov" : "Keyingi to'lov"} · {date}
+					</span>
 					<span className="text-[17px] font-bold leading-tight">{formatSom(payment.left)} so&apos;m</span>
 				</div>
-				<Badge variant="default" className="bg-[#be9941] text-white">
+				<Badge variant="default" className={overdue ? "bg-red-600 text-white" : "bg-[#be9941] text-white"}>
 					{daysLeftLabel(payment.daysLeft)}
 				</Badge>
 				<ChevronRight aria-hidden className="size-[18px] shrink-0 text-muted-foreground" />
