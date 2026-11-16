@@ -1,5 +1,3 @@
-## What changed
-
 ## Testing
 
 <!-- Commands run and their output. Screenshots for UI changes. -->
