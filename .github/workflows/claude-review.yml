@@ -33,12 +33,8 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
+    # No job-level env: the model's process must not inherit GH_TOKEN. The shell steps get it.
     env:
-      GH_TOKEN: ${{ github.token }}
-      REPO: ${{ github.repository }}
-      PR: ${{ github.event.pull_request.number }}
-      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-      BASE_SHA: ${{ github.event.pull_request.base.sha }}
       # The action posts as the Claude GitHub App; nobody else's comment text is trusted.
       BOT: '.user.login == "claude[bot]"'
     steps:
@@ -52,6 +48,12 @@ jobs:
 
       - name: Review scope
         id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           out=.claude-review
@@ -97,9 +99,10 @@ jobs:
           git diff --name-only "$from" "$HEAD_SHA" >"$out/files.txt"
           git diff --name-only "$base" "$HEAD_SHA" >"$out/pr-files.txt"
 
+          # Test files or a test runner config, not a directory named test (Next.js routes use that).
           # grep reads all input (no -q): an early exit would fail the pipe under pipefail.
           tests=no
-          if git ls-files | grep -E '(\.(test|spec)\.[cm]?[jt]sx?$)|(^|/)(jest|vitest)\.config\.|(^|/)test_[^/]*\.py$|(^|/)tests?/' >/dev/null; then
+          if git ls-files | grep -E '(\.(test|spec)\.[cm]?[jt]sx?$)|(^|/)__tests__/|(^|/)(jest|vitest)\.config\.|(^|/)test_[^/]*\.py$|_test\.py$' >/dev/null; then
             tests=yes
           fi
 
@@ -177,7 +180,7 @@ jobs:
                complete fixes get a suggestion block.
                Then one summary comment, also when nothing was found, posted with a plain
                gh pr comment ${{ github.event.pull_request.number }} --body "<text>" (no heredoc,
-               no $(...): other shell forms are denied). It starts
+               no $(...), no other flags: everything else is denied). It starts
                with the count as REVIEW.md says, then the risk tier, the High files from
                pr-files.txt (the owner reads those diffs before merging) and whether the range was
                full or incremental.
@@ -187,7 +190,7 @@ jobs:
                  is incomplete and what was missed, and leave the marker out, so the next run
                  reviews this range again and this check fails.
           claude_args: |
-            --allowedTools "Agent,Task,Read,Grep,Glob,Bash(gh pr comment:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Agent,Task,Read,Grep,Glob,Bash(gh pr comment ${{ github.event.pull_request.number }} --body:*),mcp__github_inline_comment__create_inline_comment"
             --permission-mode default
 
       # Green only when a complete review of this head was posted by the bot.
@@ -195,6 +198,12 @@ jobs:
         if: >-
           steps.scope.outputs.mode != 'none' &&
           steps.claude.outputs.skipped_due_to_workflow_validation_mismatch != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           marker="<!-- claude-review sha=$HEAD_SHA -->"
