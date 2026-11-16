@@ -30,7 +30,7 @@ Read by `/code-review`, `/security-review` and the Claude PR review workflow.
   - `apps/api/src/integrations/` (1C, amoCRM, Besales, ASLZAR ID, purchases)
   - `apps/api/src/sync-1c.ts`, `apps/api/src/sync-1c-cron.ts`
   - `apps/admin/lib/auth.ts`, `apps/admin/lib/auth-utils.ts`
-  - `apps/bot/src/callback-server.ts`
+  - `apps/bot/src/callback-server.ts`, `apps/bot/src/besales*.ts`
   - `apps/admin/vercel.json`, `turbo.json`, `.github/`, any `.env.example`
 - Low (merge once CI is green), only when every changed file is one of:
   - `*.md`, `CHANGELOG.md`, `apps/*/public/**`, `*.css`

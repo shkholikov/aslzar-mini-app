@@ -1,37 +1,145 @@
 name: claude-review
 
+# Multi-agent PR review, modelled on Anthropic's code-review plugin and Code Review:
+# four reviewers in parallel, every finding re-checked by its own agent, only confirmed ones posted.
+# Runs on every push to the PR; later rounds review only the commits added since the last round.
+# The review range is computed by a shell step, not by the model.
+
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
 
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  # A running review finishes before the next starts, so it never stops between its inline
+  # comments and the summary marker (which would post the same comments twice).
+  cancel-in-progress: false
+
 jobs:
   review:
-    if: github.event.pull_request.draft == false
+    # Fork and Dependabot PRs get no secrets, so the review could only fail there.
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
       id-token: write
     steps:
+      # The PR head itself, not GitHub's test merge with the base branch.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
+      - name: Review scope
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          out=.claude-review
+          rm -rf "$out" && mkdir -p "$out"
+
+          # Last round's marker, trusted only in comments posted by a bot account.
+          last=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+              --jq '.[] | select(.user.type == "Bot") | .body' |
+            grep -oE '<!-- claude-review sha=[0-9a-f]{40} -->' | tail -n 1 |
+            grep -oE '[0-9a-f]{40}' || true)
+
+          # Incremental only when that commit is still an ancestor of the head (no rebase or
+          # force-push since) and no merge commit came in after it (that would bring in base-branch code).
+          mode=full
+          if [ -n "$last" ] && git cat-file -e "$last^{commit}" 2>/dev/null &&
+            git merge-base --is-ancestor "$last" "$HEAD_SHA" &&
+            [ -z "$(git rev-list --merges "$last..$HEAD_SHA")" ]; then
+            mode=incremental
+            if [ "$last" = "$HEAD_SHA" ]; then mode=none; fi
+          fi
+          if [ "$mode" = incremental ]; then
+            from=$last
+          else
+            from=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          fi
+
+          git diff "$from" "$HEAD_SHA" >"$out/scope.diff"
+          git diff --name-only "$from" "$HEAD_SHA" >"$out/files.txt"
+          gh api --paginate "repos/$REPO/pulls/$PR/comments" \
+            --jq '.[] | {path, line, author: .user.login, body: .body[0:600]}' >"$out/inline-comments.json"
+
+          # grep reads all input (no -q): an early exit would fail the pipe under pipefail.
+          tests=no
+          if git ls-files | grep -E '(\.(test|spec)\.[cm]?[jt]sx?$)|(^|/)(jest|vitest)\.config\.|(^|/)test_[^/]*\.py$|(^|/)tests?/' >/dev/null; then
+            tests=yes
+          fi
+
+          echo "Review range: $mode, $from..$HEAD_SHA, $(wc -l <"$out/files.txt") files, tests: $tests"
+          {
+            echo "mode=$mode"
+            echo "from=$from"
+            echo "tests=$tests"
+          } >>"$GITHUB_OUTPUT"
+
       - uses: anthropics/claude-code-action@v1
+        if: steps.scope.outputs.mode != 'none'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # or: anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
+            HEAD SHA: ${{ github.event.pull_request.head.sha }}
+            REVIEW RANGE: ${{ steps.scope.outputs.mode }} (${{ steps.scope.outputs.from }}..HEAD SHA)
+            REPO HAS TESTS: ${{ steps.scope.outputs.tests }}
 
-            Review this pull request for bugs and security problems.
-            Follow REVIEW.md exactly and check the change against CLAUDE.md.
-            Read the existing review comments first. Do not repeat a finding already posted.
-            If this PR already had review rounds, review only commits added since the last one.
+            Review this pull request for real bugs and security problems. Follow REVIEW.md exactly
+            (output, tags, nit limit, skip list, rules from incidents) and check the change against
+            CLAUDE.md. Follow these steps exactly.
 
-            Post each finding as an inline comment tagged Important, Nit or Pre-existing.
-            Post one summary comment that starts with the finding count.
-            If a file in REVIEW.md's High tier changed, say so in the summary.
+            1. Scope. The diff to review is in .claude-review/scope.diff and its files in
+               .claude-review/files.txt. They were computed for you ("full" is the whole PR,
+               "incremental" only the commits since your last round); do not compute another range.
+               Read the PR title and description (gh pr view). Inline comments already on the PR are
+               in .claude-review/inline-comments.json; earlier summaries are in gh pr view --comments.
+               Read REVIEW.md and every CLAUDE.md on the path of a changed file. Note the changed
+               files in REVIEW.md's High tier, and the PR's risk tier: High if any High file changed,
+               Low if every changed file is Low, otherwise Medium.
+
+            2. Review. Launch 4 agents in parallel. Give each the PR title, description, the diff in
+               scope, REVIEW.md, and the relevant CLAUDE.md paths. Each returns issues with file,
+               line, description and why it was flagged.
+               - Agent A (sonnet): violations of REVIEW.md and CLAUDE.md rules. Quote the exact rule.
+               - Agent B (opus): bugs in the changed code: wrong logic, crashes, type errors, broken
+                 contracts with the code it calls.
+               - Agent C (opus): security in the changed code: auth checks, injection, secrets in code
+                 or logs, unverified webhooks and payment callbacks, amounts not checked server-side.
+               - Agent D (sonnet), only if a High file changed: errors swallowed or hidden in High
+                 files (empty catch, ignored results, fallbacks that hide failure). Only when REPO HAS
+                 TESTS is yes, also new High-path behaviour without a test.
+               Flag only what will go wrong. Not: style, nitpicks a linter catches, guesses that need
+               context the agent did not read, problems that existed before this PR (tag those
+               Pre-existing only when they are serious).
+
+            3. Validate. For each issue, launch an agent (opus for bugs and security, sonnet for rule
+               violations) that reads the code around it and confirms or rejects it with high
+               confidence. Drop every issue that is not confirmed, and every issue already raised in
+               inline-comments.json or an earlier summary.
+
+            4. Post. For each confirmed issue, one inline comment with
+               mcp__github_inline_comment__create_inline_comment and confirmed: true, tagged
+               Important, Nit or Pre-existing per REVIEW.md. Small complete fixes get a suggestion
+               block.
+               Then one summary comment with gh pr comment, even when nothing was found. It starts
+               with the count as REVIEW.md says, then the risk tier, the High files changed (the owner
+               reads those diffs before merging) and whether the range was full or incremental. Its
+               last line is exactly
+               <!-- claude-review sha=${{ github.event.pull_request.head.sha }} -->
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "Agent,Task,Read,Grep,Glob,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),mcp__github_inline_comment__create_inline_comment"
