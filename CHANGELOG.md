@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.2] - 2026-11-16
+
+### Changed
+
+- Claude PR review must always run its review agents, whatever the size of the PR, and its summary lists each agent's issue count. The review check fails when that list is missing, so a review the model shortcut no longer shows green.
+
 ## [2.23.1] - 2026-11-16
 
 ### Changed
