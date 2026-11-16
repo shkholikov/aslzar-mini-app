@@ -10,6 +10,15 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.1] - 2026-11-16
+
+### Changed
+
+- Claude PR review now runs four reviewers in parallel (rules, bugs, security, and silent failures when a High file changes) and re-checks every finding before posting it. On later pushes it reviews only the new commits, falling back to the whole PR after a rebase, force-push or merge from main, and it trusts its earlier-round marker only in comments posted by a bot. A new push waits for the running review instead of cancelling it, and every round ends with a summary naming the risk tier.
+- `REVIEW.md`: the bot's Besales files (`apps/bot/src/besales*.ts`) are now in the High risk tier.
+- Claude PR review fails its check when no complete review was posted, trusts only comments from `claude[bot]`, skips fork and bot PRs, and a manual re-run reviews the whole PR again.
+- The PR template keeps only Testing, Risk and How to revert.
+
 ## [2.23.0] - 2026-11-13
 
 ### Added
