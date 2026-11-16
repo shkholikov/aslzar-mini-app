@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Script from "next/script";
 import { Menu } from "@/components/common/menu";
@@ -13,10 +13,15 @@ import { Toaster } from "sonner";
 import { TelegramGuard } from "@/components/common/telegram-guard";
 import { AnimatedPage } from "@/components/common/animated-page";
 
-const montserratFont = Montserrat({
-	variable: "--font-radley",
-	subsets: ["latin"],
-	weight: ["400", "500", "600", "700"]
+// Montserrat ships with the app: one variable font (weights 100-900) cut to Latin (incl. the
+// Uzbek ʻ), Cyrillic and Cyrillic Extended (Russian and Uzbek Cyrillic names), OFL licence in
+// app/fonts. next/font/google downloaded it from Google at build time, and a failed download
+// broke the production build. Latin Extended (Ş, ğ…) is left out to keep the file at 91 KB;
+// those letters fall back to the system font.
+const montserratFont = localFont({
+	src: "./fonts/montserrat-wght.woff2",
+	variable: "--font-montserrat",
+	weight: "100 900"
 });
 
 export const metadata: Metadata = {

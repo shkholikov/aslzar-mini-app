@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.2] - 2026-11-16
+
+### Fixed
+
+- The Mini App's Montserrat font now ships with the app instead of being downloaded from Google Fonts during the build, so a failed download can no longer break a webapp deploy. It covers Latin (with the Uzbek ʻ), Cyrillic and Uzbek Cyrillic as before; the rarely used Latin Extended letters (Ş, ğ) now show in the system font.
+
 ## [2.23.1] - 2026-11-16
 
 ### Changed
