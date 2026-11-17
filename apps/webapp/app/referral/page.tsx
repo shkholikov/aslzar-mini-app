@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { Header } from "@/components/common/header";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
+import { UserLoadError } from "@/components/common/user-load-error";
 import { ReferralLockedCard } from "@/components/common/referral-locked-card";
 import { ReferralQRCode } from "./components/referral-qr-code";
 import { ReferralLimitCard } from "./components/referral-limit-card";
@@ -44,7 +45,9 @@ const preparedMessageFetcher = async (path: string): Promise<string | null> => {
 
 export default function ReferralPage() {
 	const tg = useTelegram();
-	const { data, loading } = useUser();
+	const { data, loading, error } = useUser();
+	// Error without data is a failed call, not "not a customer": show a retry (same rule as Home).
+	const failed = !loading && !data && Boolean(error);
 	const clientId = data?.clientId;
 	const userId = tg?.initDataUnsafe?.user?.id;
 
@@ -146,6 +149,8 @@ export default function ReferralPage() {
 						}}
 					/>
 				</>
+			) : failed ? (
+				<UserLoadError />
 			) : (
 				<RegisterPromptCard />
 			)}

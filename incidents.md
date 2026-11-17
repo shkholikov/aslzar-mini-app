@@ -18,6 +18,14 @@ One entry per production bug or revert. Each one should end with a rule in `REVI
 - Fix: 2.21.0, only private chats are forwarded.
 - Rule added: REVIEW.md, "The bot treats a group or channel message as a private chat".
 
+## 2026-11-17: Moliyaviy and Referal asked existing customers to register
+
+- What broke: when loading the customer's data failed (network, API or 1C trouble), the Moliyaviy and Referal pages showed «Ro'yxatdan o'ting», the register card, to people who are already customers.
+- Cause: `apps/webapp/app/finance/page.tsx` and `apps/webapp/app/referral/page.tsx` read only `data` and `loading` from `useUser()`, so a failed call fell through to `RegisterPromptCard`. Home and Profile already checked `error`.
+- How found: code review of the Mini App UI rework (2.23.0).
+- Fix: 2.23.3, both pages show `UserLoadError` with a retry when the call failed.
+- Rule added: none new; REVIEW.md's "1C slow or unreachable is treated as an answer" covers it.
+
 <!--
 ## YYYY-MM-DD: short title
 - What broke: what users saw

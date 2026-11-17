@@ -7,6 +7,7 @@ import { Contracts } from "./components/contracts";
 import { UpcomingPayments } from "./components/upcoming-payments";
 import { useUser } from "@/hooks/useUser";
 import { RegisterPromptCard } from "@/components/common/register-prompt-card";
+import { UserLoadError } from "@/components/common/user-load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionCard } from "@/components/common/section-card";
 import { ProductCarousel } from "@/components/common/product-carousel";
@@ -14,7 +15,10 @@ import { ProductCarousel } from "@/components/common/product-carousel";
 const GLASS = GLASS_CARD;
 
 export default function FinancePage() {
-	const { data, loading } = useUser();
+	const { data, loading, error } = useUser();
+	// useUser maps 404 (not a customer) to data: null with no error, so error without data is a failed
+	// call: show a retry, never the register card (incidents.md, 2026-11-17). Same rule as Home.
+	const failed = !loading && !data && Boolean(error);
 
 	return (
 		<div className="pt-12">
@@ -72,6 +76,8 @@ export default function FinancePage() {
 						<Contracts contracts={data?.contract?.ids || []} />
 						<ProductCarousel />
 					</>
+				) : failed ? (
+					<UserLoadError />
 				) : (
 					<RegisterPromptCard />
 				)}
