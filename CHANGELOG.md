@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.24.0] - 2026-11-17
+
+### Added
+
+- Mini App Katalog remembers where the customer left it: coming back from a product or through the bottom menu shows the same search, category, «Sevimlilar» and filters, the same loaded products and the same scroll position. After the Mini App reloads the choices are kept and the list starts from the top; closing the Mini App starts clean. The «Sevimlilar» link from Boshqa still opens straight on «Sevimlilar».
+
 ## [2.23.6] - 2026-11-17
 
 ### Fixed

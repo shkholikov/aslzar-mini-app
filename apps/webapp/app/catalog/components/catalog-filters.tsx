@@ -5,21 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { RippleButton } from "@/components/ui/shadcn-io/ripple-button";
 import { goldButtonClass } from "@/components/common/button-variants";
 import { useTelegram } from "@/hooks/useTelegram";
-import { latinColor, type CatalogQuery } from "@/lib/catalog";
-
-/** The subset of the query the sheet owns. Search and category live in the page header. */
-export type Filters = Pick<CatalogQuery, "fineness" | "color" | "stone" | "hasStone" | "hasPhotos" | "inStock">;
-
-/**
- * `fineness` and `color` are strict enums upstream — an unlisted value is a 400, so these are
- * hardcoded from the spec rather than derived from whatever the current page happens to hold.
- * Colour values stay in 1C's Cyrillic on the wire; latinColor() is only for the label.
- */
-const FINENESS: NonNullable<CatalogQuery["fineness"]>[] = ["585", "750", "925"];
-const COLORS = ["Сарик", "Кизил", "Ок"];
-
-/** Photos and stock default on, so they only count as "active" when the customer turns them off. */
-const DEFAULTS: Filters = { hasPhotos: true, inStock: true };
+import { COLORS, DEFAULT_FILTERS, FINENESS, latinColor, type Filters } from "@/lib/catalog";
 
 export function activeFilterCount(f: Filters): number {
 	let n = 0;
@@ -27,8 +13,8 @@ export function activeFilterCount(f: Filters): number {
 	if (f.color) n++;
 	if (f.stone) n++;
 	if (f.hasStone !== undefined) n++;
-	if (f.hasPhotos !== DEFAULTS.hasPhotos) n++;
-	if (f.inStock !== DEFAULTS.inStock) n++;
+	if (f.hasPhotos !== DEFAULT_FILTERS.hasPhotos) n++;
+	if (f.inStock !== DEFAULT_FILTERS.inStock) n++;
 	return n;
 }
 
@@ -113,8 +99,8 @@ export function CatalogFilters({ open, onOpenChange, value, onChange, total }: P
 						variant="outline"
 						className="grow rounded-full"
 						onClick={tap(() => {
-							setDraft(DEFAULTS);
-							onChange(DEFAULTS);
+							setDraft(DEFAULT_FILTERS);
+							onChange(DEFAULT_FILTERS);
 							onOpenChange(false);
 						})}
 					>

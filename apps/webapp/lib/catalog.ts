@@ -93,6 +93,20 @@ export interface CatalogQuery {
 	perPage?: number;
 }
 
+/** The subset of the query the filter sheet owns. Search and category live in the page header. */
+export type Filters = Pick<CatalogQuery, "fineness" | "color" | "stone" | "hasStone" | "hasPhotos" | "inStock">;
+
+/**
+ * `fineness` and `color` are strict enums upstream — an unlisted value is a 400, so these are
+ * hardcoded from the spec rather than derived from whatever the current page happens to hold.
+ * Colour values stay in 1C's Cyrillic on the wire; latinColor() is only for the label.
+ */
+export const FINENESS: NonNullable<CatalogQuery["fineness"]>[] = ["585", "750", "925"];
+export const COLORS = ["Сарик", "Кизил", "Ок"];
+
+/** Photos and stock default on, so they only count as "active" when the customer turns them off. */
+export const DEFAULT_FILTERS: Filters = { hasPhotos: true, inStock: true };
+
 // ——— Display helpers ———
 
 /**
