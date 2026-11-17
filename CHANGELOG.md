@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.6] - 2026-11-17
+
+### Fixed
+
+- Claude PR review check no longer fails on a PR that changes the review workflow itself; such a PR gets no Claude review by design, and the check now says so instead of turning red. The review job also moves to `actions/checkout@v6`.
+
 ## [2.23.5] - 2026-11-17
 
 ### Fixed

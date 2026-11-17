@@ -34,7 +34,7 @@ jobs:
     steps:
       # The PR's current head (CLAUDE.md and the code the agents read). No token is left in
       # .git/config for the model to find.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/head
           fetch-depth: 1
@@ -63,14 +63,21 @@ jobs:
 
       # Green only when the bot posted something in this run: inline comments or a PR comment.
       - name: Check the review was posted
-        if: steps.claude.outputs.skipped_due_to_workflow_validation_mismatch != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           SINCE: ${{ steps.start.outputs.at }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           set -euo pipefail
+          # The action skips a PR whose copy of this file differs from the default branch's.
+          wf=.github/workflows/claude-review.yml
+          base_blob=$(gh api "repos/$REPO/contents/$wf?ref=$BASE_REF" --jq .sha 2>/dev/null || true)
+          if [ "$base_blob" != "$(git rev-parse "HEAD:$wf")" ]; then
+            echo "::notice::This PR changes claude-review.yml, so it gets no Claude review; the next PR does."
+            exit 0
+          fi
           sel=".[] | select(.user.login == \"claude[bot]\" and .created_at >= \"$SINCE\") | .id"
           issue=$(gh api --paginate "repos/$REPO/issues/$PR/comments" --jq "$sel" | wc -l | tr -d ' ')
           inline=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" --jq "$sel" | wc -l | tr -d ' ')
