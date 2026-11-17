@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.5] - 2026-11-17
+
+### Fixed
+
+- Mini App Moliyaviy and Referal pages: when the customer's data fails to load (network or 1C trouble), they now show «Ma'lumotlarni yuklab bo'lmadi» with a retry button, like Home, instead of asking an existing customer to register.
+
 ## [2.23.4] - 2026-11-17
 
 ### Changed
