@@ -61,7 +61,8 @@ jobs:
             --model claude-opus-5-5
             --allowedTools "Agent,Task,Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*),mcp__github_inline_comment__create_inline_comment"
 
-      # Green only when the bot posted something in this run: inline comments or a PR comment.
+      # Green when the bot posted in this run (inline comments or a PR comment), or when it
+      # stopped on purpose and its last message could be posted instead. Red otherwise.
       - name: Check the review was posted
         env:
           GH_TOKEN: ${{ github.token }}
@@ -73,7 +74,11 @@ jobs:
           set -euo pipefail
           # The action skips a PR whose copy of this file differs from the default branch's.
           wf=.github/workflows/claude-review.yml
-          base_blob=$(gh api "repos/$REPO/contents/$wf?ref=$BASE_REF" --jq .sha 2>/dev/null || true)
+          # Missing on the base (first install) counts as changed; any other API error fails.
+          if ! base_blob=$(gh api "repos/$REPO/contents/$wf?ref=$BASE_REF" --jq .sha 2>"$RUNNER_TEMP/gh.err"); then
+            grep -q 'HTTP 404' "$RUNNER_TEMP/gh.err" || { cat "$RUNNER_TEMP/gh.err" >&2; exit 1; }
+            base_blob=none
+          fi
           if [ "$base_blob" != "$(git rev-parse "HEAD:$wf")" ]; then
             echo "::notice::This PR changes claude-review.yml, so it gets no Claude review; the next PR does."
             exit 0
@@ -82,7 +87,18 @@ jobs:
           issue=$(gh api --paginate "repos/$REPO/issues/$PR/comments" --jq "$sel" | wc -l | tr -d ' ')
           inline=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" --jq "$sel" | wc -l | tr -d ' ')
           echo "claude[bot] posted $issue PR comment(s) and $inline inline comment(s) in this run."
-          if [ "$issue" -eq 0 ] && [ "$inline" -eq 0 ]; then
-            echo "::error::Claude posted nothing in this run. Close and reopen the PR to try again."
+          [ "$issue" -gt 0 ] || [ "$inline" -gt 0 ] && exit 0
+
+          # Nothing posted: the plugin may have judged the PR trivial (docs only) and stopped.
+          # Post Claude's last message, so the reason is visible on the PR; fail only when the
+          # run errored or left no message.
+          log="$RUNNER_TEMP/claude-execution-output.json"
+          last=$(jq -r '[.[] | select(.type == "result")] | last | select(.is_error != true) | .result // empty' "$log" 2>/dev/null | head -c 1500 || true)
+          if [ -z "$last" ]; then
+            echo "::error::Claude posted nothing in this run and left no message. Close and reopen the PR to try again."
             exit 1
           fi
+          printf 'Claude review posted no findings on this PR. Its last message:\n\n%s\n' \
+            "$(printf '%s\n' "$last" | sed 's/^/> /')" >"$RUNNER_TEMP/skip.md"
+          gh pr comment "$PR" -R "$REPO" --body-file "$RUNNER_TEMP/skip.md"
+          echo "::notice::Claude posted no review; its last message was posted on the PR instead."
