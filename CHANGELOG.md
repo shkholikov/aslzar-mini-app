@@ -16,6 +16,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 - Claude PR review check no longer turns red when Claude finds nothing to say about a PR (for example a docs-only change): it posts Claude's last message on the PR and stays green. It turns red only when the run fails or leaves no message, and now also when GitHub's API errors while checking the workflow file, instead of passing silently.
 
+## [2.24.1] - 2026-11-17
+
+### Changed
+
+- `CLAUDE.md` gains a `## Dev` section: how to run the apps locally (commands, ports, env files, the dev bot token, the ngrok setup for testing the Mini App inside Telegram, and how to stop).
+
 ## [2.24.0] - 2026-11-17
 
 ### Added

@@ -47,6 +47,16 @@ pnpm --filter webapp lint
 pnpm --filter admin lint
 ```
 
+## Dev
+
+- Start: `pnpm dev` from the root runs webapp, admin, api and bot in parallel through turbo. One app: `pnpm dev:webapp`, `pnpm dev:admin`, `pnpm dev:api`, `pnpm dev:bot`.
+- First: nothing local to start. MongoDB is remote (`mongodb+srv` in the examples) and the repo has no docker-compose file. Use the `MONGO_DB_COLLECTION_*` `_dev` overrides so dev never writes production collections.
+- Ports today: webapp 3000, api 3001 (`PORT`, default in `apps/api/src/config.ts`), admin takes the next free port Next finds (3002 when webapp and api are up). The bot's Besales callback server binds `PORT` (3000 in the bot example) only when `BESALES_ENABLED=true`, and then collides with the webapp. The fixed block 3140 from `~/.claude/docs/dev-ports.md` is not wired yet.
+- Env: each app reads `apps/<app>/.env.development.local`. Copy from `apps/api/.env.example`, `apps/bot/.env.example` and `apps/webapp/.env.example`; admin has no example. Needed to boot: api `MONGO_DB_CONNECTION_STRING`, `MONGO_DB_NAME`, `BOT_TOKEN`; bot `BOT_TOKEN`, `MONGO_DB_CONNECTION_STRING`; webapp `NEXT_PUBLIC_API_BASE_URL` (`http://localhost:3001`); admin `MONGO_DB_CONNECTION_STRING`, `MONGO_DB_NAME`, `ADMIN_SESSION_SECRET`.
+- Bot: long polling only (`bot.start()` in `apps/bot/src/bot.ts`), no webhook mode to switch to. Use a dev bot token: a second poller on the production token gets 409 from Telegram.
+- Mini App inside Telegram needs HTTPS: one ngrok tunnel to the webapp, `pnpm --filter webapp exec ngrok http 3000`. Then set `LOCAL_API_PROXY_TARGET=http://localhost:3001` and `NEXT_PUBLIC_API_BASE_URL=<ngrok URL>` in the webapp env, `CORS_ALLOW_ANY_ORIGIN=true` in the api env, and `WEBAPP_URL=<ngrok URL>` in the bot env.
+- Stop: Ctrl+C or `/stack down`. No containers to stop.
+
 ## Architecture
 
 ### Monorepo Structure
