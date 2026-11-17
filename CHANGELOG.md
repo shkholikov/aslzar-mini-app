@@ -10,11 +10,17 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
-## [2.23.4] - 2026-11-17
+## [2.23.5] - 2026-11-17
 
 ### Fixed
 
 - Mini App Moliyaviy and Referal pages: when the customer's data fails to load (network or 1C trouble), they now show «Ma'lumotlarni yuklab bo'lmadi» with a retry button, like Home, instead of asking an existing customer to register.
+
+## [2.23.4] - 2026-11-17
+
+### Changed
+
+- Claude PR review now runs Anthropic's official code-review plugin on Opus instead of our own prompt. The previous run used the action's default model and stopped without reviewing. `REVIEW.md` is read as project rules, the bot always posts a comment (a review or the reason it skipped), and the check fails only when it posted nothing.
 
 ## [2.23.3] - 2026-11-17
 
