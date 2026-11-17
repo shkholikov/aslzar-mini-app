@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.24.1] - 2026-11-17
+
+### Changed
+
+- `CLAUDE.md` gains a `## Dev` section: how to run the apps locally (commands, ports, env files, the dev bot token, the ngrok setup for testing the Mini App inside Telegram, and how to stop).
+
 ## [2.24.0] - 2026-11-17
 
 ### Added
