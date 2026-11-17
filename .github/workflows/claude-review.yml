@@ -153,7 +153,8 @@ jobs:
                and the PR's risk tier: High if any High file changed, Low if every file is Low,
                otherwise Medium.
 
-            2. Review. Launch 4 agents in parallel. Give each the PR title, description, the diff in
+            2. Review. Always launch these agents with the Agent tool, in parallel, whatever the size of
+               the PR; never review the diff yourself instead, even when it is small. Give each the PR title, description, the diff in
                scope, REVIEW.md, and the relevant CLAUDE.md paths. Each returns issues with file,
                line, description and why it was flagged.
                - Agent A (sonnet): violations of REVIEW.md and CLAUDE.md rules. Quote the exact rule.
@@ -170,7 +171,7 @@ jobs:
 
             3. Validate. For each issue, launch an agent (opus for bugs and security, sonnet for rule
                violations) that reads the code around it and confirms or rejects it with high
-               confidence. Drop every issue that is not confirmed, and every issue you already raised
+               confidence. Always do this with agents too, never by judging the issue yourself. Drop every issue that is not confirmed, and every issue you already raised
                (inline-comments.json, earlier-summaries.md).
 
             4. Post. For each confirmed issue, one inline comment with
@@ -183,8 +184,9 @@ jobs:
                no $(...), no other flags: everything else is denied). It starts
                with the count as REVIEW.md says, then the risk tier, the High files from
                pr-files.txt (the owner reads those diffs before merging) and whether the range was
-               full or incremental.
-               - Every agent finished: its last line is exactly
+               full or incremental. Then a line exactly in this form, with each agent's issue count:
+               Agents: A <n>, B <n>, C <n>, D <n or "skipped">; validated <confirmed>/<raised>
+               - Every agent finished: the marker on its own last line, exactly
                  <!-- claude-review sha=${{ github.event.pull_request.head.sha }} -->
                - An agent failed or did not finish, or part of the diff went unread: say the review
                  is incomplete and what was missed, and leave the marker out, so the next run
@@ -207,10 +209,16 @@ jobs:
         run: |
           set -euo pipefail
           marker="<!-- claude-review sha=$HEAD_SHA -->"
-          if gh api --paginate "repos/$REPO/issues/$PR/comments" --jq ".[] | select($BOT) | .body" |
-            grep -F -- "$marker" >/dev/null; then
-            echo "Review of $HEAD_SHA posted."
-          else
+          agents='Agents: A [0-9]+, B [0-9]+, C [0-9]+, D ([0-9]+|skipped)'
+          posted=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+            --jq ".[] | select($BOT) | .body | select(contains(\"$marker\")) | test(\"$agents\")")
+          if [ -z "$posted" ]; then
             echo "::error::No complete Claude review of $HEAD_SHA was posted (an agent failed, or the summary is missing). Re-run this job."
             exit 1
           fi
+          # Every summary for this head prints true or false; one with the Agents line is enough.
+          if ! printf '%s\n' "$posted" | grep -x true >/dev/null; then
+            echo "::error::The review of $HEAD_SHA does not show that the review agents ran (no 'Agents:' line). Re-run this job."
+            exit 1
+          fi
+          echo "Review of $HEAD_SHA posted, review agents ran."
