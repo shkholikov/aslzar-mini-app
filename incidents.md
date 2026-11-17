@@ -23,7 +23,7 @@ One entry per production bug or revert. Each one should end with a rule in `REVI
 - What broke: when loading the customer's data failed (network, API or 1C trouble), the Moliyaviy and Referal pages showed «Ro'yxatdan o'ting», the register card, to people who are already customers.
 - Cause: `apps/webapp/app/finance/page.tsx` and `apps/webapp/app/referral/page.tsx` read only `data` and `loading` from `useUser()`, so a failed call fell through to `RegisterPromptCard`. Home and Profile already checked `error`.
 - How found: code review of the Mini App UI rework (2.23.0).
-- Fix: 2.23.3, both pages show `UserLoadError` with a retry when the call failed.
+- Fix: 2.23.4, both pages show `UserLoadError` with a retry when the call failed.
 - Rule added: none new; REVIEW.md's "1C slow or unreachable is treated as an answer" covers it.
 
 <!--
