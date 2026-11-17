@@ -1,6 +1,8 @@
 "use client";
 
+import * as React from "react";
 import useSWR from "swr";
+import useSWRInfinite, { type SWRInfiniteResponse } from "swr/infinite";
 import { apiRequest, ApiError } from "@/lib/api-client";
 import { useTelegram } from "./useTelegram";
 import type { CatalogCategoriesResponse, CatalogListResponse, CatalogQuery } from "@/lib/catalog";
@@ -43,23 +45,69 @@ function keyFor(params: Record<string, string | number | undefined>): string {
 	return `/v1/catalog?${sp.toString()}`;
 }
 
-export function useCatalogPage(query: CatalogQuery, enabled = true) {
+/**
+ * The catalogue for one query, paged with «Ko'proq yuklash». useSWRInfinite keeps the loaded pages
+ * and their count in SWR's cache per query, so leaving the page and coming back shows the same
+ * list straight from cache, and a changed query starts at page 1.
+ */
+export function useCatalogList(query: Omit<CatalogQuery, "page" | "perPage">, enabled = true) {
 	const tg = useTelegram();
 	const ready = Boolean(tg && typeof window !== "undefined" && window.Telegram?.WebApp?.initData);
-	const params = toParams(query);
+	const active = ready && enabled;
+	const pageKey = (page: number) => keyFor(toParams({ ...query, page }));
 
-	// No keepPreviousData: the page accumulates pages itself, so holding the previous query's
-	// results here would append stale rows and show a stale `meta.total` after a filter change.
-	const { data, error, isLoading, mutate } = useSWR<CatalogListResponse>(
-		ready && enabled ? keyFor(params) : null,
+	const res = useSWRInfinite<CatalogListResponse>(
+		(index, previous: CatalogListResponse | null) => (!active || (previous && !previous.meta?.hasMore) ? null : pageKey(index + 1)),
 		(path: string) => apiRequest<CatalogListResponse>(path),
-		{ revalidateOnFocus: false }
+		PAGED_OPTIONS
 	);
+	return usePagedList(res, active, pageKey(1));
+}
+
+/**
+ * «Ko'proq yuklash» fetches only the new page: page 1 is not refetched each time
+ * (revalidateFirstPage), so the order does not shift under the reader while paging. Pages are
+ * requested in parallel, so refreshing several cached pages on return is one round-trip, not one
+ * per page; the page count comes from SWR's cache and `hasMore` caps it.
+ */
+export const PAGED_OPTIONS = { revalidateOnFocus: false, revalidateFirstPage: false, parallel: true };
+
+/**
+ * Flattens useSWRInfinite pages into what the catalogue page renders. Shared with the likes list.
+ *
+ * When a list becomes active with pages already in cache (coming back to the page, or back to a
+ * chip used before), every cached page is refreshed once in the background. Otherwise a like or a
+ * price change on page 1 would shift items across the stale later pages, and one could vanish or
+ * show twice until a reload.
+ */
+export function usePagedList(res: SWRInfiniteResponse<CatalogListResponse>, active: boolean, listKey: string) {
+	const { data, error, isLoading, isValidating, size, setSize, mutate } = res;
+
+	const refreshedFor = React.useRef<string | null>(null);
+	React.useEffect(() => {
+		const key = active ? listKey : null;
+		if (key === refreshedFor.current) return;
+		refreshedFor.current = key;
+		if (key && data) void mutate();
+	}, [active, listKey, data, mutate]);
+
+	// Pages can shift between requests; key on productId so a product never appears twice.
+	const products = React.useMemo(() => {
+		const seen = new Set<string>();
+		return (data ?? []).flatMap((p) => p.data).filter((p) => !seen.has(p.productId) && Boolean(seen.add(p.productId)));
+	}, [data]);
+
+	// Asked for one more page than has arrived: loading, unless that request failed and is not
+	// being retried right now.
+	const pending = data !== undefined && data.length < size;
 
 	return {
-		products: data?.data ?? [],
-		meta: data?.meta,
-		loading: ready && enabled && isLoading && data === undefined,
+		products,
+		meta: data?.[data.length - 1]?.meta,
+		loading: active && isLoading && data === undefined,
+		loadingMore: pending && (isValidating || !error),
+		// After a failed page, the button asks for that missing page again, not every loaded page.
+		loadMore: () => void (pending ? mutate(data, { revalidate: (page: unknown) => page === undefined }) : setSize(size + 1)),
 		failure: failureKind(error),
 		retry: () => void mutate()
 	};

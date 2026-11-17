@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { toast } from "sonner";
 import { apiRequest, ApiError } from "@/lib/api-client";
 import { useTelegram } from "./useTelegram";
-import { failureKind } from "./useCatalog";
+import { PAGED_OPTIONS, usePagedList } from "./useCatalog";
 import type { CatalogListResponse } from "@/lib/catalog";
 
 /**
@@ -61,20 +62,17 @@ export function useFavoriteIds() {
 	return { isLiked: (productId: string) => ids.has(productId), toggle, count: ids.size };
 }
 
-/** The liked designs themselves, 24 per page, in the catalogue's own `{ data, meta }` shape. */
-export function useFavoriteProducts(page: number, enabled: boolean) {
-	const ready = useReady();
-	const { data, error, isLoading, mutate } = useSWR<CatalogListResponse>(
-		ready && enabled ? `/v1/favorites/products?page=${page}` : null,
+/**
+ * The liked designs themselves, 24 per page, in the catalogue's own `{ data, meta }` shape, paged
+ * and cached the same way as useCatalogList.
+ */
+export function useFavoriteProducts(enabled: boolean) {
+	const active = useReady() && enabled;
+	const res = useSWRInfinite<CatalogListResponse>(
+		(index, previous: CatalogListResponse | null) =>
+			!active || (previous && !previous.meta?.hasMore) ? null : `/v1/favorites/products?page=${index + 1}`,
 		(path: string) => apiRequest<CatalogListResponse>(path),
-		{ revalidateOnFocus: false }
+		PAGED_OPTIONS
 	);
-
-	return {
-		products: data?.data ?? [],
-		meta: data?.meta,
-		loading: ready && enabled && isLoading && data === undefined,
-		failure: failureKind(error),
-		retry: () => void mutate()
-	};
+	return usePagedList(res, active, "/v1/favorites/products");
 }
