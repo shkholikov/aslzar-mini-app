@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.23.3] - 2026-11-17
+
+### Fixed
+
+- Claude PR review posts its review again. The stricter tool rules from 2.23.2 blocked the review agents and the summary comment on the first PR they ran on, so it goes back to the rules that worked. The token stays out of the model's environment, and only text from write-access authors and the review bot reaches it.
+
 ## [2.23.2] - 2026-11-16
 
 ### Changed
