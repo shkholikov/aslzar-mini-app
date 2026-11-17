@@ -12,9 +12,13 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [2.23.3] - 2026-11-17
 
+### Changed
+
+- Claude PR review is simpler: it runs once when a PR is opened (or reopened, or leaves draft) and reviews the whole PR; another round is a re-run or a close and reopen. Its summary has a short fixed shape (count and risk, High files, one line per finding, a verdict, and which review agents ran).
+
 ### Fixed
 
-- Claude PR review posts its review again. The stricter tool rules from 2.23.2 blocked the review agents and the summary comment on the first PR they ran on, so it goes back to the rules that worked. The token stays out of the model's environment, and only text from write-access authors and the review bot reaches it.
+- Claude PR review posts its review again. The stricter tool rules from 2.23.2 blocked the review agents and the summary on the first PR they ran on, so it goes back to the rules that worked. The token stays out of the model's environment, and only text from write-access authors and the review bot reaches it.
 
 ## [2.23.2] - 2026-11-16
 
