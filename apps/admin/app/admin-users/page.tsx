@@ -193,7 +193,7 @@ function AdminUsersContent() {
 
 				{/* Create form */}
 				<div className="rounded-lg border border-border bg-card p-4 mb-6">
-					<h2 className="text-base font-semibold mb-3">Yangi admin qo'shish</h2>
+					<h2 className="text-base font-semibold mb-3">Yangi admin qo&apos;shish</h2>
 					<form onSubmit={handleCreate} className="flex flex-col gap-3">
 						<div className="flex flex-wrap gap-3">
 							<Input
@@ -261,7 +261,7 @@ function AdminUsersContent() {
 				</div>
 
 				<div className="flex items-center justify-between mb-3">
-					<h2 className="text-lg font-medium text-gray-800">Adminlar ro'yxati</h2>
+					<h2 className="text-lg font-medium text-gray-800">Adminlar ro&apos;yxati</h2>
 					<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={users.length === 0} className="shrink-0">
 						<Download className="mr-2 h-4 w-4" />
 						Excel
@@ -275,7 +275,7 @@ function AdminUsersContent() {
 								<TableHead>Ism Familiya</TableHead>
 								<TableHead>Rol</TableHead>
 								<TableHead>Ruxsatlar</TableHead>
-								<TableHead>Qo'shdi</TableHead>
+								<TableHead>Qo&apos;shdi</TableHead>
 								<TableHead>Sana</TableHead>
 								<TableHead />
 							</TableRow>
@@ -290,7 +290,7 @@ function AdminUsersContent() {
 							) : users.length === 0 ? (
 								<TableRow>
 									<TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-										Adminlar yo'q
+										Adminlar yo&apos;q
 									</TableCell>
 								</TableRow>
 							) : (
@@ -311,7 +311,7 @@ function AdminUsersContent() {
 												{effectiveRole === "superadmin" ? (
 													<span className="text-muted-foreground text-xs">Barcha ruxsatlar</span>
 												) : (user.permissions ?? []).length === 0 ? (
-													<span className="text-muted-foreground text-xs">Ruxsat yo'q</span>
+													<span className="text-muted-foreground text-xs">Ruxsat yo&apos;q</span>
 												) : (
 													<div className="flex flex-wrap gap-1">
 														{(user.permissions ?? []).map((p) => (

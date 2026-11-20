@@ -340,7 +340,7 @@ export default function NewsPage() {
 								/>
 							</div>
 							<p className="text-xs text-muted-foreground mt-1">
-								Webapp da yangilik ostida tugma ko'rinadi. Ikkalasi ham to'ldirilishi kerak.
+								Webapp da yangilik ostida tugma ko&apos;rinadi. Ikkalasi ham to&apos;ldirilishi kerak.
 							</p>
 						</div>
 
@@ -359,7 +359,7 @@ export default function NewsPage() {
 
 					<div>
 						<div className="flex items-center justify-between mb-3">
-							<h2 className="text-lg font-medium text-gray-800">Yangiliklar ro'yxati</h2>
+							<h2 className="text-lg font-medium text-gray-800">Yangiliklar ro&apos;yxati</h2>
 							<Button type="button" variant="outline" size="sm" onClick={handleExport} disabled={items.length === 0} className="shrink-0">
 								<Download className="mr-2 h-4 w-4" />
 								Excel
@@ -368,7 +368,7 @@ export default function NewsPage() {
 						{loadingItems ? (
 							<Loading />
 						) : items.length === 0 ? (
-							<p className="text-sm text-muted-foreground">Hali yangiliklar yo'q.</p>
+							<p className="text-sm text-muted-foreground">Hali yangiliklar yo&apos;q.</p>
 						) : (
 							<div className="space-y-4">
 								<div className="overflow-x-auto rounded-md border">

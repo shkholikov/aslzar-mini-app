@@ -44,7 +44,8 @@ export function ColumnFilterHeader<TData, V>({
 	sortable = false
 }: ColumnFilterHeaderProps<TData, V>) {
 	const [query, setQuery] = React.useState("");
-	const selected = React.useMemo(() => (column.getFilterValue() as V[] | undefined) ?? [], [column.getFilterValue()]); // eslint-disable-line react-hooks/exhaustive-deps
+	const filterValue = column.getFilterValue() as V[] | undefined;
+	const selected = React.useMemo(() => filterValue ?? [], [filterValue]);
 	const isActive = selected.length > 0;
 
 	const resolvedOptions: FilterOption<V>[] = React.useMemo(() => {

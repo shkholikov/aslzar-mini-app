@@ -1,5 +1,6 @@
 import { MongoClient, ObjectId } from "mongodb";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import type { AdminRole, AdminPermission } from "./auth-utils";
 import { normalizePermissions } from "./auth-utils";
@@ -61,23 +62,14 @@ export async function findAdminById(id: string): Promise<AdminUser | null> {
 	}
 }
 
-// Password hashing using bcryptjs. This module is lightweight and works well in Next.js.
-// Make sure to add `bcryptjs` (and optionally `@types/bcryptjs`) to dependencies.
-// We keep the import dynamic to avoid issues in edge runtimes.
-async function getBcrypt() {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
-	const bcrypt = require("bcryptjs") as typeof import("bcryptjs");
-	return bcrypt;
-}
-
+// Password hashing with bcryptjs. Admin runs on the Node runtime only (no middleware, no edge
+// routes), so a static import is fine.
 export async function hashPassword(plain: string): Promise<string> {
-	const bcrypt = await getBcrypt();
 	const saltRounds = 10;
 	return bcrypt.hash(plain, saltRounds);
 }
 
 export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
-	const bcrypt = await getBcrypt();
 	return bcrypt.compare(plain, hash);
 }
 
