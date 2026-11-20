@@ -10,11 +10,17 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
-## [2.24.5] - 2026-11-20
+## [2.24.6] - 2026-11-20
 
 ### Fixed
 
 - Admin panel passes lint with no errors (13 before). Apostrophes in Uzbek headings and labels are escaped (they look the same), the table column filter reads its value once instead of inside the hook's dependency list, and password hashing imports bcryptjs normally instead of through `require()` (same library, same 10 salt rounds, existing passwords still work).
+
+## [2.24.5] - 2026-11-20
+
+### Changed
+
+- Claude PR review check now lists in its log which review agents Claude launched and which models it used, to confirm the full multi-agent review runs.
 
 ## [2.24.4] - 2026-11-20
 

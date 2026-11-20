@@ -152,6 +152,17 @@ jobs:
           inline=$(gh api --paginate "repos/$REPO/pulls/$PR/comments" --jq ".[] | select($since) | .id" | wc -l | tr -d ' ')
           echo "claude[bot] posted $issue PR comment(s) and $inline inline comment(s) in this run. Claude step: $OUTCOME."
 
+          # Which subagents the review used (the plugin asks for haiku, sonnet and opus agents).
+          log=${EXEC_FILE:-$RUNNER_TEMP/claude-execution-output.json}
+          if [ -s "$log" ]; then
+            jq -r '
+              [.[] | select(.type == "assistant") | .message.content[]? | select(.type == "tool_use" and (.name == "Agent" or .name == "Task")) | .input] as $a
+              | "Subagents launched: \($a | length)",
+                ($a[] | "  - \(.model // "default"): \(.description // .subagent_type // "?")"),
+                "Models used: \([.[] | select(.type == "result") | .modelUsage // {} | keys[]] | unique | join(", "))"
+            ' "$log" 2>/dev/null || echo "Could not read the subagent list from the run log."
+          fi
+
           if [ "$issue" -gt 0 ] || [ "$inline" -gt 0 ]; then
             if [ "$OUTCOME" = success ]; then
               clear_notes
@@ -165,7 +176,6 @@ jobs:
           fi
 
           # Nothing posted. Without a run log the action never started the review.
-          log=${EXEC_FILE:-$RUNNER_TEMP/claude-execution-output.json}
           if [ ! -s "$log" ]; then
             if [ "$OUTCOME" = success ]; then
               msg="The action skipped this run: its workflow file differs from the default branch's (an old re-run, or the PR's base is not the default branch). Close and reopen the PR."
