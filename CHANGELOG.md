@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.24.4] - 2026-11-20
+
+### Fixed
+
+- Claude PR review now finishes and posts its review. Its review agents ran in the background and were cut off when the run ended, so nothing was posted (PR #38). They now run in the foreground, and Claude waits for them before it ends.
+
 ## [2.24.3] - 2026-11-20
 
 ### Changed
