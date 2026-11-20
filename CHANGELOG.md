@@ -10,6 +10,12 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.24.5] - 2026-11-20
+
+### Changed
+
+- Claude PR review check now lists in its log which review agents Claude launched and which models it used, to confirm the full multi-agent review runs.
+
 ## [2.24.4] - 2026-11-20
 
 ### Fixed
