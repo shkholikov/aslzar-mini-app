@@ -177,7 +177,7 @@ export default function SuggestionsPage() {
 					) : (
 						<div className="space-y-4">
 							<div className="flex items-center justify-between mb-3">
-								<h2 className="text-lg font-medium text-gray-800">Takliflar ro'yxati</h2>
+								<h2 className="text-lg font-medium text-gray-800">Takliflar ro&apos;yxati</h2>
 								<Button
 									type="button"
 									variant="outline"

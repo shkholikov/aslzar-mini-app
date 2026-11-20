@@ -308,7 +308,7 @@ export default function EmployeesPage() {
 							</form>
 
 							<div className="flex items-center justify-between mb-3">
-								<h2 className="text-lg font-medium text-gray-800">Xodimlar ro'yxati</h2>
+								<h2 className="text-lg font-medium text-gray-800">Xodimlar ro&apos;yxati</h2>
 								<Button
 									type="button"
 									variant="outline"
