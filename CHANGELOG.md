@@ -10,6 +10,16 @@ Every committed or deployed change bumps that version and adds an entry here.
 
 ## [Unreleased]
 
+## [2.24.3] - 2026-11-20
+
+### Changed
+
+- Claude PR review workflow hardened: one review per PR (a PR Claude has already commented on is skipped and stays green), the review action pinned to a release commit instead of the moving `v1` tag, and the common write commands denied to Claude (edit, write, commit, push, merge, close, review, edit or mark a PR ready). A review cut off partway leaves a note, and reopening the PR reviews it again.
+
+### Fixed
+
+- Claude PR review check: a skipped PR counts as green only when Claude says so explicitly (`REVIEW-SKIPPED:`), the "this PR changes the workflow" skip only applies when the PR itself touches the workflow file, and failures name their cause (action skipped, Claude step failed, or no review posted).
+
 ## [2.24.2] - 2026-11-17
 
 ### Fixed
