@@ -78,6 +78,11 @@ jobs:
       - uses: anthropics/claude-code-action@cc98b3ae241b0fcfb6a42a2690751afffecb4452 # v1.0.278
         id: claude
         if: steps.prior.outputs.reviewed == 'false'
+        # A headless run ends when Claude ends its turn, which kills background subagents: the
+        # model launched the review agents in the background, said "waiting", and nothing was
+        # posted (claude-code-action#1462). This makes every Agent call run in the foreground.
+        env:
+          CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           # or: anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -93,9 +98,9 @@ jobs:
           # prompt of its own (parse-sdk-options.ts at the pinned commit).
           claude_args: |
             --model claude-opus-5-5
-            --append-system-prompt "If the code-review command stops before reviewing (PR closed, draft, trivial, automated or already reviewed), end your final message with one line: REVIEW-SKIPPED: followed by the reason."
+            --append-system-prompt "This is a one-shot CI run: ending your turn ends the run and kills any background work, and you will never be re-invoked or notified. Run every Agent call in the foreground and wait for its result; several calls in one message still run in parallel. Do not end your turn until the review is posted. If the code-review command stops before reviewing (PR closed, draft, trivial, automated or already reviewed), end your final message with one line: REVIEW-SKIPPED: followed by the reason."
             --allowedTools "Agent,Task,Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh pr comment:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*),mcp__github_inline_comment__create_inline_comment"
-            --disallowedTools "Edit,Write,NotebookEdit,Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh pr close:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh pr ready:*)"
+            --disallowedTools "Edit,Write,NotebookEdit,Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh pr close:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh pr ready:*),ScheduleWakeup,Monitor,SendMessage,CronCreate"
 
       # Green when the Claude step succeeded and Claude posted in this run (inline comments or a
       # PR comment), or skipped the PR on purpose (last line REVIEW-SKIPPED; the reason is posted).
